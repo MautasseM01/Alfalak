@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مواقع الكواكب — الفَلَك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/ephemeris.html" class="on">مواقع الكواكب</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">مواقع الكواكب</h2>
+<p class="lede">جدول المواقع الظاهرية لأي لحظة، مع الرجوع والسرعة اليومية وطور القمر.</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="date">التاريخ</label><input type="date" id="date"></div>
+      <div class="field"><label for="time">الساعة</label><input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">التوقيت حسب مدينة</label><input type="text" id="city" placeholder="دمشق، باريس…" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">اعرض الجدول</button>
+      <button class="btn ghost" id="now">الآن</button>
+      <button class="btn ghost" id="utc">بالتوقيت العالمي</button>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  محسوبة بمكتبة Swiss Ephemeris — مواقع ظاهرية على المنطقة البروجية الاستوائية.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+const $ = id => document.getElementById(id);
+const out = $('out');
+let tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+cityInput($('city'), c => { tz = c.tz; load(); });
+
+async function load() {
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب</div></div>';
+  try {
+    const d = await API('ephemeris', { date: $('date').value, time: $('time').value, tz });
+    const ph = d.moon_phase;
+    out.innerHTML = `
+      <div class="card">
+        <div class="card-top">
+          <h2 class="card-title">${d.when_local.slice(0, 16).replace('T', ' — ')}</h2>
+          <div class="chips">
+            <span class="chip">${d.tz}</span>
+            <span class="chip gold">${ph.name} ${Math.round(ph.illumination * 100)}٪</span>
+            ${d.bodies.filter(b => b.retro).map(b => `<span class="chip neg">℞ ${b.name}</span>`).join('')}
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th></th><th>الجرم</th><th>الدرجة</th><th>البرج</th><th>السرعة اليومية</th><th></th></tr></thead>
+            <tbody>${d.bodies.map(b => `
+              <tr><td class="sym">${b.symbol}</td><td>${b.name}</td>
+                  <td class="num">${b.short}</td><td>${b.sign}</td>
+                  <td class="num" style="color:var(--muted)">${b.speed.toFixed(4)}°</td>
+                  <td>${b.retro ? '<span class="retro">راجع</span>' : ''}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <p class="note" style="margin-top:16px">
+            التوقيت العالمي: ${d.when_utc.slice(0, 16).replace('T', ' — ')}
+          </p>
+        </div>
+      </div>`;
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`;
+  }
+}
+
+$('go').onclick = load;
+$('date').onchange = load;
+$('time').onchange = load;
+$('now').onclick = () => {
+  const d = new Date();
+  $('date').value = todayISO();
+  $('time').value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  load();
+};
+$('utc').onclick = () => { tz = 'UTC'; $('city').value = ''; load(); };
+
+$('date').value = todayISO();
+$('now').click();
+</script>
+</body>
+</html>

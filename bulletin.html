@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>النشرة الفلكية اليومية — الفَلَك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html" class="on">النشرة اليومية</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">النشرة الفلكية</h2>
+<p class="lede">اختر أي يوم وأي مدينة. تُحسب لحظيًا، وتُنسخ جاهزة للتلغرام أو الواتساب.</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field">
+        <label for="date">التاريخ</label>
+        <input type="date" id="date">
+      </div>
+      <div class="field">
+        <label for="city">المدينة</label>
+        <input type="text" id="city" placeholder="دمشق، باريس، القاهرة…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="voice">الصيغة</label>
+        <select id="voice">
+          <option value="today">نشرة اليوم</option>
+          <option value="tomorrow">نشرة الغد</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="shift">عدّ المنازل</label>
+        <select id="shift">
+          <option value="0">المذهب المشهور</option>
+          <option value="1">مُزاح منزلة واحدة</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">اعرض النشرة</button>
+      <button class="btn ghost" id="prev">اليوم السابق ›</button>
+      <button class="btn ghost" id="next">‹ اليوم التالي</button>
+      <button class="btn ghost" id="today">اليوم</button>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  المواقع محسوبة بمكتبة Swiss Ephemeris على المنطقة البروجية الاستوائية.<br>
+  المنازل القمرية والاختيارات من تراث الأنواء العربي.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+
+const $ = id => document.getElementById(id);
+const out = $('out');
+let last = null;
+
+cityInput($('city'), () => save());
+
+function save() {
+  store.set('bul', { city: $('city').value, voice: $('voice').value, shift: $('shift').value });
+}
+function restore() {
+  const s = store.get('bul', {});
+  $('city').value = s.city || 'دمشق';
+  $('voice').value = s.voice || 'today';
+  $('shift').value = s.shift || '0';
+  $('date').value = todayISO();
+}
+
+async function load() {
+  save();
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب مواقع الأفلاك</div></div>';
+  try {
+    const d = await API('bulletin', {
+      date: $('date').value, city: $('city').value.trim(),
+      voice: $('voice').value, shift: $('shift').value,
+    });
+    last = d;
+    render(d);
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`;
+  }
+}
+
+function render(d) {
+  const s = d.summary;
+  const chips = [
+    `<span class="chip">☾ ${s.moon_sign}</span>`,
+    `<span class="chip">☉ ${s.sun_sign}</span>`,
+    `<span class="chip gold">${s.phase} ${s.illum}٪</span>`,
+    ...s.voc.map(v => `<span class="chip neg">خلو مسار ${v.hours} س</span>`),
+    ...s.retrogrades.map(r => `<span class="chip neg">℞ ${r}</span>`),
+  ].join('');
+
+  out.innerHTML =
+    `<div class="card">
+      <div class="card-top">
+        <h2 class="card-title">${d.date} — ${d.place}</h2>
+        <div class="chips">${chips}</div>
+      </div>
+      <div class="card-body">${bulletinHtml(d.text)}</div>
+      <div class="actions">
+        <button class="btn" id="copy">نسخ النصّ للتلغرام أو الواتساب</button>
+        <button class="btn ghost" id="toggle">عرض النصّ الخام</button>
+      </div>
+      <pre class="raw" id="raw"></pre>
+    </div>`;
+
+  $('raw').textContent = d.text;
+  $('toggle').onclick = e => {
+    const p = $('raw'); p.classList.toggle('show');
+    e.target.textContent = p.classList.contains('show') ? 'إخفاء النصّ الخام' : 'عرض النصّ الخام';
+  };
+  $('copy').onclick = e => copyText(d.text, e.target, 'نسخ النصّ للتلغرام أو الواتساب');
+}
+
+$('go').onclick = load;
+$('voice').onchange = load;
+$('shift').onchange = load;
+$('date').onchange = load;
+$('prev').onclick = () => { $('date').value = shiftISO($('date').value, -1); load(); };
+$('next').onclick = () => { $('date').value = shiftISO($('date').value, 1); load(); };
+$('today').onclick = () => { $('date').value = todayISO(); load(); };
+$('city').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
+});
+
+restore();
+load();
+</script>
+</body>
+</html>

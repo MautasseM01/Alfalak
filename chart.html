@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خريطة الميلاد والطالع — الفَلَك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/chart.html" class="on">خريطة الميلاد</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">خريطة الميلاد والطالع</h2>
+<p class="lede">
+  دقّة الساعة مهمّة: كل أربع دقائق تُزحزح الطالع درجة كاملة.
+  التوقيت الصيفي التاريخي يُطبَّق تلقائيًّا، وتُنبَّه إن كانت ساعتك ملتبسة.
+  الخرائط تُحفظ في متصفّحك وحده.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="name">الاسم (اختياري)</label><input type="text" id="name" placeholder="لتمييز الخريطة عند الحفظ"></div>
+      <div class="field"><label for="date">تاريخ الميلاد</label><input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة الميلاد</label><input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">مكان الميلاد</label><input type="text" id="city" placeholder="دمشق، معرّة النعمان، أي قرية…" autocomplete="off"></div>
+      <div class="field">
+        <label for="system">نظام البيوت</label>
+        <select id="system">
+          <option value="whole">البيوت الكاملة — نظام العرب</option>
+          <option value="alcabitius">القبّاني — نظام بغداد</option>
+          <option value="placidus">بلاسيدوس — المعاصر</option>
+          <option value="koch">كوخ</option>
+          <option value="regiomontanus">ريجومونتانوس</option>
+          <option value="campanus">كامبانوس</option>
+          <option value="porphyry">بورفيري</option>
+          <option value="equal">البيوت المتساوية</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="compare">قارن بنظام</label>
+        <select id="compare">
+          <option value="placidus">بلاسيدوس</option>
+          <option value="whole">البيوت الكاملة</option>
+          <option value="alcabitius">القبّاني</option>
+          <option value="">بلا مقارنة</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">احسب الخريطة</button>
+      <button class="btn ghost" id="save">حفظ</button>
+      <div class="seg" id="minorSeg">
+        <button data-minor="1" aria-pressed="true">مع الزوايا الصغرى</button>
+        <button data-minor="0" aria-pressed="false">الرئيسية فقط</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px" id="saved"></div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  المواقع ظاهرية على المنطقة البروجية الاستوائية، بمكتبة Swiss Ephemeris.<br>
+  الكرامات والسهام والمنازل من التراث الفلكي العربي.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/wheel.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+const $ = id => document.getElementById(id);
+const out = $('out');
+let minor = '1', current = null;
+
+cityInput($('city'));
+document.querySelectorAll('#minorSeg button').forEach(b => {
+  b.onclick = () => {
+    minor = b.dataset.minor;
+    document.querySelectorAll('#minorSeg button').forEach(x =>
+      x.setAttribute('aria-pressed', x.dataset.minor === minor ? 'true' : 'false'));
+    if (current) load();
+  };
+});
+
+function form() {
+  return {
+    name: $('name').value.trim(), date: $('date').value, time: $('time').value,
+    city: $('city').value.trim(), system: $('system').value,
+    compare: $('compare').value, minor,
+    both: $('compare').value ? '1' : '0',
+  };
+}
+
+async function load() {
+  const f = form();
+  if (!f.date || !f.city) {
+    out.innerHTML = '<div class="card"><div class="msg err">أدخل تاريخ الميلاد ومكانه.</div></div>';
+    return;
+  }
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب الخريطة</div></div>';
+  try { current = await API('chart', f); render(current); }
+  catch (e) { out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`; }
+}
+
+const card = (title, body, chips) =>
+  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
+   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+
+function render(c) {
+  const A = c.angles, D = c.dominants, R = c.reading;
+  const digClass = d => /وبال|هبوط/.test(d || '') ? 'bad' : '';
+
+  const alerts = c.warnings.map(w => `<div class="alert">⚠ ${w}</div>`).join('')
+               + c.notes.map(n => `<div class="alert note">${n}</div>`).join('');
+
+  const head = card(
+    `${c.name || 'الخريطة'} — ${c.place}`,
+    `${alerts}
+     <p style="color:var(--muted);font-size:.86rem;margin:0">
+       ${c.when_local.slice(0,16).replace('T',' — ')} · ${c.tz_describe}
+       · خط العرض ${c.lat} · خط الطول ${c.lon}</p>
+     <p style="margin:10px 0 0">خريطة ${c.sect} ${q('الطائفة')} — ${c.sect_note}</p>`,
+    `<span class="chip gold">الطالع ${A['الطالع'].text}</span>
+     <span class="chip">${c.houses.system_name}</span>`);
+
+  const wheel = card('العجلة',
+    `<div class="wheel">${wheelSVG(c)}</div>
+     <p class="note" style="margin-top:14px">
+       الطالع إلى اليسار، والبروج تدور عكس عقارب الساعة. الحلقة الخارجية البروج،
+       وتليها المنازل القمرية الثماني والعشرون مرقّمة، ثم البيوت. الخطوط في الوسط
+       هي الزوايا: الخضراء موافقة والحمراء مخالفة، وسُمكها بحسب دقّتها.
+       الكواكب الخضراء ذات كرامة والحمراء في وبال أو هبوط.</p>`);
+
+  const bodyRows = c.bodies.map(b => `
+    <tr><td class="sym">${b.symbol}</td><td>${b.name}</td>
+        <td class="num">${b.short}</td><td>${b.sign}</td><td class="num">${b.house}</td>
+        <td>${b.retro ? '<span class="retro">راجع</span> ' : ''}
+            ${b.dignity && b.dignity !== '—' ? `<span class="dig ${digClass(b.dignity)}">${b.dignity}</span>` : ''}</td>
+        <td class="num" style="color:var(--muted)">${b.dignity_score != null ? (b.dignity_score > 0 ? '+' : '') + b.dignity_score : ''}</td>
+    </tr>`).join('');
+
+  const planets = card(`الأجرام والكرامات ${q('الكرامات')}`,
+    `<table><thead><tr><th></th><th>الجرم</th><th>الدرجة</th><th>البرج</th><th>البيت</th>
+     <th>الكرامة</th><th>القوّة</th></tr></thead><tbody>${bodyRows}</tbody></table>`);
+
+  const alm = c.almuten;
+  const almuten = card(`الأَلْمُطَن ${q('الأَلْمُطَن')}`,
+    `<p>${R.almuten}</p>
+     <div class="bars" style="margin-top:12px">${
+       alm.ranking.filter(x => x.score > 0).map(x =>
+        `<div class="bar"><span>${x.planet}</span>
+         <div class="track"><div class="fill" style="width:${Math.round(x.score / alm.score * 100)}%"></div></div>
+         <span class="val">${x.score}</span></div>`).join('')}</div>
+     <p class="note" style="margin-top:14px">يُحسَب بجمع ما يملكه كل كوكب من كرامات في
+       المواضع الحاكمة: الشمس والقمر والطالع ووسط السماء وسهم السعادة، مضافًا إليه حاله في موضعه.</p>`,
+    `<span class="chip gold">${alm.winner}</span>`);
+
+  const angleRows = Object.entries(A).map(([k,v]) =>
+    `<tr><td class="sym">${v.symbol}</td><td>${k}</td><td class="num">${v.short}</td><td>${v.sign}</td></tr>`).join('');
+  const houseRows = c.houses.cusps.map(h =>
+    `<tr><td class="num">${h.house}</td><td class="num">${h.short}</td><td>${h.sign}</td>
+     <td style="color:var(--muted);font-size:.8rem">${h.name.split(':')[1]}</td>
+     <td style="color:var(--muted)">حاكمه ${h.ruler}</td></tr>`).join('');
+
+  const houses = card(`الأوتاد والبيوت — ${c.houses.system_name}`,
+    `<table><tbody>${angleRows}</tbody></table>
+     <table style="margin-top:18px"><thead><tr><th>البيت</th><th>الدرجة</th><th>البرج</th>
+      <th>معناه</th><th></th></tr></thead><tbody>${houseRows}</tbody></table>
+     <p class="note" style="margin-top:14px">${c.houses.system_note}</p>`);
+
+  const aspRows = c.aspects.map(a =>
+    `<tr><td>${a.a}</td><td class="sym" title="${a.name}">${a.symbol}</td><td>${a.b}</td>
+     <td><span class="chip ${a.polarity==='إيجابية'?'pos':a.polarity==='سلبية'?'neg':''}">${a.name}</span></td>
+     <td class="num">${a.orb}°</td>
+     <td class="num" style="color:var(--muted)">${a.orb_max}°</td>
+     <td style="color:var(--muted);font-size:.79rem">${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</td></tr>`).join('');
+
+  const aspects = card(`الزوايا ${q('الزاوية')}`,
+    `${aspectGrid(c)}
+     <table style="margin-top:20px"><thead><tr><th></th><th></th><th></th><th>النوع</th>
+      <th>الوجاج ${q('الوجاج')}</th><th>الحدّ</th><th>${q('مُقبِلة ومُدبِرة')}</th></tr></thead>
+      <tbody>${aspRows}</tbody></table>`,
+    `<span class="chip">${c.aspects.length} زاوية</span>`);
+
+  const lotRows = c.lots.map(L =>
+    `<tr><td>${L.name}</td><td class="num">${L.short}</td><td>${L.sign}</td>
+     <td class="num">${L.house}</td>
+     <td style="color:var(--muted);font-size:.79rem">${L.formula}</td></tr>`).join('');
+  const lots = card(`السهام ${q('السهم')}`,
+    `<table><thead><tr><th>السهم</th><th>الدرجة</th><th>البرج</th><th>البيت</th><th>صيغته</th></tr></thead>
+     <tbody>${lotRows}</tbody></table>
+     <div class="read" style="margin-top:18px">${R.lots.map(x =>
+       `<div class="item"><h4>${x.title}</h4><p>${x.text}</p></div>`).join('')}</div>`);
+
+  const patterns = c.patterns.length ? card('الأشكال الزاوية',
+    `<div class="read">${R.patterns.map(p =>
+      `<div class="item"><h4>${p.title} ${q(p.title.split(' —')[0])}</h4>
+       <p class="sub">${p.members.join(' · ')}</p><p>${p.text}</p></div>`).join('')}</div>`) : '';
+
+  const starsCard = c.stars.length ? card(`النجوم الثابتة ${q('النجوم الثابتة')}`,
+    `<table><thead><tr><th>الجرم</th><th>النجم</th><th></th><th>الوجاج</th><th>دلالته</th></tr></thead>
+     <tbody>${c.stars.map(s =>
+      `<tr><td>${s.body}</td><td>${s.star}${s.royal?' <span class="chip gold" style="font-size:.62rem">ملكي</span>':''}</td>
+       <td style="color:var(--dim);font-size:.76rem">${s.star_la}</td>
+       <td class="num">${s.orb}°</td>
+       <td style="color:var(--muted);font-size:.8rem">${s.meaning}</td></tr>`).join('')}</tbody></table>
+     <p class="note" style="margin-top:14px">لا يعمل النجم إلا بمقارنة دقيقة، فالوجاج هنا درجة واحدة لا أكثر.</p>`) : '';
+
+  const bars = o => `<div class="bars">` + Object.entries(o).map(([k,v]) =>
+    `<div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v}%"></div></div>
+     <span class="val">${v}٪</span></div>`).join('') + `</div>`;
+
+  const dominants = card('الغالب في الخريطة',
+    `<div class="sec"><h3>العناصر</h3>${bars(D.elements)}</div>
+     <div class="sec"><h3>الطبائع</h3>${bars(D.modes)}</div>
+     <div class="sec"><h3>الكواكب</h3>${bars(Object.fromEntries(Object.entries(D.planets).slice(0,6)))}</div>
+     <p class="note">${R.balance}</p>`);
+
+  const item = x => `<div class="item"><h4>${x.title}</h4><p>${x.text}</p>
+    ${x.extra ? `<p class="sub">${x.extra}</p>` : ''}
+    ${x.dignity && x.dignity !== '—' ? `<p class="sub">الكرامة: ${x.dignity}</p>` : ''}</div>`;
+
+  const reading = card('قراءة الخريطة',
+    `<div class="read">${R.core.map(item).join('')}</div>
+     <h3 style="font-family:Amiri,serif;color:var(--gold);margin:24px 0 12px">سائر الأجرام</h3>
+     <div class="read">${R.others.map(item).join('')}</div>
+     <h3 style="font-family:Amiri,serif;color:var(--gold);margin:24px 0 12px">أقوى الزوايا</h3>
+     <div class="read">${R.aspects.map(a =>
+       `<div class="item"><h4>${a.title}</h4><p>${a.text}</p>
+        <p class="sub">وجاج ${a.orb}° · ${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</p></div>`).join('')}</div>`);
+
+  const moon = card('منزلة القمر',
+    `<p><strong>${c.moon.mansion.name}</strong> — المنزلة ${c.moon.mansion.index} من ثمانٍ وعشرين
+      ${q('المنازل القمرية')}</p>
+     <p class="note">${c.moon.mansion.desc} ${c.moon.mansion.good_for}</p>
+     <p style="color:var(--muted);font-size:.86rem">القمر في طور ${c.moon.phase.name}
+       (${Math.round(c.moon.phase.illumination*100)}٪ إضاءة).</p>`,
+    `<span class="chip gold">${c.moon.mansion.mood_text}</span>`);
+
+  const compare = c.alt ? card(`للمقارنة — ${c.alt.system_name}`,
+    `<table><thead><tr><th>الجرم</th><th>${c.houses.system_name}</th><th>${c.alt.system_name}</th></tr></thead>
+     <tbody>${c.bodies.map(b => {
+       const o = c.alt.bodies.find(x => x.name === b.name);
+       const diff = o && o.house !== b.house;
+       return `<tr><td>${b.name}</td><td class="num">${b.house}</td>
+               <td class="num" style="${diff?'color:var(--gold);font-weight:600':''}">${o?o.house:''}</td></tr>`;
+     }).join('')}</tbody></table>
+     <p class="note" style="margin-top:14px">${c.alt.system_note}<br>
+       الصفوف الذهبية هي التي يختلف فيها البيت بين النظامين.</p>`) : '';
+
+  out.innerHTML = head + wheel + reading + planets + almuten + houses
+                + aspects + lots + patterns + starsCard + dominants + moon + compare;
+}
+
+/* ── الخرائط المحفوظة ── */
+function renderSaved() {
+  const list = store.get('charts', []);
+  $('saved').innerHTML = list.length
+    ? '<span style="color:var(--muted);font-size:.8rem">المحفوظة:</span>' + list.map((c,i) =>
+      `<button class="btn ghost" data-i="${i}" style="font-size:.8rem;padding:7px 14px">${c.name||c.city} · ${c.date}</button>`
+    ).join('') + '<button class="btn ghost" id="clear" style="font-size:.8rem;padding:7px 14px;color:var(--neg)">مسح</button>'
+    : '';
+  $('saved').querySelectorAll('[data-i]').forEach(b => {
+    b.onclick = () => {
+      const c = store.get('charts', [])[+b.dataset.i];
+      $('name').value = c.name || ''; $('date').value = c.date;
+      $('time').value = c.time; $('city').value = c.city;
+      if (c.system) $('system').value = c.system;
+      load();
+    };
+  });
+  const cl = $('clear');
+  if (cl) cl.onclick = () => { store.set('charts', []); renderSaved(); };
+}
+
+$('save').onclick = () => {
+  const f = form();
+  if (!f.date || !f.city) return;
+  const list = store.get('charts', []);
+  if (!list.some(c => c.date===f.date && c.time===f.time && c.city===f.city)) {
+    list.unshift({ name:f.name, date:f.date, time:f.time, city:f.city, system:f.system });
+    store.set('charts', list.slice(0,12));
+  }
+  renderSaved();
+};
+
+$('go').onclick = load;
+$('system').onchange = () => current && load();
+$('compare').onchange = () => current && load();
+$('city').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
+});
+renderSaved();
+</script>
+</body>
+</html>

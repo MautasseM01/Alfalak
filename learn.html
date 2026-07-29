@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تعلّم — الفَلَك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/learn.html" class="on">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">تعلّم</h2>
+<p class="lede">كل مصطلح تراه في الجداول مشروح هنا. ابحث عنه أو تصفّح الأبواب.</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="field" style="max-width:420px">
+      <input type="search" id="find" placeholder="ابحث عن مصطلح: الطالع، الوجاج، الأَلْمُطَن…" autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">كيف تُقرأ خريطة</h2></div>
+  <div class="card-body">
+    <div class="lesson">
+      <h3>١ — ابدأ بالثلاثة</h3>
+      <p>الشمس والقمر والطالع. الشمس جوهر إرادتك، والقمر ما يطمئنّ إليه قلبك،
+        والطالع الباب الذي تدخل منه على الناس. من عرف هذه الثلاثة عرف نصف الخريطة.</p>
+      <p>ثم انظر في سيّد الطالع — حاكم البرج الطالع — وأين وقع. هو دليلك في الخريطة،
+        وحيث وقع فثمّ مجرى حياتك.</p>
+    </div>
+    <div class="lesson">
+      <h3>٢ — ثم البيوت</h3>
+      <p>البرج يقول <em>كيف</em>، والبيت يقول <em>أين</em>. المريخ في العقرب يقول إن إرادتك
+        صامتة نافذة؛ ووقوعه في البيت العاشر يقول إن مجراها في العمل والمرتبة.</p>
+      <p>ولا تنسَ أن نظام تقسيم البيوت مذهب لا حقيقة. جرّب الخريطة بالبيوت الكاملة
+        ثم بالقبّاني ثم ببلاسيدوس، وانظر أيّها يصف حياتك أصدق وصف.</p>
+    </div>
+    <div class="lesson">
+      <h3>٣ — ثم الكرامات</h3>
+      <p>ليس كل كوكب في الخريطة بقوّة واحدة. الكوكب في بيته يتصرّف بحرّية، وفي وباله
+        يتصرّف بضيق. فقبل أن تُحمّل كوكبًا معنى، انظر أله من القوّة ما يُنفّذه به.</p>
+      <p>والأَلْمُطَن — أقوى الكواكب مجموعًا — هو الذي يحكم بنية الخريطة كلها.</p>
+    </div>
+    <div class="lesson">
+      <h3>٤ — ثم الزوايا</h3>
+      <p>الكوكب المنعزل لا يفعل شيئًا. الزوايا هي ما يربط الأجزاء ببعضها، والزاوية
+        الدقيقة أشدّ أثرًا من عشر زوايا واسعة.</p>
+      <p>وانظر أهي مُقبِلة أم مُدبِرة: المُقبِلة لمّا تتمّ بعد فأثرها آتٍ،
+        والمُدبِرة تمّت وانفكّت فأثرها ماضٍ.</p>
+    </div>
+    <div class="lesson">
+      <h3>٥ — وأخيرًا ما يُميّز التراث العربي</h3>
+      <p>المنازل القمرية الثماني والعشرون، والسهام، والنجوم الثابتة بأسمائها.
+        هذه أبواب أهملتها المدرسة الغربية المعاصرة، وهي أصل علم الاختيارات عند العرب:
+        متى تبدأ وما تتجنّب.</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">معجم المصطلحات</h2>
+    <span class="chip" id="count"></span></div>
+  <div class="card-body" id="terms"><div class="msg">… أُحمّل المعجم</div></div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">تنبيه</h2></div>
+  <div class="card-body">
+    <p class="note">هذا الموقع أداة حسابية وقراءة رمزية، لا أداة تشخيص ولا نصيحة طبية
+      ولا مالية ولا قانونية. لا تُبنى عليه قرارات مصيرية، ولا يُستغنى به عن أهل الاختصاص.</p>
+  </div>
+</div>
+
+<footer>الفَلَك — أدوات فلكية عربية</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+starfield('stars');
+const $ = id => document.getElementById(id);
+let TERMS = {};
+
+const slug = t => encodeURIComponent(t);
+function draw(filter) {
+  const f = (filter || '').trim();
+  const keys = Object.keys(TERMS).filter(k => !f || k.includes(f) || TERMS[k].includes(f));
+  $('count').textContent = `${keys.length} مصطلحًا`;
+  $('terms').innerHTML = keys.length
+    ? keys.map(k => `<div class="lesson" id="${slug(k)}"><h3>${k}</h3><p>${TERMS[k]}</p></div>`).join('')
+    : '<div class="msg">لا مصطلح بهذا الاسم.</div>';
+}
+
+API('glossary')
+  .then(r => {
+    TERMS = r.terms; draw('');
+    if (location.hash) {
+      const el = document.getElementById(location.hash.slice(1));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  })
+  .catch(e => { $('terms').className = 'card-body msg err'; $('terms').textContent = e.message; });
+
+$('find').addEventListener('input', e => draw(e.target.value));
+</script>
+</body>
+</html>
