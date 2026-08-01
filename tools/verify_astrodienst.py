@@ -136,6 +136,42 @@ def matches(ev, kind, want) -> bool:
     return False
 
 
+# ادّعاءات عن أشكال الزوايا في خرائط لحظية
+# «La figure d'aspects montre un grand trigone entre Vénus, Uranus et Pluton.
+#  Des sextiles à Mercure d'un côté et à Neptune de l'autre l'étendent
+#  en deux figures de cerf-volant.» — نشرة أغسطس ٢٠٢٦
+FIGURE_CLAIMS = [
+    ("2026-08-12 20:45", "Europe/Zurich",
+     "grand trigone Vénus–Uranus–Pluton lors de l'éclipse",
+     {"name": "المثلّث الكبير", "members": {"الزهرة", "أورانوس", "بلوتو"}}),
+    ("2026-08-12 20:45", "Europe/Zurich",
+     "cerf-volant avec Mercure",
+     {"name": "الطائرة الورقية",
+      "members": {"الزهرة", "أورانوس", "بلوتو", "عطارد"}}),
+    ("2026-08-12 20:45", "Europe/Zurich",
+     "cerf-volant avec Neptune",
+     {"name": "الطائرة الورقية",
+      "members": {"الزهرة", "أورانوس", "بلوتو", "نبتون"}}),
+]
+
+
+def check_figures():
+    from falak import chart as ch
+    ok = bad = 0
+    print("\nأشكال الزوايا في خريطة الكسوف")
+    for stamp, tzn, label, want in FIGURE_CLAIMS:
+        when = datetime.fromisoformat(stamp).replace(tzinfo=ZoneInfo(tzn))
+        c = ch.compute(when, 47.37, 8.54, "whole", tzn, minor_aspects=False)
+        hit = any(p["name"] == want["name"]
+                  and set(p["members"]) == want["members"]
+                  for p in c["patterns"])
+        print(("  ✓ " if hit else "  ✗ ") + label
+              + ("" if hit else "  — لم نجده"))
+        ok += hit
+        bad += not hit
+    return ok, bad
+
+
 def main():
     evs = gather()
     ok = miss = drift = 0
@@ -171,6 +207,10 @@ def main():
             else:
                 print(f"  ✗ {date}  {label} — لم نجده")
                 miss += 1
+
+    fok, fbad = check_figures()
+    ok += fok
+    miss += fbad
 
     total = ok + drift + miss
     print(f"\n{'─'*62}")

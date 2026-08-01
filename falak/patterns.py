@@ -55,7 +55,10 @@ def detect(bodies: list, aspects: list, cusps: list | None = None) -> list:
     """
     found = []
     by_name = {b["name"]: b for b in bodies}
-    names = [b["name"] for b in bodies if b.get("core", True)]
+    # كل الأجرام المُمرَّرة تدخل في الأشكال — المُستدعي هو الذي ينتقي.
+    # (كان الفلتر هنا يُسقط الكواكب الخارجية، فيضيع المثلّث الكبير
+    #  الذي يقوم بين كوكب شخصي وأورانوس وبلوتو.)
+    names = [b["name"] for b in bodies]
 
     # ── الكومة: ثلاثة فأكثر في برج واحد ──
     for key, label in (("sign", "برج"), ("house", "بيت")):

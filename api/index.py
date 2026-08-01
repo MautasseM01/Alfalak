@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import interpret, mundane  # noqa: E402
+from falak import interpret, monthly, mundane  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -306,6 +306,28 @@ def route_elections(q):
     return out
 
 
+def route_monthly(q):
+    """النشرة الشهرية: سرد الشهر ومعناه بثلاثة ألسنة."""
+    lat, lon, tzname, label = resolve_place(q)
+    tz = ZoneInfo(tzname)
+    now = datetime.now(tz)
+    year = int(_one(q, "year", now.year))
+    month = int(_one(q, "month", now.month))
+    if not (1 <= month <= 12):
+        raise ApiError("الشهر يجب أن يكون بين ١ و١٢")
+    if not (1800 <= year <= 2400):
+        raise ApiError("السنة يجب أن تكون بين ١٨٠٠ و٢٤٠٠")
+    voice = _one(q, "voice", "daily")
+    if voice not in monthly.VOICES:
+        raise ApiError("لسان غير معروف: " + voice + ". المتاح: "
+                       + "، ".join(monthly.VOICES))
+    ps = _one(q, "purposes")
+    plist = [x.strip() for x in ps.split("،") if x.strip()] if ps else None
+    return monthly.compose(year, month, tzname, lat, lon, voice=voice,
+                           place=_one(q, "city") or label, purposes=plist,
+                           with_figures=_one(q, "figures", "1") == "1")
+
+
 def route_month(q):
     """أحداث الشهر العامّة: انتقالات، رجوع، زوايا، تقميرات، كسوف."""
     tzname = _one(q, "tz")
@@ -345,6 +367,7 @@ ROUTES = {
     "hours": route_hours,
     "month": route_month,
     "elections": route_elections,
+    "monthly": route_monthly,
 }
 
 
