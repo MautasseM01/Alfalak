@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ساعات الكواكب — الفَلَك</title>
+<meta name="description" content="ساعات الكواكب الاثنتا عشرة نهارًا ومثلها ليلًا، بدلالات «غاية الحكيم» و«التفهيم».">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:11px}
+.hcard{padding:13px 15px;border-radius:12px;background:rgba(255,255,255,.025);
+  border:1px solid var(--line);border-inline-start:3px solid var(--neu);cursor:pointer;transition:.15s}
+.hcard:hover{border-color:var(--gold-dim);background:rgba(217,180,91,.05)}
+.hcard.sead{border-inline-start-color:var(--pos)}
+.hcard.nahs{border-inline-start-color:var(--neg)}
+.hcard.now{border-color:var(--gold);background:rgba(217,180,91,.1);box-shadow:0 0 0 1px var(--gold-dim)}
+.hcard .t1{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}
+.hcard .pl{font-size:1rem;color:var(--gold);font-weight:600}
+.hcard .tm{font-variant-numeric:tabular-nums;font-size:.86rem;color:var(--text)}
+.hcard .nt{font-size:.79rem;color:var(--muted)}
+.hcard .no{font-size:.7rem;color:var(--gold);border:1px solid var(--gold-dim);
+  border-radius:999px;padding:1px 8px}
+.detail{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);display:none}
+.detail.show{display:block}
+.detail p{margin:0 0 7px;font-size:.84rem;line-height:1.8}
+.detail b{color:var(--gold);font-weight:600}
+.detail .src{color:var(--muted);font-size:.79rem;padding-inline-start:10px;
+  border-inline-start:2px solid var(--gold-dim)}
+.exs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.exs span{font-size:.74rem;background:rgba(143,165,216,.12);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px;color:var(--muted)}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/hours.html" class="on">ساعات الكواكب</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">ساعات الكواكب</h2>
+<p class="lede">
+  ليست الساعة هنا ستّين دقيقة. النهار من الشروق إلى الغروب يُقسَم اثنتي عشرة ساعة
+  متساوية، والليل مثله — فتطول ساعات النهار صيفًا وتقصر شتاءً.
+  الدلالات من «غاية الحكيم» للمجريطي و«التفهيم» للبيروني.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="date">التاريخ</label><input type="date" id="date"></div>
+      <div class="field"><label for="city">المدينة</label>
+        <input type="text" id="city" placeholder="دمشق، باريس…" autocomplete="off"></div>
+      <div class="field"><label for="purpose">لغرض بعينه</label>
+        <select id="purpose"><option value="">— كل الساعات —</option></select></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">اعرض الجدول</button>
+      <button class="btn ghost" id="today">اليوم</button>
+      <button class="btn ghost" id="prev">السابق ›</button>
+      <button class="btn ghost" id="next">‹ التالي</button>
+      <div class="seg" id="partSeg">
+        <button data-part="" aria-pressed="true">الكلّ</button>
+        <button data-part="نهارية" aria-pressed="false">النهار</button>
+        <button data-part="ليلية" aria-pressed="false">الليل</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<div class="card" id="srcCard" style="display:none">
+  <div class="card-top"><h2 class="card-title">المصادر</h2></div>
+  <div class="card-body" id="srcBody"></div>
+</div>
+
+<footer>
+  الشروق والغروب محسوبان بمكتبة Swiss Ephemeris لموضعك تحديدًا.<br>
+  الدلالات من التراث الفلكي العربي، والصياغة معاصرة.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+const $ = id => document.getElementById(id);
+const out = $('out');
+let part = '', data = null;
+
+cityInput($('city'), () => load());
+
+document.querySelectorAll('#partSeg button').forEach(b => {
+  b.onclick = () => {
+    part = b.dataset.part;
+    document.querySelectorAll('#partSeg button').forEach(x =>
+      x.setAttribute('aria-pressed', x.dataset.part === part ? 'true' : 'false'));
+    if (data) render(data);
+  };
+});
+
+async function load() {
+  const city = $('city').value.trim();
+  if (!city) { out.innerHTML = '<div class="card"><div class="msg err">أدخل مدينة.</div></div>'; return; }
+  store.set('hrs', { city, purpose: $('purpose').value });
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب الشروق والغروب</div></div>';
+  try {
+    data = await API('hours', { date: $('date').value, city, purpose: $('purpose').value });
+    fillPurposes(data.purposes);
+    render(data);
+    renderSources(data.sources);
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`;
+  }
+}
+
+function fillPurposes(list) {
+  const sel = $('purpose');
+  if (sel.options.length > 1) return;
+  list.forEach(p => { const o = document.createElement('option'); o.value = o.textContent = p; sel.appendChild(o); });
+  const s = store.get('hrs', {});
+  if (s.purpose) sel.value = s.purpose;
+}
+
+function esc2(t){ return String(t).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function hourCard(h, i, highlight) {
+  const cls = h.nature === 'سعد' ? 'sead' : h.nature === 'نحس' ? 'nahs' : '';
+  const isNow = data.current && data.current.index === h.index;
+  return `<div class="hcard ${cls} ${isNow ? 'now' : ''} ${highlight ? 'now' : ''}" data-i="${i}">
+    <div class="t1">
+      <span class="pl">${h.symbol} ساعة ${h.planet}</span>
+      <span class="tm">${h.start_text} – ${h.end_text}</span>
+    </div>
+    <div class="t1">
+      <span class="nt">${h['طبعها']}</span>
+      ${isNow ? '<span class="no">الآن</span>' : ''}
+    </div>
+    <div class="detail" id="d${i}">
+      <p><b>تصلح:</b> ${esc2(h['تصلح'])}</p>
+      <p><b>تُتجنّب:</b> ${esc2(h['تُتجنّب'])}</p>
+      <p class="src"><b>من التفهيم —</b> ${esc2(h['من التفهيم'])}</p>
+      <p class="src"><b>من غاية الحكيم —</b> ${esc2(h['من غاية الحكيم'])}</p>
+      <div class="exs">${(h['أمثلة'] || []).map(x => `<span>${esc2(x)}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+function render(d) {
+  const shown = d.hours.filter(h => !part || h.part === part);
+  const pr = d.purpose_result;
+  const wanted = pr && !pr.error ? new Set(pr.hours.map(h => h.index)) : null;
+
+  const chips = [
+    `<span class="chip gold">حاكم اليوم ${d.day_ruler} ${d.day_ruler_symbol}</span>`,
+    `<span class="chip">الشروق ${d.sunrise}</span>`,
+    `<span class="chip">الغروب ${d.sunset}</span>`,
+    `<span class="chip">الساعة النهارية ${Math.round(d.day_hour_minutes)}د</span>`,
+    `<span class="chip">الليلية ${Math.round(d.night_hour_minutes)}د</span>`,
+  ].join('');
+
+  let purposeBlock = '';
+  if (pr && !pr.error) {
+    purposeBlock = `<div class="card"><div class="card-top">
+      <h2 class="card-title">أفضل ساعات اليوم لـ«${esc2(pr.purpose)}»</h2>
+      <span class="chip gold">${pr.planets.join(' · ')}</span></div>
+      <div class="card-body">${pr.hours.length
+        ? '<ul style="margin:0;padding:0;list-style:none">' + pr.hours.map(h =>
+            `<li style="padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+              <span class="t">${h.start_text} – ${h.end_text}</span>
+              &nbsp; ساعة ${h.planet} ${h.symbol} — ${esc2(h['طبعها'])}</li>`).join('') + '</ul>'
+        : '<p class="note">لا ساعة نهارية لهذا الغرض اليوم. جرّب يومًا آخر أو انظر ساعات الليل.</p>'}
+      </div></div>`;
+  }
+
+  out.innerHTML = purposeBlock + `
+    <div class="card">
+      <div class="card-top">
+        <h2 class="card-title">${d.weekday} ${d.date} — ${d.place}</h2>
+        <div class="chips">${chips}</div>
+      </div>
+      <div class="card-body">
+        <p class="note">${esc2(d.day_ruler_note)}</p>
+        <div class="hgrid" style="margin-top:14px">
+          ${shown.map((h, i) => hourCard(h, i, wanted && wanted.has(h.index))).join('')}
+        </div>
+        <p class="note" style="margin-top:16px">اضغط أي ساعة لترى تفصيل ما تصلح له ومصدره.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="copy">نسخ الجدول</button>
+      </div>
+    </div>`;
+
+  out.querySelectorAll('.hcard').forEach(c => {
+    c.onclick = () => $('d' + c.dataset.i).classList.toggle('show');
+  });
+  $('copy').onclick = e => copyText(d.text, e.target, 'نسخ الجدول');
+}
+
+function renderSources(src) {
+  if (!src) return;
+  $('srcCard').style.display = '';
+  $('srcBody').innerHTML = Object.entries(src).map(([k, v]) =>
+    `<div class="sec"><h3>${k}</h3><p>${v}</p></div>`).join('');
+}
+
+$('go').onclick = load;
+$('date').onchange = load;
+$('purpose').onchange = load;
+$('today').onclick = () => { $('date').value = todayISO(); load(); };
+$('prev').onclick = () => { $('date').value = shiftISO($('date').value, -1); load(); };
+$('next').onclick = () => { $('date').value = shiftISO($('date').value, 1); load(); };
+$('city').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
+});
+
+const s = store.get('hrs', {});
+$('city').value = s.city || 'دمشق';
+$('date').value = todayISO();
+load();
+</script>
+</body>
+</html>

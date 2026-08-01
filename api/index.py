@@ -23,7 +23,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from falak import atlas, bulletin, chart, config, ephem, interpret  # noqa: E402
+from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
+from falak import interpret, mundane  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -203,6 +204,137 @@ def route_glossary(q):
     return {"terms": interpret.GLOSSARY}
 
 
+def route_hours(q):
+    """ساعات الكواكب: الاثنتا عشرة نهارًا ومثلها ليلًا."""
+    lat, lon, tzname, label = resolve_place(q)
+    tz = ZoneInfo(tzname)
+    ds = _one(q, "date")
+    day = (datetime.fromisoformat(ds) if ds else datetime.now(tz)).replace(tzinfo=tz)
+
+    tbl = hours.hours_for(day, lat, lon, tzname)
+    if "error" in tbl:
+        raise ApiError(tbl["error"])
+
+    now = datetime.now(tz)
+    current = hours.hour_at(now, lat, lon, tzname) if day.date() == now.date() else None
+
+    purpose = _one(q, "purpose")
+    purpose_hours = None
+    if purpose:
+        purpose_hours = hours.for_purpose(day, lat, lon, tzname, purpose,
+                                          day_only=_one(q, "dayonly", "1") == "1")
+
+    return {
+        "place": _one(q, "city") or label,
+        "purposes": list(hours.PURPOSE_HOURS),
+        "purpose_result": purpose_hours,
+        "sources": hours.SOURCES,
+        "date": tbl["date"], "weekday": tbl["weekday"], "tz": tzname,
+        "day_ruler": tbl["day_ruler"], "day_ruler_symbol": tbl["day_ruler_symbol"],
+        "day_ruler_note": tbl["day_ruler_note"],
+        "sunrise": tbl["sunrise_text"], "sunset": tbl["sunset_text"],
+        "day_hour_minutes": tbl["day_hour_minutes"],
+        "night_hour_minutes": tbl["night_hour_minutes"],
+        "current": {k: v for k, v in current.items()
+                    if k not in ("start", "end")} if current else None,
+        "hours": [{k: v for k, v in h.items() if k not in ("start", "end")}
+                  for h in tbl["hours"]],
+        "text": hours.render_text(tbl),
+    }
+
+
+def route_elections(q):
+    """
+    تقويم الاختيارات: درجة كل يوم لكل غرض.
+      يوم واحد لغرض:      /api/elections?date=&city=&purpose=الزواج والخِطبة
+      شهر كامل:           /api/elections?year=&month=&city=&purposes=أ،ب
+      قائمة الأغراض فقط:  /api/elections?list=1
+    """
+    if _one(q, "list") == "1":
+        return {"purposes": {k: {"group": v.get("group"), "note": v.get("note", ""),
+                                 "ruler": v.get("ruler")}
+                             for k, v in elections.PURPOSES.items()},
+                "groups": elections.GROUPS,
+                "verdicts": [{"min": t, "name": n, "note": d}
+                             for t, n, d in elections.VERDICTS]}
+
+    lat, lon, tzname, label = resolve_place(q)
+    tz = ZoneInfo(tzname)
+    place = _one(q, "city") or label
+
+    # يوم واحد
+    ds = _one(q, "date")
+    purpose = _one(q, "purpose")
+    if ds or (purpose and not _one(q, "month")):
+        day = _date.fromisoformat(ds) if ds else datetime.now(tz).date()
+        if purpose:
+            r = elections.score_day(day, tzname, lat, lon, purpose)
+            if "error" in r:
+                raise ApiError(r["error"])
+            return {"place": place, "tz": tzname, **r}
+        # كل الأغراض ليوم واحد
+        data = bulletin.gather(day, tzname, lat, lon)
+        ecl = elections.eclipses_on(day, tzname)
+        rows = []
+        for p in elections.PURPOSES:
+            r = elections.score_day(day, tzname, lat, lon, p, data, eclipses=ecl)
+            rows.append({"purpose": p, "group": r["group"], "score": r["score"],
+                         "verdict": r["verdict"], "plus": r["plus"],
+                         "minus": r["minus"], "rule": r["rule"],
+                         "best_hours": r["best_hours"]})
+        rows.sort(key=lambda x: -x["score"])
+        return {"place": place, "tz": tzname, "date": day.isoformat(),
+                "eclipse": ecl[0]["title"] if ecl else None,
+                "moon_sign": data["moon_sign_noon"],
+                "mansion": data["mansions"][0]["name"],
+                "groups": elections.GROUPS, "results": rows}
+
+    # شهر كامل
+    now = datetime.now(tz)
+    year = int(_one(q, "year", now.year))
+    month = int(_one(q, "month", now.month))
+    if not (1 <= month <= 12):
+        raise ApiError("الشهر يجب أن يكون بين ١ و١٢")
+    ps = _one(q, "purposes")
+    plist = [x.strip() for x in ps.split("،")] if ps else None
+    if plist:
+        plist = [x for x in plist if x]
+    out = elections.month_calendar(year, month, tzname, lat, lon, plist)
+    if "error" in out:
+        raise ApiError(out["error"])
+    out["place"] = place
+    return out
+
+
+def route_month(q):
+    """أحداث الشهر العامّة: انتقالات، رجوع، زوايا، تقميرات، كسوف."""
+    tzname = _one(q, "tz")
+    if not tzname:
+        city = _one(q, "city")
+        if city:
+            hit = atlas.find(city)
+            tzname = hit["tz"] if hit else "UTC"
+        else:
+            tzname = "UTC"
+    try:
+        ZoneInfo(tzname)
+    except Exception:
+        raise ApiError(f"منطقة زمنية غير معروفة: {tzname}")
+
+    now = datetime.now(ZoneInfo(tzname))
+    year = int(_one(q, "year", now.year))
+    month = int(_one(q, "month", now.month))
+    if not (1 <= month <= 12):
+        raise ApiError("الشهر يجب أن يكون بين ١ و١٢")
+    if not (1800 <= year <= 2400):
+        raise ApiError("السنة يجب أن تكون بين ١٨٠٠ و٢٤٠٠")
+
+    return mundane.month_events(
+        year, month, tzname,
+        minor_aspects=_one(q, "minor", "0") == "1",
+        quarters=_one(q, "quarters", "1") == "1")
+
+
 ROUTES = {
     "health": route_health,
     "atlas": route_atlas,
@@ -210,6 +342,9 @@ ROUTES = {
     "bulletin": route_bulletin,
     "chart": route_chart,
     "glossary": route_glossary,
+    "hours": route_hours,
+    "month": route_month,
+    "elections": route_elections,
 }
 
 

@@ -104,14 +104,19 @@ def dur_phrase(hours: float) -> str:
 
 # ── جمع معطيات اليوم ─────────────────────────────────────────────
 def gather(target_date, tzname: str, lat: float | None = None,
-           lon: float | None = None) -> dict:
+           lon: float | None = None, preload: bool = True) -> dict:
+    """
+    preload=False يعني أن المستدعي حسب زوايا القمر لنافذة أوسع مسبقًا،
+    فلا نعيد حسابها لكل يوم. يُستعمل في تقويم الشهر فيوفّر أربعة أخماس الوقت.
+    """
     tz = ZoneInfo(tzname)
     d0 = datetime(target_date.year, target_date.month, target_date.day, 0, 0, tzinfo=tz)
     d1 = d0 + timedelta(days=1)
     noon = d0 + timedelta(hours=12)
 
     # نحسب زوايا نافذة واسعة مرّة واحدة (تُستعمل لخلو المسار أيضًا)
-    ephem.preload_aspects(d0 - timedelta(hours=48), d1 + timedelta(hours=48))
+    if preload:
+        ephem.preload_aspects(d0 - timedelta(hours=48), d1 + timedelta(hours=48))
 
     data = {"tz": tzname, "date": d0, "day_name": day_name(d0),
             "date_phrase": date_phrase(d0)}
@@ -183,6 +188,15 @@ def gather(target_date, tzname: str, lat: float | None = None,
         for k, v in ephem.sun_events(d0, lat, lon, tz).items():
             if v:
                 data["sun_times"][k] = v
+
+    # ٧. ساعات الكواكب
+    data["hours"] = None
+    if lat is not None and lon is not None:
+        from . import hours as _hours
+        try:
+            data["hours"] = _hours.day_summary(d0, lat, lon, tzname)
+        except Exception:
+            data["hours"] = None
     return data
 
 
@@ -311,7 +325,22 @@ def render_text(d: dict, for_tomorrow: bool = True, location: str = "") -> str:
             f"ولا للقرارات المصيريّة ولا لإنهاء علاقة ولا لتوقيع عقود.")
     parts.append("\n".join(az))
 
-    # ٤ — الأخبار الصحية
+    # ٤ — ساعات الكواكب
+    hs = d.get("hours")
+    if hs and "error" not in hs:
+        sh = ["#ساعات_الكواكب",
+              f"حاكم اليوم {hs['day_ruler']}، وطول الساعة النهارية "
+              f"{hs['hour_minutes']:.0f} دقيقة (الشروق {hs['sunrise']} "
+              f"والغروب {hs['sunset']})."]
+        if hs["line_good"]:
+            sh.append(f"- أحمد ساعات النهار: {hs['line_good']} — "
+                      f"لطلب الحاجة والصلح وبدء ما يُرجى فيه خير.")
+        if hs["line_hard"]:
+            sh.append(f"- أثقلها: {hs['line_hard']} — "
+                      f"تُتجنّب فيها العقود والاجتماع وما يُخشى فيه غضب.")
+        parts.append("\n".join(sh))
+
+    # ٥ — الأخبار الصحية
     parts.append("#الأخبار_الصحية\n" + "\n".join(health_section(d)))
 
     return "\n\n".join(parts)
