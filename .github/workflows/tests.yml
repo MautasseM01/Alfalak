@@ -1,0 +1,52 @@
+name: الفحص
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: تثبيت المتطلبات
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: الأرقام المرجعية
+        run: python -m pytest -q
+
+      - name: المقارنة بنشرات Astrodienst
+        run: python tools/verify_astrodienst.py
+
+      - name: فحص بنية الجافاسكربت
+        run: |
+          for f in assets/*.js; do node --check "$f"; done
+          python - <<'EOF'
+          import re, pathlib, subprocess, sys, tempfile
+          bad = []
+          for p in pathlib.Path('.').glob('*.html'):
+              js = "\n;\n".join(re.findall(r'<script>(.*?)</script>',
+                                           p.read_text(encoding='utf-8'), re.S))
+              if not js.strip():
+                  continue
+              with tempfile.NamedTemporaryFile('w', suffix='.js',
+                                               delete=False, encoding='utf-8') as f:
+                  f.write(js)
+                  tmp = f.name
+              r = subprocess.run(['node', '--check', tmp], capture_output=True)
+              if r.returncode:
+                  bad.append((p.name, r.stderr.decode()[:300]))
+          for name, err in bad:
+              print(f"✗ {name}\n{err}")
+          sys.exit(1 if bad else 0)
+          EOF

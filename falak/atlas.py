@@ -316,6 +316,41 @@ def _norm(s: str) -> str:
     return s.lower().strip()
 
 
+# أسماء بديلة شائعة: النقل إلى اللاتينية لا يستقرّ على صورة واحدة،
+# وكثير من المدن لها اسمان أو أكثر بلغات أهلها وجيرانها.
+ALIASES = {
+    "مكة المكرمة": ["Makkah", "Mekka", "Makka"],
+    "المدينة المنورة": ["Madinah", "Medinah", "Al Madinah"],
+    "القدس": ["Al-Quds", "Jerusalem", "Yerushalayim", "Bayt al-Maqdis"],
+    "دمشق": ["Dimashq", "Damas", "Sham"],
+    "حلب": ["Halab", "Alep"],
+    "القاهرة": ["Al-Qahirah", "Le Caire"],
+    "الإسكندرية": ["Iskandariyah", "Alexandrie"],
+    "بغداد": ["Baghdād", "Bagdad"],
+    "الدار البيضاء": ["Casa", "Dar el Beida"],
+    "طرابلس": ["Tarabulus"],
+    "طرابلس الغرب": ["Tarabulus", "Tripoli Libya"],
+    "الرياض": ["Riyad", "Ar Riyadh"],
+    "جدة": ["Jiddah", "Jedda"],
+    "صنعاء": ["Sanaa", "Sana'a"],
+    "الخرطوم": ["Khartum"],
+    "نواكشوط": ["Nouakchot"],
+    "إسطنبول": ["Istanbul", "Constantinople"],
+    "باريس": ["Paris"],
+    "لندن": ["London", "Londres"],
+    "نيويورك": ["New York City", "NYC"],
+    "بيروت": ["Beyrouth", "Bayrut"],
+    "عمّان": ["Amman", "Ammān"],
+    "الدوحة": ["Doha", "Ad Dawhah"],
+    "أبو ظبي": ["Abu Dhabi", "Abou Dabi"],
+    "مسقط": ["Muscat", "Masqat"],
+    "تونس": ["Tunis", "Tounes"],
+    "الجزائر": ["Alger", "Algiers", "El Djazair"],
+    "مراكش": ["Marrakech", "Marrakesh"],
+    "طهران": ["Teheran", "Tehrān"],
+}
+
+
 def _load():
     out = []
     for line in _RAW.strip().splitlines():
@@ -323,11 +358,14 @@ def _load():
         if len(p) != 6:
             continue
         ar, en, country, lat, lon, tz = p
+        alt = ALIASES.get(ar, [])
         out.append({
             "ar": ar, "en": en, "country": country,
             "lat": float(lat), "lon": float(lon), "tz": tz,
             "label": f"{ar} — {country}",
-            "_k": _norm(ar) + " " + _norm(en) + " " + _norm(country),
+            "_alt": alt,
+            "_k": " ".join([_norm(ar), _norm(en), _norm(country),
+                            *(_norm(a) for a in alt)]),
         })
     return out
 
@@ -342,7 +380,8 @@ def search_local(q: str, limit: int = 12):
         return []
     starts, contains = [], []
     for c in CITIES:
-        if _norm(c["ar"]).startswith(q) or _norm(c["en"]).startswith(q):
+        heads = [_norm(c["ar"]), _norm(c["en"])] + [_norm(a) for a in c["_alt"]]
+        if any(h.startswith(q) for h in heads):
             starts.append(c)
         elif q in c["_k"]:
             contains.append(c)
