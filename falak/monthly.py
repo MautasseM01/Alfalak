@@ -248,7 +248,8 @@ def lunation_figures(events: list, tzname: str, lat: float, lon: float) -> list:
 def compose(year: int, month: int, tzname: str, lat: float, lon: float,
             voice: str = "daily", place: str = "",
             purposes: list[str] | None = None,
-            with_figures: bool = True) -> dict:
+            with_figures: bool = True,
+            natal: dict | None = None) -> dict:
     if voice not in VOICES:
         voice = "daily"
 
@@ -307,9 +308,18 @@ def compose(year: int, month: int, tzname: str, lat: float, lon: float,
         lines.append(f"{'- ' if voice=='daily' else ''}{p}: أحمدها {best} — "
                      f"وتُتجنّب {worst}.")
 
+    # ── القسم الشخصي ──
+    personal = None
+    if natal:
+        from . import transits
+        personal = transits.personal_month(natal, year, month, tzname,
+                                           events=events)
+        lines += ["", personal["text"]]
+
     text = "\n".join(lines)
 
     return {
+        "personal": personal,
         "year": year, "month": month, "month_name": MONTHS_AR[month - 1],
         "tz": tzname, "place": place, "voice": voice,
         "voice_name": VOICES[voice], "voices": VOICES,

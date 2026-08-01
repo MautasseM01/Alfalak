@@ -97,6 +97,27 @@
       <button class="btn ghost" id="prev">الشهر السابق ›</button>
       <button class="btn ghost" id="next">‹ الشهر التالي</button>
       <button class="btn ghost" id="now">هذا الشهر</button>
+      <button class="btn ghost" id="togglePersonal">+ جوّي الشخصي</button>
+    </div>
+
+    <div id="personalForm" style="display:none;margin-top:16px;padding-top:16px;
+         border-top:1px dashed var(--line)">
+      <p class="note" style="margin:0 0 12px">
+        أدخل ميلادك ليقول لك الشهر أيّ أحداثه تمسّك أنت.
+        البيانات تُرسَل للحساب فقط ولا تُحفَظ على الخادم، وتُخزَّن في متصفّحك وحده.
+      </p>
+      <div class="form">
+        <div class="field"><label for="nd">تاريخ ميلادك</label>
+          <input type="date" id="nd"></div>
+        <div class="field"><label for="nt">ساعة ميلادك</label>
+          <input type="time" id="nt" value="12:00"></div>
+        <div class="field"><label for="nc">مكان ميلادك</label>
+          <input type="text" id="nc" placeholder="حلب، دمشق…" autocomplete="off"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="applyPersonal">احسب جوّي</button>
+        <button class="btn ghost" id="clearPersonal">امسح بياناتي</button>
+      </div>
     </div>
   </div>
 </div>
@@ -118,7 +139,7 @@ const out = $('out');
 const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const WD = ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'];
 const ICON = { ingress:'⇢', station:'℞', aspect:'∠', lunation:'☾', eclipse:'◐', season:'☀', combust:'☼' };
-let data = null, focusPurpose = null;
+let data = null, focusPurpose = null, natal = null;
 
 MONTHS.forEach((m,i) => { const o=document.createElement('option'); o.value=i+1; o.textContent=m; $('month').appendChild(o); });
 cityInput($('city'), () => load());
@@ -131,8 +152,14 @@ async function load() {
   store.set('mon', { city, voice: $('voice').value });
   out.innerHTML = '<div class="card"><div class="msg">… أحسب أحداث الشهر وتقويم الاختيارات</div></div>';
   try {
-    data = await API('monthly', { year: $('year').value, month: $('month').value,
-                                  city, voice: $('voice').value });
+    const args = { year: $('year').value, month: $('month').value,
+                   city, voice: $('voice').value };
+    if (natal && natal.date && natal.city) {
+      args.natal_date = natal.date;
+      args.natal_time = natal.time || '12:00';
+      args.natal_city = natal.city;
+    }
+    data = await API('monthly', args);
     focusPurpose = data.purposes[0];
     render();
   } catch (e) {
@@ -196,6 +223,53 @@ function render() {
       <small>${esc2(r.note)}</small>
     </div>`).join('');
 
+  const P = d.personal;
+  const personal = P ? `
+    <div class="card">
+      <div class="card-top"><h2 class="card-title">جوّك الشخصي</h2>
+        <div class="chips">
+          <span class="chip gold">الطالع ${esc2(d.natal_summary.asc)}</span>
+          <span class="chip">☉ ${esc2(d.natal_summary.sun)}</span>
+          <span class="chip">☾ ${esc2(d.natal_summary.moon)}</span>
+        </div></div>
+      <div class="card-body">
+        ${P.touches.length ? `
+          <div class="sec"><h3>ما يمسّك من أحداث الشهر</h3>
+          ${P.touches.map(h => `<div class="alert">
+            <strong>${+h.date.slice(-2)} ${h.time} — ${esc2(h.event)}</strong><br>${esc2(h.note)}
+          </div>`).join('')}</div>` : ''}
+
+        ${P.transits.length ? `
+          <div class="sec"><h3>أثقل عبورات الشهر على خريطتك ${q('العبور')}</h3>
+          <table><thead><tr><th>العابر</th><th></th><th>على</th><th>الزاوية</th>
+            <th>يتمّ</th><th>نافذته</th></tr></thead>
+          <tbody>${P.transits.map(r => `
+            <tr><td>${r.transit}</td>
+              <td class="sym" title="${r.aspect}">${r.symbol}</td>
+              <td>${r.target}</td>
+              <td><span class="chip ${r.polarity==='إيجابية'?'pos':r.polarity==='سلبية'?'neg':''}">${r.aspect}</span></td>
+              <td class="num">${r.exact_in_window ? '★ ' : ''}${r.exact_text}</td>
+              <td class="num" style="color:var(--muted);font-size:.79rem">${r.enter_text} → ${r.leave_text}</td>
+            </tr>`).join('')}</tbody></table>
+          <div class="read" style="margin-top:16px">${P.transits.slice(0,5).map(r=>
+            `<div class="item"><h4>${r.transit} ${r.symbol} ${r.target} — ${r.aspect}</h4>
+             <p>${esc2(r.note)}.</p>
+             <p class="sub">يتمّ ${r.exact_text} · نافذته ${r.days} يومًا</p></div>`).join('')}</div>
+          <p class="note" style="margin-top:14px">★ تعني أن الزاوية تتمّ داخل هذا الشهر.
+            وما لا نجمة له فنافذته تمرّ بالشهر وتمامه خارجه.</p>
+          </div>` : ''}
+
+        ${P.house_moves.length ? `
+          <div class="sec"><h3>انتقالات تدخل بيوتك</h3>
+          <ul>${P.house_moves.map(m => `<li>
+            <span class="t">${+m.date.slice(-2)}</span> ${esc2(m.note)}</li>`).join('')}</ul>
+          </div>` : ''}
+
+        ${(!P.touches.length && !P.transits.length && !P.house_moves.length)
+          ? '<p class="note">لا يمسّ أحداث هذا الشهر خريطتك مسًّا قويًّا — شهر هادئ عليك.</p>' : ''}
+      </div>
+    </div>` : '';
+
   const retro = d.retrograde_windows.length ? `
     <div class="card"><div class="card-top"><h2 class="card-title">الكواكب الراجعة ${q('الرجوع')}</h2></div>
     <div class="card-body"><table><thead><tr><th>الكوكب</th><th>من</th><th>إلى</th><th>المدّة</th></tr></thead>
@@ -248,6 +322,8 @@ function render() {
         للتفصيل الكامل بثلاثين غرضًا انظر مسار الاختيارات.</p></div>
   </div>
 
+  ${personal}
+
   <div class="card">
     <div class="card-top"><h2 class="card-title">أحداث الشهر</h2>
       <span class="chip">${d.events.length}</span></div>
@@ -283,12 +359,59 @@ $('city').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
 });
 
+/* ── جوّك الشخصي ── */
+cityInput($('nc'));
+
+$('togglePersonal').onclick = () => {
+  const f = $('personalForm');
+  const open = f.style.display === 'none';
+  f.style.display = open ? '' : 'none';
+  $('togglePersonal').textContent = open ? '− جوّي الشخصي' : '+ جوّي الشخصي';
+};
+
+$('applyPersonal').onclick = () => {
+  const nd = $('nd').value, nc = $('nc').value.trim();
+  if (!nd || !nc) {
+    alert('أدخل تاريخ ميلادك ومكانه.');
+    return;
+  }
+  natal = { date: nd, time: $('nt').value || '12:00', city: nc };
+  store.set('natal', natal);
+  load();
+};
+
+$('clearPersonal').onclick = () => {
+  natal = null;
+  store.set('natal', null);
+  $('nd').value = ''; $('nt').value = '12:00'; $('nc').value = '';
+  load();
+};
+
 const s = store.get('mon', {});
 const now = new Date();
 $('city').value = s.city || 'دمشق';
 $('voice').value = s.voice || 'daily';
 $('year').value = now.getFullYear();
 $('month').value = now.getMonth() + 1;
+
+/* استعادة الميلاد المحفوظ — من هذه الصفحة أو من صفحة الخريطة */
+const savedNatal = store.get('natal', null);
+const savedCharts = store.get('charts', []);
+if (savedNatal && savedNatal.date) {
+  natal = savedNatal;
+} else if (savedCharts.length) {
+  const c = savedCharts[0];
+  natal = { date: c.date, time: c.time, city: c.city };
+  store.set('natal', natal);
+}
+if (natal) {
+  $('nd').value = natal.date || '';
+  $('nt').value = natal.time || '12:00';
+  $('nc').value = natal.city || '';
+  $('personalForm').style.display = '';
+  $('togglePersonal').textContent = '− جوّي الشخصي';
+}
+
 load();
 </script>
 </body>

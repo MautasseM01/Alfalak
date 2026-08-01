@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import interpret, monthly, mundane  # noqa: E402
+from falak import interpret, monthly, mundane, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -323,9 +323,36 @@ def route_monthly(q):
                        + "، ".join(monthly.VOICES))
     ps = _one(q, "purposes")
     plist = [x.strip() for x in ps.split("،") if x.strip()] if ps else None
-    return monthly.compose(year, month, tzname, lat, lon, voice=voice,
-                           place=_one(q, "city") or label, purposes=plist,
-                           with_figures=_one(q, "figures", "1") == "1")
+
+    # القسم الشخصي: يحتاج تاريخ ميلاد ومكانه
+    natal = None
+    nd = _one(q, "natal_date")
+    if nd:
+        ncity = _one(q, "natal_city") or _one(q, "city")
+        nq = {"city": [ncity]} if ncity else {}
+        for k in ("natal_lat", "natal_lon", "natal_tz"):
+            v = _one(q, k)
+            if v:
+                nq[k.replace("natal_", "")] = [v]
+        nlat, nlon, ntz, nlabel = resolve_place(nq)
+        nwhen, ninfo = parse_birth(
+            {"date": [nd], "time": [_one(q, "natal_time", "12:00")]}, ntz, nlon)
+        natal = chart.compute(nwhen, nlat, nlon, "whole", ntz,
+                              minor_aspects=False, tz_info=ninfo)
+        natal["place"] = nlabel
+
+    out = monthly.compose(year, month, tzname, lat, lon, voice=voice,
+                          place=_one(q, "city") or label, purposes=plist,
+                          with_figures=_one(q, "figures", "1") == "1",
+                          natal=natal)
+    if natal:
+        out["natal_summary"] = {
+            "place": natal["place"],
+            "asc": natal["angles"]["الطالع"]["text"],
+            "sun": next(b["text"] for b in natal["bodies"] if b["name"] == "الشمس"),
+            "moon": next(b["text"] for b in natal["bodies"] if b["name"] == "القمر"),
+        }
+    return out
 
 
 def route_month(q):
