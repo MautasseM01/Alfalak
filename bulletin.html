@@ -80,9 +80,12 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
 initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+pageIntro('bulletin');
 
 const $ = id => document.getElementById(id);
 const out = $('out');
@@ -105,10 +108,10 @@ async function load() {
   save();
   out.innerHTML = '<div class="card"><div class="msg">… أحسب مواقع الأفلاك</div></div>';
   try {
-    const d = await API('bulletin', {
+    const d = await API('bulletin', withLevel({
       date: $('date').value, city: $('city').value.trim(),
       voice: $('voice').value, shift: $('shift').value,
-    });
+    }));
     last = d;
     render(d);
   } catch (e) {

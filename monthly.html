@@ -131,9 +131,12 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
 initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+pageIntro('monthly');
 const $ = id => document.getElementById(id);
 const out = $('out');
 const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -159,7 +162,7 @@ async function load() {
       args.natal_time = natal.time || '12:00';
       args.natal_city = natal.city;
     }
-    data = await API('monthly', args);
+    data = await API('monthly', withLevel(args));
     focusPurpose = data.purposes[0];
     render();
   } catch (e) {

@@ -102,9 +102,12 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
 initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+pageIntro('hours');
 const $ = id => document.getElementById(id);
 const out = $('out');
 let part = '', data = null;
@@ -126,7 +129,7 @@ async function load() {
   store.set('hrs', { city, purpose: $('purpose').value });
   out.innerHTML = '<div class="card"><div class="msg">… أحسب الشروق والغروب</div></div>';
   try {
-    data = await API('hours', { date: $('date').value, city, purpose: $('purpose').value });
+    data = await API('hours', withLevel({ date: $('date').value, city, purpose: $('purpose').value }));
     fillPurposes(data.purposes);
     render(data);
     renderSources(data.sources);

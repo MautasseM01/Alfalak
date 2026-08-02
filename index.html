@@ -81,11 +81,13 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
 initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
 
-API('ephemeris', { tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' })
+API('ephemeris', withLevel({ tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' }))
   .then(d => {
     const ph = d.moon_phase;
     document.getElementById('nowChips').innerHTML =

@@ -404,3 +404,60 @@ def test_moon_never_retrograde():
     for d in range(0, 400, 37):
         when = datetime(2026, 1, 1, tzinfo=UTC) + __import__("datetime").timedelta(days=d)
         assert not ephem.is_retrograde("القمر", when)
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١١ — اللغة المبسّطة
+# ══════════════════════════════════════════════════════════════════
+def test_plain_replaces_hard_terms():
+    from falak import plain
+    out = plain.simplify("أَلْمُطَن الخريطة الزهرة، وزحل في وباله.")
+    assert "أَلْمُطَن" not in out.split("(")[0]
+    assert "الكوكب الذي يحكم الخريطة" in out
+    assert "موضع ضعف" in out
+
+
+def test_plain_keeps_proper_names():
+    """«سعد السعود» منزلة، ولا يجوز أن تصير «مُيسِّر السعود»."""
+    from falak import plain
+    for name in ("سعد السعود", "سعد الذابح", "سعد الأخبية", "رأس الغول"):
+        out = plain.simplify(f"القمر في منزلة {name} اليوم.")
+        assert name in out, name
+
+
+def test_plain_keeps_moon_phases():
+    from falak import plain
+    for ph in ("التربيع الأول", "التربيع الأخير", "المحاق / الاقتران"):
+        assert ph in plain.simplify(f"القمر في طور {ph}.")
+
+
+def test_plain_respects_word_boundaries():
+    """لا يُبدَّل جزء من كلمة أطول."""
+    from falak import plain
+    out = plain.simplify("المسعود أسعد الناس.")
+    assert "مُيسِّر" not in out
+
+
+def test_plain_teaches_original_once():
+    """المصطلح الأصلي يظهر بين قوسين أوّل مرّة فقط."""
+    from falak import plain
+    out = plain.simplify("خلو المسار طويل. وخلو المسار مانع.")
+    assert out.count("(خلو المسار)") == 1
+
+
+def test_plain_no_double_parentheses():
+    from falak import plain
+    out = plain.simplify("زاوية تثليث بين القمر وزحل.")
+    assert ") (" not in out
+
+
+def test_api_level_changes_text():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    p = dispatch('/api/bulletin', q(date="2026-08-12", city="دمشق", level="plain"))
+    e = dispatch('/api/bulletin', q(date="2026-08-12", city="دمشق", level="expert"))
+    assert p["text"] != e["text"]
+    assert p["level"] == "plain" and e["level"] == "expert"
+    assert "تثليث" in e["text"] and "منسجمة" in p["text"]

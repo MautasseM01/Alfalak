@@ -91,10 +91,13 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
 <script src="/assets/wheel.js"></script>
 <script>
 starfield('stars');
 initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+pageIntro('chart');
 const $ = id => document.getElementById(id);
 const out = $('out');
 let minor = '1', current = null;
@@ -125,7 +128,7 @@ async function load() {
     return;
   }
   out.innerHTML = '<div class="card"><div class="msg">… أحسب الخريطة</div></div>';
-  try { current = await API('chart', f); render(current); }
+  try { current = await API('chart', withLevel(f)); render(current); }
   catch (e) { out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`; }
 }
 

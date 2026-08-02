@@ -59,9 +59,12 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
 initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+pageIntro('ephemeris');
 const $ = id => document.getElementById(id);
 const out = $('out');
 let tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -71,7 +74,7 @@ cityInput($('city'), c => { tz = c.tz; load(); });
 async function load() {
   out.innerHTML = '<div class="card"><div class="msg">… أحسب</div></div>';
   try {
-    const d = await API('ephemeris', { date: $('date').value, time: $('time').value, tz });
+    const d = await API('ephemeris', withLevel({ date: $('date').value, time: $('time').value, tz }));
     const ph = d.moon_phase;
     out.innerHTML = `
       <div class="card">

@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import interpret, monthly, mundane, transits  # noqa: E402
+from falak import interpret, monthly, mundane, plain, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -93,6 +93,26 @@ def parse_birth(q: dict, tzname: str, lon: float, default_time="12:00"):
     return info["when"], info
 
 
+
+def _level(q: dict) -> str:
+    """مستوى اللغة المطلوب: plain (افتراضي) أو expert."""
+    lv = _one(q, "level", plain.DEFAULT_LEVEL)
+    return lv if lv in plain.LEVELS else plain.DEFAULT_LEVEL
+
+
+def _apply_level(out: dict, q: dict) -> dict:
+    """يُبسّط النصوص المولَّدة إن كان المستوى المطلوب هو العامّي."""
+    lv = _level(q)
+    out["level"] = lv
+    out["levels"] = plain.LEVELS
+    if lv != "plain":
+        return out
+    out = plain.simplify_deep(out, keep_original=True)
+    out["level"] = lv
+    out["levels"] = plain.LEVELS
+    return out
+
+
 # ── المسارات ─────────────────────────────────────────────────────
 def route_health(q):
     return {"ok": True, "cities": len(atlas.CITIES),
@@ -143,7 +163,7 @@ def route_bulletin(q):
     place = _one(q, "city") or label
     text = bulletin.render_text(d, for_tomorrow=for_tomorrow, location=place)
 
-    return {
+    return _apply_level({
         "date": day.isoformat(), "tz": tzname, "place": place,
         "lat": lat, "lon": lon, "mansion_shift": config.MANSION_SHIFT,
         "text": text,
@@ -163,7 +183,7 @@ def route_bulletin(q):
                      "hours": round(v["hours"], 1), "long": v["long"],
                      "next_sign": v["next_sign"]} for v in d["voc"]],
         },
-    }
+    }, q)
 
 
 def route_chart(q):
@@ -196,12 +216,14 @@ def route_chart(q):
                           "bodies": [{"name": b["name"], "house": b["house"]}
                                      for b in alt["bodies"]],
                           "dominants": alt["dominants"]}
-    return out
+    return _apply_level(out, q)
 
 
 def route_glossary(q):
     """معجم المصطلحات — لشروح «عند الطلب» في الواجهة."""
-    return {"terms": interpret.GLOSSARY}
+    return {"terms": interpret.GLOSSARY, "ui": plain.UI_LABELS,
+            "intros": plain.INTROS, "levels": plain.LEVELS,
+            "default_level": plain.DEFAULT_LEVEL}
 
 
 def route_hours(q):
@@ -224,7 +246,7 @@ def route_hours(q):
         purpose_hours = hours.for_purpose(day, lat, lon, tzname, purpose,
                                           day_only=_one(q, "dayonly", "1") == "1")
 
-    return {
+    return _apply_level({
         "place": _one(q, "city") or label,
         "purposes": list(hours.PURPOSE_HOURS),
         "purpose_result": purpose_hours,
@@ -240,7 +262,7 @@ def route_hours(q):
         "hours": [{k: v for k, v in h.items() if k not in ("start", "end")}
                   for h in tbl["hours"]],
         "text": hours.render_text(tbl),
-    }
+    }, q)
 
 
 def route_elections(q):
@@ -303,7 +325,7 @@ def route_elections(q):
     if "error" in out:
         raise ApiError(out["error"])
     out["place"] = place
-    return out
+    return _apply_level(out, q)
 
 
 def route_monthly(q):
@@ -352,7 +374,7 @@ def route_monthly(q):
             "sun": next(b["text"] for b in natal["bodies"] if b["name"] == "الشمس"),
             "moon": next(b["text"] for b in natal["bodies"] if b["name"] == "القمر"),
         }
-    return out
+    return _apply_level(out, q)
 
 
 def route_month(q):
@@ -378,10 +400,10 @@ def route_month(q):
     if not (1800 <= year <= 2400):
         raise ApiError("السنة يجب أن تكون بين ١٨٠٠ و٢٤٠٠")
 
-    return mundane.month_events(
+    return _apply_level(mundane.month_events(
         year, month, tzname,
         minor_aspects=_one(q, "minor", "0") == "1",
-        quarters=_one(q, "quarters", "1") == "1")
+        quarters=_one(q, "quarters", "1") == "1"), q)
 
 
 ROUTES = {
