@@ -1216,3 +1216,168 @@ def test_horary_and_search_routes():
     with pytest.raises(Exception):
         dispatch('/api/search', q(city="دمشق", purpose="العقود والتوقيع",
                                   days="900"))
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٧ — الواجهة العامّة والتقويم
+# ══════════════════════════════════════════════════════════════════
+def test_v1_detection_survives_vercel_rewrite():
+    """
+    Vercel يُعيد كتابة /api/… إلى /api/index/… فيصير /api/v1/chart
+    عند وصوله /api/index/v1/chart. فحصٌ بالنصّ على «/api/v1» يعمل
+    محليًّا ويسقط منشورًا — وهذا الاختبار يحرس المقاطع لا النصّ.
+    """
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import is_v1
+    for p in ("/api/v1/chart", "/api/index/v1/chart", "/api/v1", "/api/v1/",
+              "/api/index/v1"):
+        assert is_v1(p), p
+    for p in ("/api/chart", "/api/index/chart", "/api/v11/chart", "/api/"):
+        assert not is_v1(p), p
+
+
+def test_v1_envelope_and_legacy_stay_separate():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    new = dispatch('/api/index/v1/chart', q(date="1990-05-17", city="حلب"))
+    assert new["ok"] and new["version"] and new["endpoint"] == "chart"
+    assert new["rate"]["limit"] and "angles" in new["data"]
+    old = dispatch('/api/index/chart', q(date="1990-05-17", city="حلب"))
+    assert "ok" not in old and "angles" in old       # القديم بلا مغلَّف
+
+
+def test_api_keys_sign_and_expire():
+    from falak import apikeys as ak
+    k = ak.issue("basic", 30, "اختبار")
+    v = ak.verify(k["key"])
+    assert v["valid"] and v["tier"] == "basic" and v["rpm"] == 120
+    assert not ak.verify(k["key"][:-2] + "zz")["valid"]     # توقيع مبدَّل
+    assert not ak.verify("falak_pro.2030-01-01.aaaa_bbbb")["valid"]
+    assert ak.verify(None)["valid"] and ak.verify(None)["anonymous"]
+    expired = ak.issue("basic", 1)
+    body = expired["key"][len("falak_"):].rpartition("_")[0]
+    old_body = body.replace(expired["expires"], "2020-01-01")
+    forged = f"falak_{old_body}_{ak._sign(old_body)}"
+    assert not ak.verify(forged)["valid"]                   # منتهٍ ولو صحّ توقيعه
+
+
+def test_rate_limit_counts_and_recovers():
+    from falak import apikeys as ak
+    ak._HITS.clear()
+    for i in range(5):
+        assert ak.check_rate("t", 5, now=1000.0 + i)["ok"]
+    blocked = ak.check_rate("t", 5, now=1005.0)
+    assert not blocked["ok"] and blocked["retry_after"] > 0
+    assert ak.check_rate("t", 5, now=1065.0)["ok"]          # بعد انقضاء النافذة
+
+
+def test_tier_caps_search_range():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    from falak import apikeys as ak
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    with pytest.raises(Exception) as e:
+        dispatch('/api/v1/search', q(city="دمشق", purpose="العقود والتوقيع",
+                                     days="300"))
+    assert "يسمح" in str(e.value)
+    k = ak.issue("pro", 10)["key"]
+    ak._HITS.clear()
+    out = dispatch('/api/v1/search',
+                   {**q(city="دمشق", purpose="العقود والتوقيع", days="120"),
+                    "key": [k]})
+    assert out["tier"] == "pro" and out["data"]["count"] == 120
+
+
+# ── التقويم: مقابل المعيار لا مقابل ظنّنا ────────────────────────
+def _ical_text():
+    from falak import ics
+    evs = (ics.bulletin_events(date(2026, 8, 2), 6, "Asia/Damascus",
+                               33.51, 36.28, "دمشق")
+           + ics.month_events(2026, 8, "Asia/Damascus")
+           + ics.election_events(date(2026, 8, 2), 40, "Asia/Damascus",
+                                 33.51, 36.28, "العقود والتوقيع", "دمشق"))
+    return ics.build(evs, "الفَلَك — دمشق", "اختبار"), evs
+
+
+def test_ics_lines_obey_the_octet_limit():
+    """
+    المعيار يطوي عند ٧٥ **ثمانيّة** لا ٧٥ حرفًا. والحرف العربي
+    ثمانيّتان، فالعدّ بالحروف يُخرج الأسطر عن الحدّ.
+    """
+    txt, _ = _ical_text()
+    for line in txt.split("\r\n"):
+        assert len(line.encode("utf-8")) <= 75, line[:40]
+
+
+def test_ics_folding_never_splits_a_character():
+    """القطع في وسط حرف يُخرج ملفًّا فاسدًا لا يفتحه تقويم."""
+    txt, _ = _ical_text()
+    raw = txt.encode("utf-8")
+    assert raw.decode("utf-8") == txt          # لا بايت يتيم
+    # فكّ الطيّ يُعيد النصّ الأصلي حرفًا حرفًا
+    from falak import ics
+    for src in ("م" * 200, "abc, def; ghi\njkl", "الفَلَك — منزلة سعد السعود"):
+        folded = ics.fold("SUMMARY:" + ics.esc(src))
+        unfolded = folded.replace("\r\n ", "")
+        assert unfolded.startswith("SUMMARY:")
+
+
+def test_ics_uids_are_unique_and_stable():
+    """
+    المُعرّف يُشتقّ من المضمون لا من ساعة التوليد: فلا تتضاعف
+    الأحداث كلّما تجدّد الاشتراك. والمنزلة تمتدّ عبر منتصف الليل
+    فتظهر في بيانات اليومين — فلا بدّ من حذف المكرّر.
+    """
+    from falak import ics
+    txt, evs = _ical_text()
+    uids = [l.split(":", 1)[1] for l in txt.split("\r\n") if l.startswith("UID:")]
+    assert len(uids) == len(set(uids)), "مُعرّفات مكرّرة"
+    assert len(uids) < len(evs), "الحذف لم يعمل — والمنازل تتكرّر بطبعها"
+    again, _ = _ical_text()
+    u2 = [l.split(":", 1)[1] for l in again.split("\r\n") if l.startswith("UID:")]
+    assert uids == u2
+
+
+def test_ics_parses_with_an_independent_library():
+    """
+    الحَكَم ليس اختبارنا: نُمرّر الملفّ على محلّل مستقلّ. وإن لم
+    يكن مُثبَّتًا تخطّينا، فلا نُوهم أنفسنا بأننا تحقّقنا.
+    """
+    icalendar = pytest.importorskip("icalendar")
+    txt, _ = _ical_text()
+    cal = icalendar.Calendar.from_ical(txt)
+    ve = [c for c in cal.walk() if c.name == "VEVENT"]
+    assert len(ve) > 20
+    for c in ve:
+        assert "UID" in c and "DTSTAMP" in c and "DTSTART" in c and "SUMMARY" in c
+    assert any(c["DTSTART"].params.get("VALUE") == "DATE" for c in ve)
+    assert "\n" in str([c for c in ve if "DESCRIPTION" in c][0]["DESCRIPTION"])
+
+
+def test_ics_escapes_the_special_characters():
+    from falak import ics
+    assert ics.esc("a,b") == "a\\,b"
+    assert ics.esc("a;b") == "a\\;b"
+    assert ics.esc("a\\b") == "a\\\\b"
+    assert ics.esc("a\nb") == "a\\nb"
+
+
+def test_calendar_route_returns_a_file():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch, Raw
+    from falak import apikeys as ak
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    ak._HITS.clear()
+    for kind in ("bulletin", "month", "hours"):
+        r = dispatch('/api/v1/calendar.ics',
+                     q(kind=kind, city="دمشق", days="7", year="2026", month="8"))
+        assert isinstance(r, Raw)
+        assert r.ctype.startswith("text/calendar")
+        body = r.body.decode("utf-8")
+        assert body.startswith("BEGIN:VCALENDAR") and body.endswith("END:VCALENDAR\r\n")
+        assert r.filename.endswith(".ics")

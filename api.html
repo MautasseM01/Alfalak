@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الواجهة البرمجية والتقويم — الفَلَك</title>
+<meta name="description" content="واجهة برمجية عربية للفلك التقليدي: خرائط ونشرات واختيارات ومسائل، وتصدير تقويم iCalendar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+code,pre{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;direction:ltr;text-align:left}
+code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:5px;font-size:.85em;
+  color:var(--gold);unicode-bidi:plaintext}
+pre{background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;overflow:auto;font-size:.8rem;line-height:1.7;margin:10px 0}
+.ep{border:1px solid var(--line);border-radius:12px;margin-bottom:11px;overflow:hidden}
+.ep>summary{cursor:pointer;padding:13px 16px;list-style:none;display:flex;
+  gap:12px;align-items:baseline;flex-wrap:wrap;background:rgba(255,255,255,.02)}
+.ep>summary::-webkit-details-marker{display:none}
+.ep[open]>summary{border-bottom:1px solid var(--line)}
+.ep .m{font-size:.7rem;background:rgba(95,199,161,.15);color:var(--pos);
+  border-radius:5px;padding:2px 7px;font-weight:600}
+.ep .path{color:var(--gold);font-family:ui-monospace,monospace;direction:ltr;font-size:.86rem}
+.ep .what{color:var(--muted);font-size:.83rem}
+.ep .body{padding:14px 16px}
+.params{width:100%;font-size:.82rem;margin:8px 0}
+.params td{padding:5px 7px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+.params td:first-child{color:var(--gold);font-family:ui-monospace,monospace;
+  direction:ltr;white-space:nowrap}
+.try{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.tier{padding:15px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.tier h4{margin:0 0 6px;color:var(--gold);font-size:1rem}
+.tier .n{font-family:Amiri,serif;font-size:1.7rem;color:var(--text);line-height:1.2}
+.tier p{margin:6px 0 0;font-size:.82rem;color:var(--muted);line-height:1.75}
+.keybox{background:rgba(217,180,91,.08);border:1px solid var(--gold-dim);
+  border-radius:10px;padding:14px;margin-top:12px;display:none}
+.keybox.show{display:block}
+.keybox code{display:block;padding:9px;word-break:break-all;font-size:.85rem;margin:8px 0}
+.warn{border-inline-start:3px solid var(--neg);padding:12px 15px;border-radius:8px;
+  background:rgba(224,138,125,.06);font-size:.85rem;line-height:1.9}
+.honest{border-inline-start:3px solid var(--gold-dim);padding:12px 15px;border-radius:8px;
+  background:rgba(217,180,91,.05);font-size:.85rem;line-height:1.9;margin-top:12px}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/elections.html">الاختيارات</a>
+    <a href="/horary.html">المسائل</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/synastry.html">التوافق</a>
+    <a href="/api.html" class="on">الواجهة البرمجية</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">الواجهة البرمجية والتقويم</h2>
+<p class="lede">
+  كل ما في هذا الموقع متاح بواجهة واحدة: خرائط الميلاد بقراءتها، والنشرات،
+  وتقويم الاختيارات، والمسائل، والتوافق، وأرباب الأزمنة. تُرجع JSON بالعربية
+  مباشرة (<code>ensure_ascii=false</code>)، وتُصدّر تقويمًا يدخل هاتفك.
+</p>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">التقويم — أن تدخل السماء جدولك</h2>
+    <span class="chip gold">iCalendar · RFC 5545</span></div>
+  <div class="card-body">
+    <p>اشترك بالرابط مرّة في تقويم هاتفك أو حاسوبك، فتظهر منازل القمر وأوقات
+      خلو المسار وأفضل أيامك مع مواعيدك، وتتجدّد وحدها.</p>
+    <div class="form" style="margin-top:14px">
+      <div class="field"><label for="ckind">ماذا تريد في تقويمك؟</label>
+        <select id="ckind">
+          <option value="bulletin">منازل القمر وخلو المسار</option>
+          <option value="elections">أفضل الأيام لغرض</option>
+          <option value="month">أحداث السماء: الانتقالات والرجوع والكسوف</option>
+          <option value="hours">ساعات الكواكب</option>
+        </select></div>
+      <div class="field"><label for="ccity">المدينة</label>
+        <input type="text" id="ccity" value="دمشق" autocomplete="off"></div>
+      <div class="field" id="cpurposeField" style="display:none">
+        <label for="cpurpose">الغرض</label>
+        <select id="cpurpose"></select></div>
+      <div class="field"><label for="cdays">لكم يومًا</label>
+        <select id="cdays">
+          <option value="30">شهر</option>
+          <option value="60">شهران</option>
+          <option value="90" selected>ثلاثة أشهر</option>
+        </select></div>
+    </div>
+    <div class="try">
+      <button class="btn" id="cmake">أنشئ الرابط</button>
+      <button class="btn ghost" id="cdl">نزّل الملفّ</button>
+    </div>
+    <pre id="curl" style="display:none"></pre>
+    <p class="note" style="margin-top:10px">
+      في تقويم آبل: ملفّ ← اشتراك جديد بتقويم. وفي تقويم غوغل:
+      «تقاويم أخرى» ← «من رابط». الأحداث كلّها <em>شفّافة</em> —
+      لا تُظهرك مشغولًا لمن يرى تقويمك.
+    </p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">البداية في ثلاثة أسطر</h2></div>
+  <div class="card-body">
+    <p>لا تحتاج مفتاحًا للتجريب. جرّب هذا الآن:</p>
+    <pre>curl "https://alfalak.vercel.app/api/v1/chart?date=1990-05-17&amp;time=08:30&amp;city=حلب"</pre>
+    <p>وكل جواب في المغلَّف نفسه:</p>
+    <pre>{
+  "ok": true,
+  "version": "1.0",
+  "endpoint": "chart",
+  "tier": "free",
+  "rate": { "limit": 20, "remaining": 19, "window": "60s" },
+  "data": { … }
+}</pre>
+    <p>وكل خطأ:</p>
+    <pre>{ "ok": false, "version": "1.0", "error": "…", "status": 400 }</pre>
+    <p class="note">
+      المسارات القديمة <code>/api/…</code> بلا مغلَّف ولا إصدار — تخدم صفحات
+      الموقع نفسه، وقد تتغيّر. ابنِ على <code>/api/v1/</code> وحدها.
+    </p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">المستويات والمفاتيح</h2></div>
+  <div class="card-body">
+    <div class="tiers" id="tiers"></div>
+    <div class="try" style="margin-top:14px">
+      <button class="btn" id="kfree">استخرج مفتاحًا مفتوحًا</button>
+      <button class="btn ghost" id="kbasic">مفتاحًا أساسيًّا</button>
+    </div>
+    <div class="keybox" id="keybox"></div>
+    <div class="honest">
+      <strong>كيف تعمل المفاتيح هنا — ولماذا:</strong> المشروع كلّه دالّة بلا
+      خادم ولا قاعدة بيانات. فالمفتاح <strong>موقَّع لا مخزَّن</strong>: يحمل في
+      نفسه مستواه وتاريخ انتهائه وتوقيعًا يُثبت أننا أصدرناه، فيُتحقَّق منه
+      بالحساب لا بالبحث.<br>
+      <strong>وثمن ذلك</strong> أن ما لا يُخزَّن لا يُلغى فرديًّا. فأقصى عمر
+      للمفتاح سنة، ولا نحفظ نسخة منه عندنا — احفظه أنت عند إصداره.
+    </div>
+    <div class="honest">
+      <strong>وحدّ الاستعمال مُهدّئ لا حارس:</strong> العدّاد في ذاكرة النسخة
+      الواحدة، والدالّة بلا خادم تُشغَّل نسخًا متعدّدة، فكلٌّ تعدّ وحدها.
+      يمنع الحلقة المنفلتة من عميل، ولا يمنع هجومًا مقصودًا. قلناها صراحةً
+      فلا يبني عليها أحد ما لا تحتمل.
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">المسارات</h2>
+    <span class="chip" id="epCount"></span></div>
+  <div class="card-body" id="eps"><div class="msg">… أُحمّل</div></div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">الرخصة والشروط</h2></div>
+  <div class="card-body">
+    <div class="warn">
+      <strong>Swiss Ephemeris.</strong> الحساب كلّه بمكتبة Swiss Ephemeris،
+      وهي مزدوجة الرخصة: AGPL أو تجارية. فمن بنى على هذه الواجهة خدمةً
+      مغلقة المصدر فعليه أن ينظر في رخصتها التجارية من astro.com. نحن
+      نقول هذا لأنه يُنسى كثيرًا، ولا نُفتي فيه — راجع أهل الاختصاص.
+    </div>
+    <p style="margin-top:14px">أمّا نصوص التفسير والقراءة في هذا الموقع فمكتوبة
+      لنا، ولك أن تعرضها مع الإشارة إلى المصدر.</p>
+    <p class="note">
+      هذا الموقع أداة حسابية وقراءة رمزية، لا أداة تشخيص ولا نصيحة طبية
+      ولا مالية ولا قانونية.
+    </p>
+  </div>
+</div>
+
+<footer>الفَلَك — أدوات فلكية عربية · <code>/api/v1/</code></footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+starfield('stars');
+const $ = id => document.getElementById(id);
+const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const ORIGIN = location.origin;
+
+const DOC = {
+  chart: { what: 'خريطة ميلاد كاملة: الأجرام والبيوت والكرامات والسهام والأشكال والنجوم، ومعها القراءة المكتوبة.',
+    params: [['date','تاريخ الميلاد YYYY-MM-DD','مطلوب'],['time','الساعة HH:MM','12:00'],
+             ['city','مدينة الميلاد','مطلوب أو lat+lon+tz'],
+             ['system','whole · alcabitius · placidus · koch · regiomontanus · campanus · porphyry · equal','whole'],
+             ['level','plain أو expert','plain']],
+    ex: 'chart?date=1990-05-17&time=08:30&city=حلب' },
+  bulletin: { what: 'النشرة اليومية: منازل القمر وزواياه وخلو المسار وأوقات الشمس، ونصّ جاهز للنسخ.',
+    params: [['city','المدينة','مطلوب'],['date','اليوم','اليوم'],['voice','today أو tomorrow','today']],
+    ex: 'bulletin?city=دمشق' },
+  monthly: { what: 'النشرة الشهرية المصوغة بثلاثة ألسنة: يومي وأدبي وتراثي.',
+    params: [['year','السنة','—'],['month','الشهر','—'],['city','المدينة','مطلوب'],
+             ['voice','daily · literary · classic','daily']],
+    ex: 'monthly?year=2026&month=8&city=دمشق' },
+  month: { what: 'أحداث الشهر الفلكية: الانتقالات والوقوف والرجوع والتقمير والكسوف والفصول.',
+    params: [['year','السنة','—'],['month','الشهر','—'],['tz','المنطقة الزمنية','UTC']],
+    ex: 'month?year=2026&month=8&city=دمشق' },
+  hours: { what: 'ساعات الكواكب: اثنتا عشرة نهارًا ومثلها ليلًا، بدلالاتها من «غاية الحكيم» و«التفهيم».',
+    params: [['city','المدينة','مطلوب'],['date','اليوم','اليوم'],['purpose','غرض بعينه','—']],
+    ex: 'hours?city=دمشق' },
+  elections: { what: 'تقويم الاختيارات: درجة كل يوم لكل غرض، بأسبابها.',
+    params: [['list','1 لقائمة الأغراض','—'],['year','السنة','—'],['month','الشهر','—'],
+             ['city','المدينة','مطلوب'],['purpose','الغرض','—']],
+    ex: 'elections?list=1' },
+  search: { what: 'البحث عن أفضل وقت لغرض عبر مدى من الأيام، مع ساعة كل يوم. ويُرجَّح بخريطة مولدك إن أعطيتها.',
+    params: [['purpose','الغرض','مطلوب'],['city','المدينة','مطلوب'],
+             ['start','من تاريخ','اليوم'],['days','عدد الأيام (بحسب مستواك)','90'],
+             ['birth','تاريخ مولدك — للترجيح الشخصي','—'],
+             ['birthtime','ساعة مولدك','12:00'],['birthcity','مكان مولدك','—']],
+    ex: 'search?purpose=العقود والتوقيع&city=دمشق&days=60' },
+  horary: { what: 'الحكم في مسألة من خريطة لحظة السؤال: الاعتبارات ثم الدليلان ثم التمام. وقد تُردّ المسألة — وهذا حكم لا عجز.',
+    params: [['list','1 لقائمة الأسئلة','—'],['question','سؤالك من القائمة','مطلوب أو house'],
+             ['house','البيت ١–١٢','—'],['city','أين أنت','مطلوب'],
+             ['date','تاريخ السؤال','الآن'],['time','ساعته','الآن']],
+    ex: 'horary?list=1' },
+  synastry: { what: 'التوافق بين خريطتين: الوصلات وتراكب البيوت والتقبّل، وثلاثة موازين، والمركّبة ودافيسون.',
+    params: [['date/time/city','مولد الأوّل','مطلوب'],
+             ['date2/time2/city2','مولد الثاني','مطلوب'],
+             ['name / name2','الاسمان','—'],
+             ['composite / davison','0 لإلغاء أيّهما','1']],
+    ex: 'synastry?date=1990-05-17&time=08:30&city=حلب&date2=1992-11-03&time2=21:15&city2=باريس' },
+  timelords: { what: 'الفردارات والتسيير السنوي والشهري والعودة الشمسية.',
+    params: [['date/time/city','بيانات المولد','مطلوب'],['live','مدينة إقامتك الآن','—']],
+    ex: 'timelords?date=1990-05-17&time=08:30&city=حلب' },
+  ephemeris: { what: 'مواقع الأجرام الأربعة عشر في لحظة تختارها.',
+    params: [['date','التاريخ','اليوم'],['time','الساعة','12:00'],['tz','المنطقة','UTC']],
+    ex: 'ephemeris?date=2026-08-01' },
+  atlas: { what: 'بحث المدن بالعربية والإنجليزية، مع الرجوع إلى Open-Meteo لما ليس في الأطلس.',
+    params: [['q','ما تبحث عنه','مطلوب'],['limit','عدد النتائج','12']],
+    ex: 'atlas?q=حلب' },
+  depth: { what: 'مرجع النصوص كلّه: ملفّات البيوت والبروج، والكواكب في البيوت، وجدول الزوايا.',
+    params: [['level','plain أو expert','plain']], ex: 'depth' },
+  glossary: { what: 'معجم المصطلحات وتسمياتها المبسّطة.', params: [], ex: 'glossary' },
+  health: { what: 'حال الخادم: عدد المدن وأنظمة البيوت وتوفّر ملفّات خيرون.',
+    params: [], ex: 'health' },
+  'calendar.ics': { what: 'تصدير iCalendar. يُرجع ملفًّا لا JSON.',
+    params: [['kind','bulletin · elections · month · hours','bulletin'],
+             ['city','المدينة','مطلوب'],['days','عدد الأيام','30'],
+             ['purpose','مع kind=elections','—'],['min','أدنى درجة تُصدَّر','70'],
+             ['planets','مع kind=hours، مفصولة بفواصل','الكلّ']],
+    ex: 'calendar.ics?kind=bulletin&city=دمشق&days=30' },
+  key: { what: 'استخراج مفتاح وصول. لا يُخزَّن عندنا، فاحفظه.',
+    params: [['tier','free أو basic','free'],['days','عمر المفتاح، أقصاه ٣٦٦','365'],
+             ['label','وسم تذكاري لك','—']],
+    ex: 'key?tier=free' },
+};
+
+API('v1/').then(r => {
+  $('tiers').innerHTML = Object.entries(r.tiers).map(([k, t]) => `
+    <div class="tier"><h4>${esc(t.name)} <code>${k}</code></h4>
+      <div class="n">${t.rpm} <small style="font-size:.5em;color:var(--muted)">طلبًا/دقيقة</small></div>
+      <div style="font-size:.85rem;color:var(--text);margin-top:4px">
+        أقصى مدى بحث: ${t.max_days} يومًا</div>
+      <p>${esc(t.note)}</p></div>`).join('');
+
+  const eps = Object.keys(DOC);
+  $('epCount').textContent = `${eps.length} مسارًا`;
+  $('eps').innerHTML = eps.map(name => {
+    const d = DOC[name];
+    return `<details class="ep">
+      <summary><span class="m">GET</span>
+        <span class="path">/api/v1/${name}</span>
+        <span class="what">${esc(d.what.split('.')[0])}</span></summary>
+      <div class="body">
+        <p style="font-size:.88rem;line-height:1.9">${esc(d.what)}</p>
+        ${d.params.length ? `<table class="params"><tbody>${d.params.map(p =>
+          `<tr><td>${esc(p[0])}</td><td>${esc(p[1])}</td>
+           <td style="color:var(--muted);white-space:nowrap">${esc(p[2])}</td></tr>`).join('')}
+          </tbody></table>` : '<p class="note">بلا معطيات.</p>'}
+        <pre>${esc(ORIGIN + '/api/v1/' + d.ex)}</pre>
+        <div class="try">
+          <button class="btn ghost" data-try="${esc(d.ex)}">جرّبه الآن</button>
+          <a class="btn ghost" href="/api/v1/${d.ex}" target="_blank" rel="noopener">افتحه في تبويب</a>
+        </div>
+        <pre data-out="${esc(d.ex)}" style="display:none"></pre>
+      </div>
+    </details>`;
+  }).join('');
+
+  document.querySelectorAll('[data-try]').forEach(b => {
+    b.onclick = async () => {
+      const pre = document.querySelector(`[data-out="${CSS.escape(b.dataset.try)}"]`);
+      pre.style.display = ''; pre.textContent = '… أطلب';
+      try {
+        const res = await fetch('/api/v1/' + b.dataset.try);
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('calendar')) {
+          const t = await res.text();
+          pre.textContent = t.split('\r\n').slice(0, 22).join('\n') + '\n…';
+        } else {
+          const j = await res.json();
+          pre.textContent = JSON.stringify(j, null, 2).slice(0, 2600) + '\n…';
+        }
+      } catch (e) { pre.textContent = 'خطأ: ' + e.message; }
+    };
+  });
+});
+
+// أغراض الاختيارات للتقويم
+API('elections', { list: '1' }).then(r => {
+  $('cpurpose').innerHTML = Object.keys(r.purposes)
+    .map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+});
+
+$('ckind').onchange = () => {
+  $('cpurposeField').style.display = $('ckind').value === 'elections' ? '' : 'none';
+};
+
+function calUrl() {
+  const p = new URLSearchParams({ kind: $('ckind').value, city: $('ccity').value.trim(),
+                                  days: $('cdays').value });
+  if ($('ckind').value === 'elections') p.set('purpose', $('cpurpose').value);
+  return ORIGIN + '/api/v1/calendar.ics?' + p.toString();
+}
+$('cmake').onclick = () => {
+  const u = calUrl();
+  $('curl').style.display = '';
+  $('curl').textContent = u + '\n\nولاشتراك يتجدّد وحده، استبدل https بـ webcal:\n'
+    + u.replace(/^https?:/, 'webcal:');
+};
+$('cdl').onclick = () => { location.href = calUrl(); };
+
+async function getKey(tier) {
+  const box = $('keybox');
+  box.classList.add('show');
+  box.innerHTML = '… أُصدر';
+  try {
+    const r = await fetch('/api/v1/key?tier=' + tier).then(x => x.json());
+    const k = r.data;
+    box.innerHTML = `<strong>مفتاحك (${esc(k.tier_name)}) — ينتهي ${esc(k.expires)}</strong>
+      <code>${esc(k.key)}</code>
+      <p style="font-size:.83rem;color:var(--muted);line-height:1.85;margin:0">
+        ${esc(k.warning)}</p>
+      <p style="font-size:.83rem;margin:8px 0 0">استعمله في المعطيات
+        <code>?key=…</code> أو في ترويسة <code>X-API-Key</code>.</p>`;
+  } catch (e) { box.textContent = 'تعذّر الإصدار: ' + e.message; }
+}
+$('kfree').onclick = () => getKey('free');
+$('kbasic').onclick = () => getKey('basic');
+</script>
+</body>
+</html>

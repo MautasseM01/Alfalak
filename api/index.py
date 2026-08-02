@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
@@ -24,7 +25,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import depth, horary, interpret, monthly, mundane, plain, timelords, transits  # noqa: E402
+from falak import apikeys, depth, horary, ics, interpret, monthly  # noqa: E402
+from falak import mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -115,10 +117,17 @@ def _apply_level(out: dict, q: dict) -> dict:
 
 # ── المسارات ─────────────────────────────────────────────────────
 def route_health(q):
-    return {"ok": True, "cities": len(atlas.CITIES),
-            "systems": {k: v["name"] for k, v in chart.HOUSE_SYSTEMS.items()},
-            "chiron": os.path.isdir(os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ephe"))}
+    out = {"ok": True, "cities": len(atlas.CITIES),
+           "api_version": API_VERSION,
+           "systems": {k: v["name"] for k, v in chart.HOUSE_SYSTEMS.items()},
+           "chiron": os.path.isdir(os.path.join(
+               os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ephe"))}
+    if apikeys.is_dev_secret():
+        # لا يُكتَم: مفاتيح مُصدَرة بمفتاح سرّي تجريبي تسقط عند النشر
+        out["warning"] = ("الخادم يعمل بمفتاح سرّي تجريبي. اضبط "
+                          "FALAK_API_SECRET في بيئة النشر، وإلا سقطت "
+                          "كلّ المفاتيح المُصدَرة عند أوّل ضبط له.")
+    return out
 
 
 def route_atlas(q):
@@ -633,6 +642,200 @@ ROUTES = {
 }
 
 
+
+# ══════════════════════════════════════════════════════════════════
+# الواجهة البرمجية العامّة — /api/v1/…
+#
+# المسارات نفسها، ولكن بعقد معلَن: إصدار مرقَّم، ومغلَّف موحَّد
+# للجواب والخطأ، ومفتاح ومستوى وحدّ استعمال. والمسارات القديمة
+# /api/… تبقى كما هي لصفحات الموقع نفسه.
+# ══════════════════════════════════════════════════════════════════
+API_VERSION = "1.0"
+
+
+class Raw:
+    """جواب ليس JSON — كملفّ التقويم."""
+
+    def __init__(self, body: bytes, ctype: str, filename: str = "",
+                 status: int = 200):
+        self.body = body
+        self.ctype = ctype
+        self.filename = filename
+        self.status = status
+
+
+def _client_id(q: dict, key_info: dict) -> str:
+    """
+    من نعدّ عليه الطلبات. المفتاح إن وُجد، وإلا فما يمرّره الوسيط
+    من عنوان — وهو غير موثوق، فالحدّ على المجهولين تقريبيّ أصلًا.
+    """
+    k = _one(q, "key") or _one(q, "api_key")
+    if k:
+        return "k:" + hashlib.sha1(k.encode()).hexdigest()[:16]
+    return "a:" + (_one(q, "_ip") or "anon")
+
+
+def route_v1(path: str, query: dict, headers: dict | None = None):
+    """بوّابة الإصدار الأوّل: مفتاح، ثم حدّ، ثم المسار."""
+    headers = headers or {}
+    name = path.rstrip("/").split("/")[-1] or "index"
+
+    key = (_one(query, "key") or _one(query, "api_key")
+           or headers.get("x-api-key") or "")
+    info = apikeys.verify(key or None)
+    if key and not info["valid"]:
+        raise ApiError(info.get("error", "مفتاح غير صالح."), 401)
+
+    if name in ("index", "v1", ""):
+        return _v1_index(info)
+    if name == "key":
+        return _v1_key(query)
+
+    rate = apikeys.check_rate(_client_id(query, info), info["rpm"])
+    if not rate["ok"]:
+        raise ApiError(
+            f"تجاوزت {rate['limit']} طلبًا في الدقيقة. "
+            f"أعِد المحاولة بعد {rate['retry_after']} ثانية. "
+            "وللمزيد استخرج مفتاحًا من /api.html.", 429)
+
+    if name in ("calendar.ics", "calendar", "ics"):
+        return route_calendar(query, info)
+
+    if name not in ROUTES:
+        raise ApiError(f"مسار غير معروف: {name}. المتاح: "
+                       + "، ".join(sorted(ROUTES)), 404)
+
+    # المستوى يحدّ مدى البحث
+    if name == "search":
+        d = int(_one(query, "days", "90"))
+        if d > info["max_days"]:
+            raise ApiError(
+                f"مستواك ({info['name']}) يسمح بـ{info['max_days']} يومًا، "
+                f"وطلبت {d}. استخرج مفتاحًا أوسع أو قسّم البحث.", 403)
+
+    data = ROUTES[name](query)
+    return {
+        "ok": True,
+        "version": API_VERSION,
+        "endpoint": name,
+        "tier": info["tier"],
+        "rate": {"limit": rate["limit"], "remaining": rate["remaining"],
+                 "window": "60s"},
+        "data": data,
+    }
+
+
+def _v1_index(info: dict) -> dict:
+    return {
+        "ok": True, "version": API_VERSION,
+        "name": "الفَلَك — واجهة برمجية عربية للفلك التقليدي",
+        "base": "/api/v1/",
+        "endpoints": {
+            "health": "حال الخادم", "atlas": "بحث المدن",
+            "ephemeris": "مواقع الأجرام في لحظة",
+            "chart": "خريطة ميلاد كاملة مع القراءة",
+            "bulletin": "النشرة اليومية", "monthly": "النشرة الشهرية",
+            "month": "أحداث الشهر الفلكية", "hours": "ساعات الكواكب",
+            "elections": "تقويم الاختيارات",
+            "search": "البحث عن أفضل وقت لغرض",
+            "horary": "الحكم في مسألة", "synastry": "التوافق بين خريطتين",
+            "timelords": "الفردارات والتسيير والعودة الشمسية",
+            "depth": "مرجع النصوص: البيوت والبروج والزوايا",
+            "glossary": "معجم المصطلحات",
+            "calendar.ics": "تصدير تقويم iCalendar",
+            "key": "استخراج مفتاح وصول",
+        },
+        "tiers": apikeys.TIERS,
+        "your_tier": {"tier": info["tier"], "name": info["name"],
+                      "rpm": info["rpm"], "max_days": info["max_days"],
+                      "anonymous": info.get("anonymous", True)},
+        "envelope": ("كل جواب: {ok, version, endpoint, tier, rate, data}. "
+                     "وكل خطأ: {ok:false, error, status}."),
+        "licence": ("الحساب بمكتبة Swiss Ephemeris (AGPL). من بنى عليها "
+                    "خدمة مغلقة فعليه رخصتها التجارية — انظر astro.com."),
+        "limits": ("حدّ الاستعمال يُعدّ في ذاكرة النسخة الواحدة، والدالّة "
+                   "بلا خادم تُشغَّل نسخًا متعدّدة. فهو مُهدّئ لا حارس: "
+                   "يمنع الحلقة المنفلتة ولا يمنع هجومًا مقصودًا. "
+                   "قلناها صراحةً فلا يبني عليها أحد ما لا تحتمل."),
+    }
+
+
+def _v1_key(q: dict) -> dict:
+    """استخراج مفتاح. المستوى المفتوح والأساسي بلا شرط؛ والموسّع بطلب."""
+    tier = _one(q, "tier", "free")
+    if tier not in ("free", "basic"):
+        raise ApiError("المستوى الموسّع يُطلَب بالمراسلة، لا من هذا المسار.",
+                       403)
+    days = int(_one(q, "days", "365"))
+    k = apikeys.issue(tier, days, _one(q, "label", ""))
+    return {"ok": True, "version": API_VERSION, "data": k}
+
+
+def route_calendar(q: dict, info: dict | None = None):
+    """
+    تصدير iCalendar. يُرجع Raw لا JSON.
+
+      /api/v1/calendar.ics?kind=bulletin&city=دمشق&days=30
+      /api/v1/calendar.ics?kind=elections&city=دمشق&purpose=…&days=90
+      /api/v1/calendar.ics?kind=month&city=دمشق&year=2026&month=8
+      /api/v1/calendar.ics?kind=hours&city=دمشق&days=7&planets=المشتري,الزهرة
+    """
+    info = info or apikeys.verify(None)
+    kind = _one(q, "kind", "bulletin")
+    if kind not in ics.KINDS:
+        raise ApiError(f"نوع غير معروف: {kind}. المتاح: "
+                       + "، ".join(ics.KINDS))
+
+    lat, lon, tzname, label = resolve_place(q)
+    tz = ZoneInfo(tzname)
+    place = _one(q, "city") or label
+    ss = _one(q, "start")
+    start = _date.fromisoformat(ss) if ss else datetime.now(tz).date()
+    days = max(1, min(int(_one(q, "days", "30")), info["max_days"]))
+
+    if kind == "bulletin":
+        evs = ics.bulletin_events(start, min(days, 60), tzname, lat, lon, place)
+        title = f"الفَلَك — منازل القمر ({place})"
+        desc = "منازل القمر الثماني والعشرون وأوقات خلو المسار."
+    elif kind == "elections":
+        purpose = _one(q, "purpose")
+        if not purpose:
+            raise ApiError("لا بدّ من purpose مع kind=elections.")
+        natal = None
+        if _one(q, "birth"):
+            sub = {"date": [_one(q, "birth")],
+                   "time": [_one(q, "birthtime", "12:00")]}
+            bc = _one(q, "birthcity")
+            if bc:
+                sub["city"] = [bc]
+            blat, blon, btz, _l = resolve_place(sub if bc else q)
+            bwhen, binfo = parse_birth(sub, btz, blon)
+            natal = chart.compute(bwhen, blat, blon, "whole", btz,
+                                  minor_aspects=False, tz_info=binfo)
+        evs = ics.election_events(start, days, tzname, lat, lon, purpose,
+                                  place, int(_one(q, "min", "70")), natal)
+        title = f"الفَلَك — {purpose} ({place})"
+        desc = f"أفضل الأيام لـ«{purpose}» بدرجة {_one(q, 'min', '70')} فأعلى."
+    elif kind == "month":
+        y = int(_one(q, "year", str(start.year)))
+        m = int(_one(q, "month", str(start.month)))
+        evs = ics.month_events(y, m, tzname)
+        title = f"الفَلَك — أحداث السماء {y}/{m}"
+        desc = "الانتقالات والوقوف والرجوع والتقمير والكسوف."
+    else:
+        planets = [x.strip() for x in (_one(q, "planets", "") or "").split(",")
+                   if x.strip()]
+        evs = ics.hour_events(start, min(days, 14), tzname, lat, lon, place,
+                              only=planets or None,
+                              day_only=_one(q, "night", "0") != "1")
+        title = f"الفَلَك — ساعات الكواكب ({place})"
+        desc = "الساعات الاثنتا عشرة النهارية بدلالاتها."
+
+    text = ics.build(evs, title, desc)
+    return Raw(text.encode("utf-8"), "text/calendar; charset=utf-8",
+               f"alfalak-{kind}.ics")
+
+
 def decode_path(raw: str) -> str:
     """
     خوادم HTTP تفكّ المسار بترميز latin-1، فتظهر العربية مشوّهة
@@ -644,8 +847,23 @@ def decode_path(raw: str) -> str:
         return raw
 
 
-def dispatch(path: str, query: dict):
-    name = path.rstrip("/").split("/")[-1] or "health"
+def is_v1(path: str) -> bool:
+    """
+    هل هذا مسار الإصدار الأوّل؟
+
+    **حذارِ من الفحص بالنصّ**: Vercel يُعيد كتابة /api/… إلى
+    /api/index/… (انظر vercel.json)، فيصير /api/v1/chart عند وصوله
+    إلى هنا /api/index/v1/chart — ولا يحوي «/api/v1» أصلًا. فالفحص
+    على **مقاطع المسار** لا على النصّ، وإلا عمل محليًّا وسقط منشورًا.
+    """
+    return "v1" in path.strip("/").split("/")
+
+
+def dispatch(path: str, query: dict, headers: dict | None = None):
+    clean = path.rstrip("/")
+    if is_v1(clean):
+        return route_v1(clean, query, headers)
+    name = clean.split("/")[-1] or "health"
     fn = ROUTES.get(name)
     if not fn:
         raise ApiError(f"مسار غير معروف: {name}. المتاح: " + "، ".join(ROUTES), 404)
@@ -682,6 +900,21 @@ def read_static(path: str):
         return f.read(), MIME[ext]
 
 
+def _err(msg: str, status: int, versioned: bool, trace: str = "") -> dict:
+    """
+    مغلَّف الخطأ. الإصدار الأوّل يلتزم صيغة معلَنة، والمسارات
+    القديمة تبقى على صيغتها لئلّا تنكسر صفحات الموقع.
+    """
+    if versioned:
+        out = {"ok": False, "version": API_VERSION,
+               "error": msg, "status": status}
+    else:
+        out = {"error": msg}
+    if trace:
+        out["trace"] = trace
+    return out
+
+
 # ── معالج Vercel ─────────────────────────────────────────────────
 class handler(BaseHTTPRequestHandler):
     def _send(self, status, payload):
@@ -706,13 +939,30 @@ class handler(BaseHTTPRequestHandler):
             hit = read_static(u.path)
             if hit:
                 return self._send_bytes(*hit)
+        versioned = is_v1(u.path)
         try:
-            self._send(200, dispatch(u.path, parse_qs(u.query)))
+            hdr = {k.lower(): v for k, v in self.headers.items()}
+            out = dispatch(u.path, parse_qs(u.query), hdr)
+            if isinstance(out, Raw):
+                return self._send_file(out)
+            self._send(200, out)
         except ApiError as e:
-            self._send(e.status, {"error": str(e)})
+            self._send(e.status, _err(str(e), e.status, versioned))
         except Exception as e:
-            self._send(500, {"error": f"خطأ داخلي: {e}",
-                             "trace": traceback.format_exc()[-1200:]})
+            self._send(500, _err(f"خطأ داخلي: {e}", 500, versioned,
+                                 traceback.format_exc()[-1200:]))
+
+    def _send_file(self, raw):
+        self.send_response(raw.status)
+        self.send_header("Content-Type", raw.ctype)
+        self.send_header("Content-Length", str(len(raw.body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        if raw.filename:
+            self.send_header("Content-Disposition",
+                             f'attachment; filename="{raw.filename}"')
+        self.send_header("Cache-Control", "public, max-age=3600")
+        self.end_headers()
+        self.wfile.write(raw.body)
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -739,17 +989,37 @@ if __name__ == "__main__":
         def do_GET(self):
             u = urlparse(decode_path(self.path))
             if u.path.startswith("/api/"):
+                versioned = is_v1(u.path)
+                ctype = "application/json; charset=utf-8"
+                extra = {}
                 try:
-                    payload, status = dispatch(u.path, parse_qs(u.query)), 200
+                    hdr = {k.lower(): v for k, v in self.headers.items()}
+                    out = dispatch(u.path, parse_qs(u.query), hdr)
+                    if isinstance(out, Raw):
+                        body, status, ctype = out.body, out.status, out.ctype
+                        if out.filename:
+                            extra["Content-Disposition"] = \
+                                f'attachment; filename="{out.filename}"'
+                    else:
+                        body = json.dumps(out, ensure_ascii=False,
+                                          default=str).encode()
+                        status = 200
                 except ApiError as e:
-                    payload, status = {"error": str(e)}, e.status
+                    body = json.dumps(_err(str(e), e.status, versioned),
+                                      ensure_ascii=False).encode()
+                    status = e.status
                 except Exception as e:
-                    payload, status = {"error": str(e),
-                                       "trace": traceback.format_exc()[-1200:]}, 500
-                body = json.dumps(payload, ensure_ascii=False, default=str).encode()
+                    body = json.dumps(
+                        _err(str(e), 500, versioned,
+                             traceback.format_exc()[-1200:]),
+                        ensure_ascii=False, default=str).encode()
+                    status = 500
                 self.send_response(status)
-                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Type", ctype)
                 self.send_header("Content-Length", str(len(body)))
+                self.send_header("Access-Control-Allow-Origin", "*")
+                for k, v in extra.items():
+                    self.send_header(k, v)
                 self.end_headers()
                 self.wfile.write(body)
                 return
