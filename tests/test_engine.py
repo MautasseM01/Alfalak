@@ -12,7 +12,7 @@
 
     pytest -q
 """
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -990,3 +990,229 @@ def test_calibration_matches_the_criteria():
             vals.append(syn.score(a, b)[domain]["score"])
         med = statistics.median(vals)
         assert 35 <= med <= 65, f"{domain}: الوسيط {med} — أعِد المعايرة"
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٦ — المسائل والاختيارات
+# ══════════════════════════════════════════════════════════════════
+def _q_chart(y, mo, d, h, mi, tzname="Asia/Damascus", lat=33.51, lon=36.28):
+    return chart.compute(datetime(y, mo, d, h, mi, tzinfo=ZoneInfo(tzname)),
+                         lat, lon, "regiomontanus", tzname, minor_aspects=False)
+
+
+def test_late_ascendant_blocks_judgment():
+    """
+    الطالع فوق ٢٧° أو دون ٣°: تُردّ المسألة. وهذا أشرف ما في الباب —
+    أن يُقال «لا جواب» بدل تلفيق واحد.
+    """
+    from falak import horary
+    found_late = found_early = False
+    for h in range(24):
+        for mi in (0, 20, 40):
+            c = _q_chart(2026, 8, 1, h, mi)
+            deg = c["angles"]["الطالع"]["lon"] % 30
+            cons = horary.considerations(c)
+            names = {x["name"] for x in cons if x["kind"] == "مانع"}
+            if deg > 27:
+                assert "الطالع في آخر درجات البرج" in names, deg
+                found_late = True
+            elif deg < 3:
+                assert "الطالع في أوّل درجات البرج" in names, deg
+                found_early = True
+            else:
+                assert not (names & {"الطالع في أوّل درجات البرج",
+                                     "الطالع في آخر درجات البرج"}), deg
+    assert found_late and found_early
+
+
+def test_blocked_chart_yields_no_judgment():
+    """إن رُدّت المسألة فلا يُنظَر في التمام أصلًا."""
+    from falak import horary
+    found = 0
+    for h in range(24):
+        for mi in (0, 30):
+            c = _q_chart(2026, 3, 15, h, mi)
+            j = horary.judge(c, 7)
+            if j["blocked"]:
+                assert j["verdict"] == "تُردّ المسألة"
+                assert j["perfection"]["detail"] == []
+                assert "أعِد السؤال" in j["summary"]
+                found += 1
+    # الطالع يقطع برجًا كلّ ساعتين، فلا بدّ أن يمرّ بأوّل درجاته
+    # وآخرها مرّات في اليوم الواحد
+    assert found >= 3, f"المنع لم يقع إلا {found} مرّة في اليوم"
+
+
+def test_perfection_requires_staying_in_sign():
+    """
+    شرط التمام أن يقع الاتّصال **قبل خروج الدليل من برجه**.
+    فكل اتّصال مُثبَت لا بدّ أن يسبق خروج أيٍّ من الدليلين.
+    """
+    from falak import horary
+    checked = 0
+    for h in (3, 9, 15, 21):
+        c = _q_chart(2026, 6, 10, h, 0)
+        j = horary.judge(c, 10)
+        P = j["perfection"]
+        if not P["perfects"] or not P.get("aspect"):
+            continue
+        sq = j["significators"]["السائل"]["ruler"]
+        st = j["significators"]["المسؤول عنه"]["ruler"]
+        if sq == st:
+            continue
+        when = datetime.fromisoformat(c["when_utc"])
+        end = when + timedelta(days=45)
+        t = datetime.fromisoformat(P["when"])
+        for sig in (sq, st):
+            exit_t = horary._sign_exit(sig, when, end)
+            if exit_t:
+                assert t <= exit_t + timedelta(seconds=1), (sig, t, exit_t)
+        checked += 1
+    assert checked, "لم يقع اتّصال مباشر في العيّنة"
+
+
+def test_translation_needs_both_orbs():
+    """
+    نقل النور لا يكفي فيه أن يكون الناقل قد فارق هذا يومًا وسيلقى
+    ذاك يومًا. لا بدّ أن يكون الآن في وجاج الاتّصالين معًا: مُدبِرًا
+    عن الأوّل مُقبِلًا على الثاني. وبغير هذا يقع «نقل نور» في كل
+    خريطة تقريبًا فيفقد الباب معناه.
+    """
+    import random
+    from falak import horary
+    rnd = random.Random(31)
+    kinds = {}
+    for _ in range(60):
+        c = _q_chart(2026, 1, 1, 0, 0)
+        c = chart.compute(
+            datetime(2026, 1, 1, tzinfo=ZoneInfo("Asia/Damascus"))
+            + timedelta(hours=rnd.randint(0, 8760)),
+            33.51, 36.28, "regiomontanus", "Asia/Damascus", minor_aspects=False)
+        j = horary.judge(c, rnd.randint(1, 12))
+        for step in j["perfection"]["detail"]:
+            kinds[step["kind"]] = kinds.get(step["kind"], 0) + 1
+    trans = kinds.get("نقل النور", 0)
+    assert trans <= 12, f"نقل النور وقع {trans} مرّة من ٦٠ — الشرط مُنفلت"
+
+
+def test_single_significator_is_its_own_verdict():
+    """
+    إن كان ربّ الطالع هو ربّ بيت المسألة فليس تمامًا بواسطة ولا
+    بعُسر: الأمر بيد السائل. وخلطه بغيره يُفسد الحكم.
+    """
+    from falak import horary
+    for h in range(24):
+        c = _q_chart(2026, 5, 20, h, 0)
+        asc = c["angles"]["الطالع"]["sign"]
+        for house in range(1, 13):
+            hs = chart.SIGNS[int(c["houses"]["cusps"][house - 1]["lon"] // 30)]
+            from falak import dignities as dg
+            if dg.DOMICILE[asc] == dg.DOMICILE[hs] and not any(
+                    x["kind"] == "مانع" for x in horary.considerations(c)):
+                j = horary.judge(c, house)
+                assert j["verdict"] == "بيدك أنت", j["verdict"]
+                assert "بيدك" in j["summary"] or "قرارك" in j["summary"]
+                return
+    pytest.skip("لم يقع تطابق الدليلين في العيّنة")
+
+
+def test_horary_verdicts_are_not_all_the_same():
+    """حكم يقول للجميع الشيء نفسه لا يقول شيئًا."""
+    import random
+    from falak import horary
+    rnd = random.Random(77)
+    seen = {}
+    for _ in range(60):
+        c = chart.compute(
+            datetime(2026, 1, 1, tzinfo=ZoneInfo("Asia/Damascus"))
+            + timedelta(hours=rnd.randint(0, 8760)),
+            33.51, 36.28, "regiomontanus", "Asia/Damascus", minor_aspects=False)
+        v = horary.judge(c, rnd.randint(1, 12))["verdict"]
+        seen[v] = seen.get(v, 0) + 1
+    assert len(seen) >= 4, seen
+    assert max(seen.values()) < 45, seen           # لا حكم يغلب على كل شيء
+    assert seen.get("تُردّ المسألة", 0) >= 10      # الردّ باب حقيقي لا زينة
+
+
+def test_wide_window_matches_day_by_day():
+    """
+    تسريع البحث يقتطع زوايا القمر من نافذة واسعة بدل حسابها لكل
+    يوم. فلا بدّ أن تكون النتيجة **مطابقة تمامًا**، وإلا كان
+    التسريع تغييرًا في الأرقام لا في السرعة.
+    """
+    a = datetime(2026, 8, 1, tzinfo=UTC)
+    b = a + timedelta(days=5)
+    ephem.clear_range()
+    plain_ = [(x.time, x.planet, x.angle) for x in ephem.moon_aspects(a, b)]
+    ephem.preload_range(a - timedelta(days=6), b + timedelta(days=6))
+    try:
+        sliced = [(x.time, x.planet, x.angle) for x in ephem.moon_aspects(a, b)]
+    finally:
+        ephem.clear_range()
+    assert plain_ == sliced and len(plain_) > 3
+
+
+def test_sun_events_cache_is_exact():
+    """الذاكرة تُسرّع ولا تُغيّر: النتيجة قبلها وبعدها واحدة."""
+    tz = ZoneInfo("Asia/Damascus")
+    day = datetime(2026, 8, 1, tzinfo=tz)
+    ephem._SUN_EVENTS_CACHE.clear()
+    first = ephem.sun_events(day, 33.51, 36.28, tz)
+    second = ephem.sun_events(day, 33.51, 36.28, tz)
+    assert first == second
+    ephem._SUN_EVENTS_CACHE.clear()
+    assert ephem.sun_events(day, 33.51, 36.28, tz) == first
+
+
+def test_search_finds_and_ranks():
+    from falak import elections as el
+    r = el.search(date(2026, 8, 2), 45, "Asia/Damascus", 33.51, 36.28,
+                  "العقود والتوقيع")
+    assert r["count"] == 45 and len(r["best"]) == 10
+    scores = [x["score"] for x in r["best"]]
+    assert scores == sorted(scores, reverse=True)
+    assert r["best"][0]["score"] > r["worst"][0]["score"]
+    assert r["best"][0]["plus"], "لا بدّ من أسباب لكل درجة"
+
+
+def test_search_personal_bonus_is_bounded():
+    """
+    ترجيح المولد يُرجّح ولا يقلب: العبور البطيء يدوم شهورًا، فلو
+    ثقُل وزنه لسوّى بين كل أيام الفصل.
+    """
+    from falak import elections as el
+    natal = chart.compute(datetime(1990, 5, 17, 8, 30,
+                                   tzinfo=ZoneInfo("Asia/Damascus")),
+                          36.2, 37.13, "whole", "Asia/Damascus")
+    r = el.search(date(2026, 8, 2), 40, "Asia/Damascus", 33.51, 36.28,
+                  "العقود والتوقيع", natal=natal)
+    assert r["personalised"]
+    for x in r["best"] + r["worst"]:
+        assert abs(x["personal"]) <= 20, x
+        assert abs(x["score"] - x["base_score"]) <= 20
+
+
+def test_horary_and_search_routes():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+
+    lst = dispatch('/api/horary', q(list="1"))
+    assert len(lst["questions"]) >= 20
+
+    d = dispatch('/api/horary', q(city="دمشق", date="2026-08-01",
+                                  time="11:20", question="هل أتزوّج فلانًا؟"))
+    j = d["judgment"]
+    assert j["verdict"] and j["summary"] and j["considerations"]
+    assert set(j["significators"]) == {"السائل", "المسؤول عنه", "القمر"}
+    assert "لا يُبنى" in j["limits"] or "لا وسيلة" in j["limits"]
+    assert d["system"] == "regiomontanus"
+
+    s = dispatch('/api/search', q(city="دمشق", purpose="العقود والتوقيع",
+                                  start="2026-08-02", days="40"))
+    assert s["best"] and s["all"] and s["average"]
+
+    with pytest.raises(Exception):
+        dispatch('/api/search', q(city="دمشق", purpose="العقود والتوقيع",
+                                  days="900"))

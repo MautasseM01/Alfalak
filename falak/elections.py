@@ -24,7 +24,7 @@ from __future__ import annotations
 from datetime import date as _date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from . import bulletin, config, dignities as dig, ephem, hours as _hours
+from . import bulletin, chart, config, dignities as dig, ephem, hours as _hours
 from .ephem import SIGNS
 
 SEADAN = ("المشتري", "الزهرة")      # السعدان
@@ -484,3 +484,142 @@ def month_calendar(year: int, month: int, tzname: str, lat: float, lon: float,
     return {"year": year, "month": month, "tz": tzname,
             "purposes": purposes, "groups": GROUPS,
             "days": rows, "ranking": ranking}
+
+
+# ══════════════════════════════════════════════════════════════════
+# البحث عن أفضل وقت — «متى أوقّع العقد؟»
+#
+# تقويم الشهر يُجيب عن «كيف حال هذا اليوم؟». وهذا يُجيب عن السؤال
+# المعكوس، وهو الذي يسأله الناس فعلًا: «أعطني أفضل يوم».
+#
+# ويزيد عليه شيئين لا يقدّمهما تقويم الشهر:
+#   ١ — يمسح مدى يمتدّ شهورًا لا شهرًا واحدًا.
+#   ٢ — إن أعطاه السائل خريطة مولده، رجّح الأيام التي تُوافق
+#       خريطته هو، لا الأيام الحسنة في العموم فحسب.
+# ══════════════════════════════════════════════════════════════════
+def _personal_bonus(day: _date, tzname: str, natal: dict,
+                    purpose: str) -> tuple[float, list[str]]:
+    """
+    ترجيح شخصي: عبور السعدين على كواكب مولدك يرفع، والنحسين يخفض.
+
+    الوزن هنا أصغر من وزن المعايير العامّة عمدًا — لأن العبور
+    البطيء يدوم شهورًا، فلو ثقُل وزنه لسوّى بين كل أيام الفصل.
+    """
+    from . import ephem as _e
+    tz = ZoneInfo(tzname)
+    noon = datetime(day.year, day.month, day.day, 12, tzinfo=tz)
+    natal_by = {b["name"]: b["lon"] for b in natal["bodies"]}
+    for k in ("الطالع", "وسط السماء"):
+        natal_by[k] = natal["angles"][k]["lon"]
+
+    targets = ["الشمس", "القمر", "الزهرة", "المريخ", "المشتري", "زحل",
+               "الطالع", "وسط السماء"]
+    movers = ["المشتري", "زحل", "المريخ", "الزهرة", "الشمس"]
+    BEN, MAL = {"المشتري", "الزهرة"}, {"زحل", "المريخ"}
+
+    bonus, notes = 0.0, []
+    for mv in movers:
+        try:
+            L = _e.lon_of(mv, noon)
+        except Exception:
+            continue
+        for tg in targets:
+            if tg not in natal_by:
+                continue
+            sep = abs(chart._wrap180(L - natal_by[tg]))
+            for name, angle, good in (("اقتران", 0, mv in BEN),
+                                      ("تسديس", 60, True),
+                                      ("تربيع", 90, False),
+                                      ("تثليث", 120, True),
+                                      ("تقابل", 180, False)):
+                orb = abs(sep - angle)
+                if orb > 2.0:
+                    continue
+                w = (1 - orb / 2.0) * 4.0
+                if mv in BEN and good:
+                    bonus += w
+                    notes.append(f"{mv} العابر يُنظر {name} إلى {tg} في مولدك (+{w:.0f})")
+                elif mv in MAL and not good:
+                    bonus -= w
+                    notes.append(f"{mv} العابر يُنظر {name} إلى {tg} في مولدك (−{w:.0f})")
+                break
+    return bonus, notes[:6]
+
+
+def search(start: _date, days: int, tzname: str, lat: float, lon: float,
+           purpose: str, natal: dict | None = None,
+           top: int = 10, with_hours: bool = True) -> dict:
+    """
+    يمسح مدًى من الأيام لغرض واحد، ويُرجع أفضلها مرتّبةً.
+
+    ومع كل يوم **ساعته**: لا يكفي أن يُقال «الثلاثاء» — القدماء
+    يختارون الساعة كما يختارون اليوم، فيُعطى مع اليوم أوّل ساعة
+    من ساعات الغرض فيه.
+    """
+    p = PURPOSES.get(purpose)
+    if not p:
+        return {"error": f"غرض غير معروف: {purpose}. المتاح: "
+                         + "، ".join(list(PURPOSES)[:6]) + "…"}
+    days = max(1, min(int(days), 400))
+
+    # نافذة زوايا القمر تُحسَب مرّة للمدى كلّه بدل مرّة لكل يوم.
+    # الأيام تتداخل، فكانت الحسبة تُعاد على الفترة نفسها مرارًا.
+    tz = ZoneInfo(tzname)
+    w0 = datetime(start.year, start.month, start.day, tzinfo=tz) - timedelta(days=4)
+    w1 = w0 + timedelta(days=days + 8)
+    ephem.preload_range(w0.astimezone(ephem.UTC), w1.astimezone(ephem.UTC))
+    try:
+        return _search_body(start, days, tzname, lat, lon, purpose, p,
+                            natal, top, with_hours)
+    finally:
+        ephem.clear_range()
+
+
+def _search_body(start, days, tzname, lat, lon, purpose, p,
+                 natal, top, with_hours):
+    rows = []
+    for i in range(days):
+        d = start + timedelta(days=i)
+        try:
+            r = score_day(d, tzname, lat, lon, purpose)
+        except Exception as exc:
+            rows.append({"date": d.isoformat(), "error": str(exc)})
+            continue
+        if "error" in r:
+            continue
+        r["base_score"] = r["score"]
+        if natal:
+            b, notes = _personal_bonus(d, tzname, natal, purpose)
+            r["personal"] = round(b, 1)
+            r["personal_notes"] = notes
+            r["score"] = max(0, min(100, round(r["score"] + b)))
+            r["verdict"], r["verdict_note"] = _verdict(r["score"])
+        rows.append(r)
+
+    scored = [r for r in rows if "score" in r]
+    best = sorted(scored, key=lambda r: (-r["score"], r["date"]))[:top]
+    worst = sorted(scored, key=lambda r: (r["score"], r["date"]))[:3]
+
+    if not with_hours:
+        for r in best:
+            r.pop("best_hours", None)
+
+    avg = round(sum(r["score"] for r in scored) / len(scored), 1) if scored else 0
+    return {
+        "purpose": purpose, "group": p.get("group"), "rule": p.get("note", ""),
+        "start": start.isoformat(), "days": days,
+        "end": (start + timedelta(days=days - 1)).isoformat(),
+        "personalised": bool(natal),
+        "count": len(scored), "average": avg,
+        "best": best, "worst": worst,
+        "all": [{"date": r["date"], "score": r["score"],
+                 "verdict": r["verdict"]} for r in scored],
+        "note": (
+            "الدرجة تصف حال السماء العامّ في اليوم لهذا الغرض. "
+            + ("وقد رُجِّحت بخريطة مولدك: العبور الموافق يرفع والمخالف يخفض، "
+               "بوزن أصغر عمدًا لأن العبور البطيء يدوم شهورًا فلا يُميّز يومًا "
+               "عن يوم. " if natal else
+               "أضِف تاريخ مولدك ليُرجَّح البحث بخريطتك أنت. ")
+            + "ولا تُبنى على هذا قرارات لا رجعة فيها."
+        ),
+    }

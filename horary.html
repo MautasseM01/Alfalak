@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>المسائل — الفَلَك</title>
+<meta name="description" content="خريطة اللحظة التي وقع فيها السؤال، بقواعد التراث: الاعتبارات قبل الحكم، والدليلان، والتمام بالاتّصال ونقل النور.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.verdict{text-align:center;padding:26px 20px;border-radius:14px;
+  border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.verdict .v{font-family:Amiri,serif;font-size:2.4rem;line-height:1.2;color:var(--gold)}
+.verdict.no .v{color:var(--neg)} .verdict.yes .v{color:var(--pos)}
+.verdict.hold .v{color:var(--muted)}
+.verdict p{margin:12px auto 0;max-width:640px;font-size:.93rem;line-height:1.95}
+.cons{display:grid;gap:9px}
+.con{padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+  border-inline-start:3px solid var(--neu);font-size:.86rem;line-height:1.8}
+.con.مانع{border-inline-start-color:var(--neg);background:rgba(224,138,125,.05)}
+.con.تحذير{border-inline-start-color:var(--gold-dim);background:rgba(217,180,91,.04)}
+.con.سليم{border-inline-start-color:var(--pos);background:rgba(95,199,161,.05)}
+.con b{color:var(--gold)}
+.sigs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.sig{padding:14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.sig .role{font-size:.8rem;color:var(--muted)}
+.sig .p{font-family:Amiri,serif;font-size:1.6rem;color:var(--gold);line-height:1.3}
+.sig .pos{font-size:.85rem;color:var(--text)}
+.sig .st{font-size:.82rem;color:var(--muted);line-height:1.8;margin-top:7px}
+.step{padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);margin-bottom:9px;font-size:.86rem;line-height:1.8}
+.step .k{color:var(--gold);font-weight:600}
+.step.off{opacity:.5}
+.warn{border-inline-start:3px solid var(--neg);padding:11px 14px;border-radius:8px;
+  background:rgba(224,138,125,.06);font-size:.84rem;line-height:1.85}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/elections.html">الاختيارات</a>
+    <a href="/horary.html" class="on">المسائل</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/synastry.html">التوافق</a>
+    <a href="/timelords.html">أرباب الأزمنة</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">المسائل</h2>
+<p class="lede">
+  مبنى هذا الباب أن السؤال إذا اضطرم في صدر صاحبه فسأل، كانت السماء في تلك
+  اللحظة صورةً لجوابه. ولا يُحكم فيه بالمزاج: تُنظر <strong>الاعتبارات</strong> أوّلًا،
+  فإن كان في الخريطة ما يمنع رُدّت المسألة ولم يُتكلَّف لها جواب.
+  ثم يُنظر في <strong>دليل السائل</strong> و<strong>دليل المسؤول عنه</strong>: أيقع بينهما اتّصال
+  قبل أن يخرج أحدهما من برجه؟
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="question">سؤالك</label>
+        <select id="question"><option value="">— اختر —</option></select></div>
+      <div class="field"><label for="city">أين أنت الآن؟</label>
+        <input type="text" id="city" placeholder="دمشق…" autocomplete="off"></div>
+      <div class="field"><label for="date">تاريخ السؤال</label>
+        <input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة السؤال</label>
+        <input type="time" id="time"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">احكم في المسألة</button>
+      <button class="btn ghost" id="now">اللحظة الآن</button>
+    </div>
+    <p class="note" style="margin-top:12px">
+      الوقت هنا هو لحظة <em>وقوع السؤال في نفسك</em>، لا وقت فتحك للصفحة.
+      وكلّما كان السؤال مصوغًا صياغة دقيقة كان الجواب أوضح — وأكثر الحيرة
+      تنحلّ بصياغة السؤال وحدها.
+    </p>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  الاعتبارات وقواعد التمام من «التفهيم» للبيروني و«البارع» لابن أبي الرجال.<br>
+  البيوت على ريجومونتانوس، وهو مذهب أهل هذا الباب.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/wheel.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+initLevelSwitch(() => { if (D) load(); });
+pageIntro('horary');
+const $ = id => document.getElementById(id);
+const out = $('out');
+const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const card = (title, body, chips) =>
+  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
+   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+let D = null;
+
+cityInput($('city'));
+
+API('horary', { list: '1' }).then(r => {
+  const sel = $('question');
+  Object.entries(r.questions).forEach(([k, v]) => {
+    const o = document.createElement('option');
+    o.value = k; o.textContent = k; o.title = v.note;
+    sel.appendChild(o);
+  });
+  const s = store.get('hor', {});
+  if (s.question) sel.value = s.question;
+});
+
+function setNow() {
+  const d = new Date();
+  $('date').value = d.toISOString().slice(0, 10);
+  $('time').value = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+async function load() {
+  const question = $('question').value, city = $('city').value.trim();
+  if (!question || !city) {
+    out.innerHTML = '<div class="card"><div class="msg err">اختر سؤالك وأدخل مكانك.</div></div>';
+    return;
+  }
+  store.set('hor', { question, city });
+  out.innerHTML = '<div class="card"><div class="msg">… أنظر في خريطة اللحظة</div></div>';
+  try {
+    D = await API('horary', withLevel({ question, city, date: $('date').value, time: $('time').value }));
+    render(D);
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${esc(e.message)}</div></div>`;
+  }
+}
+
+const VCLASS = { 'يتمّ':'yes', 'يتمّ بعد جهد':'yes', 'يتمّ بواسطة':'yes',
+                 'بيدك أنت':'', 'يتمّ بعُسر':'', 'لا يتمّ':'no', 'تُردّ المسألة':'hold' };
+
+function render(d) {
+  const j = d.judgment;
+
+  const head = card(esc(j.question || `مسألة البيت ${j.house}`),
+    `<div class="verdict ${VCLASS[j.verdict] || ''}">
+       <div class="v">${esc(j.verdict)}</div>
+       <p>${esc(j.summary)}</p>
+     </div>
+     <p class="note" style="margin-top:14px;text-align:center">
+       ${esc(d.place)} · ${d.when_local.slice(0,16).replace('T',' — ')} · ${esc(d.system_name)}</p>`,
+    `<span class="chip gold">الطالع ${esc(d.chart.angles['الطالع'].text)}</span>
+     <span class="chip">البيت ${j.house}</span>`);
+
+  const cons = card('الاعتبارات قبل الحكم',
+    `<p class="note" style="margin-bottom:12px">
+       لا يُحكَم في كلّ خريطة. وهذا أشرف ما في الباب: أن يعرف صاحبه متى يسكت.</p>
+     <div class="cons">${j.considerations.map(x => `<div class="con ${x.kind}">
+       <b>${esc(x.kind)}</b> — <b>${esc(x.name)}</b><br>${esc(x.note)}</div>`).join('')}</div>`);
+
+  const sigCard = k => {
+    const s = j.significators[k];
+    const st = s.state;
+    return `<div class="sig">
+      <div class="role">${esc(k)} — ${esc(s.why)}</div>
+      <div class="p">${esc(s.ruler)}</div>
+      ${st ? `<div class="pos">${esc(st.text)} · البيت ${st.house}</div>
+              <div class="st">${esc(st.note)}</div>` : ''}
+    </div>`;
+  };
+  const sigs = card('الدليلان والشاهد',
+    `<div class="sigs">${Object.keys(j.significators).map(sigCard).join('')}</div>`);
+
+  const P = j.perfection;
+  const perf = card('التمام — أيقع الاتّصال قبل خروج الدليل من برجه؟',
+    P.detail.length
+      ? P.detail.map(x => `<div class="step ${x.in_time === false ? 'off' : ''}">
+          <span class="k">${esc(x.kind)}${x.aspect ? ' — ' + esc(x.aspect) : ''}</span>
+          ${x.days != null ? `<span style="color:var(--muted)"> (بعد ${x.days} يومًا)</span>` : ''}
+          <br>${esc(x.note)}
+          ${x.reception ? `<br><span style="color:var(--pos)">${esc(x.reception.kind)}:</span>
+            ${esc(x.reception.note)}` : ''}
+        </div>`).join('')
+      : '<p class="note">لم يُنظر في التمام لأن المسألة رُدّت.</p>',
+    P.how ? `<span class="chip gold">${esc(P.how)}</span>` : '');
+
+  const m = j.moon;
+  const moon = card('القمر — شاهد كل مسألة',
+    m.void
+      ? `<p>القمر خالي المسار: لا يتّصل بكوكب قبل خروجه من برجه بعد
+         نحو ${m.sign_exit_hours} ساعة. وحكم القدماء: «لا يكون شيء».</p>`
+      : `<p>يتّصل القمر بـ<strong>${esc(m.next.planet)}</strong> اتّصال
+         ${esc(m.next.aspect)} بعد ${m.next.hours} ساعة — وهو أوّل ما يقع،
+         فمنه تُعرف صورة أوّل ما يجري في الأمر.</p>
+         ${m.all.length > 1 ? `<p class="note" style="margin-top:9px">ثم:
+           ${m.all.slice(1).map(x => `${esc(x.planet)} (${esc(x.aspect)}) بعد ${x.hours}س`).join(' · ')}</p>` : ''}`);
+
+  const wheel = card('خريطة اللحظة',
+    `<div class="wheel">${wheelSVG({ ...d.chart, houses: d.chart.houses }, { size: 600 })}</div>`);
+
+  const limits = card('حدود هذا الباب',
+    `<div class="warn">${esc(j.limits)}</div>`);
+
+  out.innerHTML = head + cons + sigs + perf + moon + wheel + limits;
+}
+
+$('go').onclick = load;
+$('now').onclick = () => { setNow(); load(); };
+$('question').onchange = () => { if (D) load(); };
+
+setNow();
+const s = store.get('hor', {});
+$('city').value = s.city || 'دمشق';
+</script>
+</body>
+</html>

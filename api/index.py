@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import depth, interpret, monthly, mundane, plain, timelords, transits  # noqa: E402
+from falak import depth, horary, interpret, monthly, mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -277,6 +277,95 @@ def route_synastry(q):
         "الخريطة تصف ميلًا وطبعًا، ولا تعرف ما تعرفانه أنتما عن "
         "بعضكما، ولا ما يصنعه الاختيار والمعاملة."
     )
+    return _apply_level(out, q)
+
+
+def route_horary(q):
+    """
+    المسألة: خريطة اللحظة التي وقع فيها السؤال.
+
+      قائمة الأسئلة:  /api/horary?list=1
+      الحكم:          /api/horary?city=&question=...  (أو house=7)
+                      و date/time اختياريان — والأصل لحظة السؤال الآن.
+    """
+    if _one(q, "list") == "1":
+        return {"questions": {k: v for k, v in horary.QUESTIONS.items()},
+                "houses": {str(k): v["name"] for k, v in depth.HOUSES.items()}}
+
+    lat, lon, tzname, label = resolve_place(q)
+    tz = ZoneInfo(tzname)
+    question = _one(q, "question", "")
+    house = _one(q, "house")
+    if question and question in horary.QUESTIONS:
+        h = horary.QUESTIONS[question]["house"]
+    elif house and house.isdigit() and 1 <= int(house) <= 12:
+        h = int(house)
+    else:
+        raise ApiError("لا بدّ من question من القائمة، أو house بين ١ و١٢. "
+                       "انظر /api/horary?list=1")
+
+    ds = _one(q, "date")
+    if ds:
+        when = parse_when(q, tzname, default_time=datetime.now(tz).strftime("%H:%M"))
+    else:
+        when = datetime.now(tz)
+
+    # المسائل تُعمل على ريجومونتانوس عند أهل الصناعة، لأن الحكم فيها
+    # على البيوت لا على البروج. ونتيح تغييره لمن يذهب مذهبًا آخر.
+    system = _one(q, "system", "regiomontanus")
+    if system not in chart.HOUSE_SYSTEMS:
+        raise ApiError(f"نظام بيوت غير معروف: {system}")
+
+    c = chart.compute(when, lat, lon, system, tzname, minor_aspects=False)
+    j = horary.judge(c, h, question,
+                     horizon_days=int(_one(q, "horizon", "45")))
+    return _apply_level({
+        "place": _one(q, "city") or label,
+        "when_local": c["when_local"], "tz": tzname,
+        "system": system, "system_name": chart.HOUSE_SYSTEMS[system]["name"],
+        "chart": {"bodies": c["bodies"], "angles": c["angles"],
+                  "houses": c["houses"], "aspects": c["aspects"],
+                  "sect": c["sect"], "moon": c["moon"]},
+        "judgment": j,
+    }, q)
+
+
+def route_search(q):
+    """
+    البحث عن أفضل وقت: /api/search?purpose=&city=&start=&days=90
+      ومع خريطة السائل: أضِف birth و birthtime و birthcity.
+    """
+    lat, lon, tzname, label = resolve_place(q)
+    tz = ZoneInfo(tzname)
+    purpose = _one(q, "purpose")
+    if not purpose:
+        raise ApiError("لا بدّ من purpose. انظر /api/elections?list=1")
+
+    ss = _one(q, "start")
+    start = _date.fromisoformat(ss) if ss else datetime.now(tz).date()
+    days = int(_one(q, "days", "90"))
+    if days > 200:
+        raise ApiError("أقصى مدى للبحث مئتا يوم، حتى لا تنقضي مهلة الخادم. "
+                       "قسّمه على بحثين.")
+
+    natal = None
+    if _one(q, "birth"):
+        sub = {"date": [_one(q, "birth")],
+               "time": [_one(q, "birthtime", "12:00")]}
+        bcity = _one(q, "birthcity")
+        if bcity:
+            sub["city"] = [bcity]
+        blat, blon, btz, _l = resolve_place(sub if bcity else q)
+        bwhen, binfo = parse_birth(sub, btz, blon)
+        natal = chart.compute(bwhen, blat, blon, "whole", btz,
+                              minor_aspects=False, tz_info=binfo)
+
+    out = elections.search(start, days, tzname, lat, lon, purpose,
+                           natal=natal, top=int(_one(q, "top", "10")))
+    if "error" in out:
+        raise ApiError(out["error"])
+    out["place"] = _one(q, "city") or label
+    out["tz"] = tzname
     return _apply_level(out, q)
 
 
@@ -539,6 +628,8 @@ ROUTES = {
     "monthly": route_monthly,
     "timelords": route_timelords,
     "synastry": route_synastry,
+    "horary": route_horary,
+    "search": route_search,
 }
 
 

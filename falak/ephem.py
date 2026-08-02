@@ -209,9 +209,35 @@ class Aspect:
     applying_from: float  # درجة القمر عند التمام
 
 
+# نافذة واسعة محسوبة مرّة: (البداية، النهاية، الخطوة، النتائج).
+# فائدتها في البحث عن أفضل وقت، إذ يُطلَب اليوم تلو اليوم فتُعاد
+# الحسبة على مدى متداخل. والتقطيع من نافذة أوسع يُعطي **النتائج
+# نفسها بالضبط** لأن الشبكة والخطوة واحدة — واختبار يُثبّت ذلك.
+_WIDE: tuple | None = None
+
+
+def preload_range(start: datetime, end: datetime, step_min: int = 20):
+    """يحسب نافذة واسعة مرّة، فتُقتطع منها الأيام بلا إعادة حساب."""
+    global _WIDE
+    _WIDE = (start, end, step_min,
+             _moon_aspects_raw(start, end, step_min))
+    return _WIDE[3]
+
+
+def clear_range():
+    global _WIDE
+    _WIDE = None
+
+
 def moon_aspects(start: datetime, end: datetime, step_min: int = 20):
+    """كل زوايا القمر التامّة بين الوقتين، مرتبة زمنيًا."""
+    if _WIDE and _WIDE[2] == step_min and _WIDE[0] <= start and end <= _WIDE[1]:
+        return [a for a in _WIDE[3] if start <= a.time <= end]
+    return _moon_aspects_raw(start, end, step_min)
+
+
+def _moon_aspects_raw(start: datetime, end: datetime, step_min: int = 20):
     """
-    كل زوايا القمر التامّة بين الوقتين، مرتبة زمنيًا.
     نأخذ عيّنة واحدة للفرق الزاوي ثم نبحث فيها عن كل الزوايا،
     بدل إعادة حساب الأفلاك لكل زاوية على حدة.
     """
@@ -307,16 +333,32 @@ def void_of_course_periods(day_start: datetime, day_end: datetime):
 
 
 # ── الشمس: الشروق والغروب والفجر ────────────────────────────────
+_SUN_EVENTS_CACHE: dict = {}
+
+
 def sun_events(date_local: datetime, lat: float, lon: float, tz: ZoneInfo):
-    """أوقات الفجر والشروق والزوال والعصر والغروب لليوم المحلي."""
+    """
+    أوقات الفجر والشروق والغروب لليوم المحلي.
+
+    مخزَّنة: حساب كلٍّ منها يمسح ٢٨٨ عيّنة، وتُطلَب مرارًا لليوم
+    الواحد في النشرة والساعات والاختيارات.
+    """
+    key = (date_local.date(), round(lat, 5), round(lon, 5), str(tz))
+    hit = _SUN_EVENTS_CACHE.get(key)
+    if hit is not None:
+        return hit
     midnight = date_local.replace(hour=0, minute=0, second=0, microsecond=0)
     jd0 = to_jd(midnight)
     geo = (lon, lat, 0.0)
-    return {
+    out = {
         "الفجر":  _sun_at_alt(jd0, geo, tz, -18.0, rising=True),
         "الشروق": _sun_at_alt(jd0, geo, tz, -0.833, rising=True),
         "الغروب": _sun_at_alt(jd0, geo, tz, -0.833, rising=False),
     }
+    if len(_SUN_EVENTS_CACHE) > 20000:
+        _SUN_EVENTS_CACHE.clear()
+    _SUN_EVENTS_CACHE[key] = out
+    return out
 
 
 def _sun_altitude(jd, geo):
