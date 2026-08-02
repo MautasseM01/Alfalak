@@ -584,7 +584,7 @@ def test_house_texts_are_distinct():
         for h, t in tbl.items():
             assert t not in seen, f"{p}/{h} مكرّر"
             seen.add(t)
-    assert len(seen) == 84
+    assert len(seen) == 168
 
 
 def test_jupiter_saturn_written_in_all_signs():
@@ -615,4 +615,164 @@ def test_depth_route():
     from api.index import dispatch
     d = dispatch('/api/depth', {})
     assert len(d["houses"]) == 12 and len(d["signs"]) == 12
-    assert sum(len(v) for v in d["planet_in_house"].values()) == 84
+    assert sum(len(v) for v in d["planet_in_house"].values()) == 168
+    assert d["coverage"]["المجموع"] == 279
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٤ — نصوص الزوايا
+# ══════════════════════════════════════════════════════════════════
+def test_all_outer_and_points_written_in_all_houses():
+    """الخارجية والنقاط لها نصّ في كل بيت — لا صيغة الباب العامّة."""
+    from falak import depth
+    for p in ("أورانوس", "نبتون", "بلوتو", "خيرون",
+              "الرأس", "الذنب", "ليليث"):
+        assert p in depth.PLANET_IN_HOUSE, p
+        assert len(depth.PLANET_IN_HOUSE[p]) == 12, p
+        for h, t in depth.PLANET_IN_HOUSE[p].items():
+            assert len(t) > 45, (p, h)
+
+
+def test_true_lilith_reads_as_mean():
+    """النقطتان معنى واحد بحسابين، فلا يُترك أحدهما بلا نصّ."""
+    from falak import depth
+    assert depth.house_text("ليليث الحقيقية", 7) == depth.house_text("ليليث", 7)
+
+
+def test_every_traditional_pair_is_written():
+    """٢١ زوجًا من السبعة، لكلٍّ موضوعه ونصوص زواياه."""
+    from falak import aspects_deep as A
+    seven = ["الشمس", "القمر", "عطارد", "الزهرة", "المريخ", "المشتري", "زحل"]
+    for i in range(len(seven)):
+        for j in range(i + 1, len(seven)):
+            k = A._key(seven[i], seven[j], A.PAIRS)
+            assert k, f"{seven[i]}/{seven[j]} غير مكتوب"
+            assert len(A.PAIRS[k]["theme"]) > 20
+
+
+def test_impossible_aspects_are_absent():
+    """
+    عطارد لا يفارق الشمس أكثر من ٢٨° والزهرة أكثر من ٤٨°،
+    وعطارد والزهرة لا يتباعدان أكثر من ٧٦°. فوجود «تربيع»
+    بينها في الجدول يعني أننا ملأنا خانة لا تُملأ في السماء.
+    """
+    from falak import aspects_deep as A
+    assert set(A.PAIRS[("الشمس", "عطارد")]) == {"theme", "اقتران"}
+    assert set(A.PAIRS[("الشمس", "الزهرة")]) == {"theme", "اقتران"}
+    assert set(A.PAIRS[("عطارد", "الزهرة")]) == {"theme", "اقتران", "تسديس"}
+
+
+def test_impossible_aspects_never_occur_in_the_sky():
+    """نتحقّق من الادّعاء نفسه بالحساب: مسح قرنين كاملين."""
+    from datetime import datetime, timedelta
+    day = datetime(1900, 1, 1, tzinfo=UTC)
+    worst_merc = worst_ven = 0.0
+    while day.year < 2100:
+        sun = ephem.lon_of("الشمس", day)
+        merc = abs(ephem._wrap180(ephem.lon_of("عطارد", day) - sun))
+        ven = abs(ephem._wrap180(ephem.lon_of("الزهرة", day) - sun))
+        worst_merc = max(worst_merc, merc)
+        worst_ven = max(worst_ven, ven)
+        day += timedelta(days=5)
+    assert worst_merc < 29, worst_merc
+    assert worst_ven < 48, worst_ven
+
+
+def test_aspect_texts_are_distinct():
+    """لا نصّين متطابقين في جدول الزوايا."""
+    from falak import aspects_deep as A
+    seen = set()
+    for pair, d in A.PAIRS.items():
+        for k, t in d.items():
+            if k == "theme":
+                continue
+            assert t not in seen, f"{pair}/{k} مكرّر"
+            seen.add(t)
+    assert len(seen) == 94
+    for pair, d in A.OUTER_PAIRS.items():
+        for k in ("سهل", "صعب"):
+            assert d[k] not in seen, f"{pair}/{k} مكرّر"
+            seen.add(d[k])
+    for pair, t in A.GENERATIONAL.items():
+        assert t not in seen, f"{pair} مكرّر"
+        seen.add(t)
+    assert len(seen) == 202
+
+
+def test_all_outers_paired_with_all_personals():
+    from falak import aspects_deep as A
+    for outer in ("أورانوس", "نبتون", "بلوتو", "خيرون"):
+        for p in ("الشمس", "القمر", "عطارد", "الزهرة",
+                  "المريخ", "المشتري", "زحل"):
+            assert A._key(outer, p, A.OUTER_PAIRS), f"{outer}/{p}"
+
+
+def test_reading_aspects_are_written_not_composed():
+    """كل زاوية كبرى في خريطة مرجعية تجد نصًّا مكتوبًا."""
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    c = dispatch('/api/chart', q(date="1990-05-17", time="08:30",
+                                 city="حلب", both="0"))
+    asp = c["reading"]["aspects"]
+    assert asp
+    for a in asp:
+        assert a["theme"] and a["text"], a["title"]
+        assert len(a["text"]) > 40, a["title"]
+
+
+def test_nodes_and_lilith_paired_with_all_personals():
+    """الرأس وليليث ليسا زينة: لهما نصّ مع كلّ كوكب شخصي."""
+    from falak import aspects_deep as A
+    for pt in ("الرأس", "ليليث"):
+        for p in ("الشمس", "القمر", "عطارد", "الزهرة",
+                  "المريخ", "المشتري", "زحل"):
+            assert A._key(pt, p, A.OUTER_PAIRS), f"{pt}/{p}"
+
+
+def test_generational_pairs_say_so():
+    """
+    زاوية بين خارجيّين يشترك فيها ملايين. فمن الأمانة أن يُقال
+    للقارئ إنها علامة جيل، لا صفة تخصّه هو.
+    """
+    from falak import aspects_deep as A
+    for pair in (("أورانوس", "نبتون"), ("أورانوس", "بلوتو"),
+                 ("نبتون", "بلوتو")):
+        assert pair in A.GENERATIONAL
+        assert "جيل" in A.GENERATIONAL[pair]
+    d = A.pair_text("نبتون", "بلوتو", "تسديس")
+    assert d["written"] and "جيل" in d["theme"]
+
+
+def test_two_liliths_make_no_aspect():
+    """
+    ليليث الوسطى والحقيقية حسابان لنقطة واحدة. اقترانهما ليس
+    زاوية في السماء بل تقارب حسابَين، فلا يُعرَض على القارئ.
+    """
+    when = datetime(1990, 5, 17, 5, 30, tzinfo=UTC)
+    c = chart.compute(when, *ALEPPO[:2], "whole", ALEPPO[2])
+    for a in c["aspects"]:
+        assert {a["a"], a["b"]} != {"ليليث", "ليليث الحقيقية"}
+
+
+def test_every_aspect_in_real_charts_is_written():
+    """
+    الحارس الحقيقي: نمسح مئة خريطة عشوائية على قرن كامل، ونتأكّد
+    أن كلّ زاوية تقع فيها تجد نصًّا مكتوبًا — لا صياغة آلية.
+    إن سقط هذا الاختبار فقد ظهر تركيب جديد لم نكتب له شيئًا.
+    """
+    import random
+    from falak.interpret import aspect_text
+    random.seed(11)
+    unwritten = {}
+    for _ in range(100):
+        when = datetime(random.randint(1925, 2015), random.randint(1, 12),
+                        random.randint(1, 28), random.randint(0, 23),
+                        random.randint(0, 59), tzinfo=UTC)
+        c = chart.compute(when, *DAMASCUS[:2], "whole", DAMASCUS[2])
+        for a in c["aspects"]:
+            if not aspect_text(a["a"], a["b"], a["name"])["written"]:
+                k = (a["a"], a["b"], a["name"])
+                unwritten[k] = unwritten.get(k, 0) + 1
+    assert not unwritten, f"تراكيب بلا نصّ: {sorted(unwritten)[:5]}"

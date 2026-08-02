@@ -206,6 +206,10 @@ def find_aspects(bodies: list, minor: bool = True):
     for i in range(len(real)):
         for j in range(i + 1, len(real)):
             a, b = real[i], real[j]
+            # ليليث الوسطى والحقيقية حسابان لنقطة واحدة، فاقترانهما
+            # ليس زاوية بل تقارب الحسابين. تُستبعَد.
+            if {a["name"], b["name"]} == {"ليليث", "ليليث الحقيقية"}:
+                continue
             sep = abs(_wrap180(a["lon"] - b["lon"]))
             best = None
             for name, angle, polarity, major, sym in ASPECT_DEFS:

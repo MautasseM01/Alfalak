@@ -235,9 +235,23 @@ KEYWORD = {
 }
 
 
-def aspect_text(a: str, b: str, aspect: str) -> str:
+def aspect_text(a: str, b: str, aspect: str) -> dict:
+    """
+    نصّ الزاوية — مكتوب إن وُجد في falak/aspects_deep.py.
+
+    يُرجع {"theme", "text", "written"}: «الموضوع» ما يجمع الجرمين
+    في كل زاوية، و«النصّ» ما تفعله هذه الزاوية بعينها.
+    """
+    from .aspects_deep import pair_text
+    d = pair_text(a, b, aspect)
+    if d["text"]:
+        return d
     ka, kb = KEYWORD.get(a, a), KEYWORD.get(b, b)
-    return f"{ka} ({a}) و{kb} ({b}) {ASPECT_QUALITY.get(aspect, '')}."
+    return {
+        "theme": f"{ka} ({a}) و{kb} ({b})",
+        "text": f"{ka} و{kb} {ASPECT_QUALITY.get(aspect, '')}.",
+        "written": False,
+    }
 
 
 # ── القراءة المركّبة ─────────────────────────────────────────────
@@ -281,9 +295,12 @@ def read_chart(c: dict) -> dict:
 
     top_aspects = []
     for a in [x for x in c["aspects"] if x["major"]][:8]:
+        d = aspect_text(a["a"], a["b"], a["name"])
         top_aspects.append({
             "title": f"{a['a']} {a['symbol']} {a['b']} — {a['name']}",
-            "text": aspect_text(a["a"], a["b"], a["name"]),
+            "theme": d["theme"],
+            "text": d["text"],
+            "quality": ASPECT_QUALITY.get(a["name"], ""),
             "orb": a["orb"], "polarity": a["polarity"],
             "applying": a["applying"],
         })

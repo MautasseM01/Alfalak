@@ -276,8 +276,11 @@ function render(c) {
      <div class="read">${R.others.map(item).join('')}</div>
      <h3 style="font-family:Amiri,serif;color:var(--gold);margin:24px 0 12px">أقوى الزوايا</h3>
      <div class="read">${R.aspects.map(a =>
-       `<div class="item"><h4>${a.title}</h4><p>${a.text}</p>
-        <p class="sub">وجاج ${a.orb}° · ${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</p></div>`).join('')}</div>`);
+       `<div class="item"><h4>${a.title}</h4>
+        ${a.theme ? `<p class="sub" style="color:var(--gold);opacity:.85">${esc2(a.theme)}</p>` : ''}
+        <p>${esc2(a.text)}</p>
+        <p class="sub">${a.quality ? esc2(a.quality) + ' · ' : ''}وجاج ${a.orb}° ·
+          ${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</p></div>`).join('')}</div>`);
 
   const moon = card('منزلة القمر',
     `<p><strong>${c.moon.mansion.name}</strong> — المنزلة ${c.moon.mansion.index} من ثمانٍ وعشرين

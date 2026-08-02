@@ -220,12 +220,16 @@ def route_chart(q):
 
 
 def route_depth(q):
-    """المرجع: ملفّ كل بيت وكل برج بعمق."""
+    """المرجع: ملفّ كل بيت وكل برج، والكواكب في البيوت، والزوايا."""
+    from falak import aspects_deep as adeep
     return _apply_level({
         "houses": {str(k): v for k, v in depth.HOUSES.items()},
         "signs": depth.SIGNS_DEEP,
         "planet_in_house": {p: {str(h): t for h, t in tbl.items()}
                             for p, tbl in depth.PLANET_IN_HOUSE.items()},
+        "aspects": {f"{a} — {b}": v for (a, b), v in adeep.PAIRS.items()},
+        "aspects_outer": {f"{a} — {b}": v for (a, b), v in adeep.OUTER_PAIRS.items()},
+        "coverage": {**depth.house_coverage(), **adeep.coverage()},
     }, q)
 
 
