@@ -101,13 +101,20 @@ initLevelSwitch(() => { if (typeof load === 'function') load(); });
 pageIntro('chart');
 const $ = id => document.getElementById(id);
 const out = $('out');
+const esc2 = t => String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let minor = '1', current = null;
 
 cityInput($('city'));
 document.querySelectorAll('#minorSeg button').forEach(b => {
   b.onclick = () => {
     minor = b.dataset.minor;
-    document.querySelectorAll('#minorSeg button').forEach(x =>
+    out.querySelectorAll('tr.hprof').forEach(tr => {
+    tr.onclick = () => {
+      const t = document.getElementById('hp' + tr.dataset.h);
+      if (t) t.style.display = t.style.display === 'none' ? '' : 'none';
+    };
+  });
+  document.querySelectorAll('#minorSeg button').forEach(x =>
       x.setAttribute('aria-pressed', x.dataset.minor === minor ? 'true' : 'false'));
     if (current) load();
   };
@@ -188,10 +195,22 @@ function render(c) {
 
   const angleRows = Object.entries(A).map(([k,v]) =>
     `<tr><td class="sym">${v.symbol}</td><td>${k}</td><td class="num">${v.short}</td><td>${v.sign}</td></tr>`).join('');
-  const houseRows = c.houses.cusps.map(h =>
-    `<tr><td class="num">${h.house}</td><td class="num">${h.short}</td><td>${h.sign}</td>
-     <td style="color:var(--muted);font-size:.8rem">${h.name.split(':')[1]}</td>
-     <td style="color:var(--muted)">حاكمه ${h.ruler}</td></tr>`).join('');
+  const HP = (R && R.profiles && R.profiles.houses) || {};
+  const houseRows = c.houses.cusps.map(h => {
+    const pr = HP[String(h.house)];
+    return `<tr class="hprof" data-h="${h.house}" style="cursor:pointer">
+      <td class="num">${h.house}</td><td class="num">${h.short}</td><td>${h.sign}</td>
+      <td style="color:var(--muted);font-size:.8rem">${h.name.split(':')[1]}</td>
+      <td style="color:var(--muted)">حاكمه ${h.ruler}</td></tr>` +
+      (pr ? `<tr id="hp${h.house}" style="display:none"><td colspan="5">
+        <div class="item" style="margin:4px 0">
+          <h4>${esc2(pr.name)} — ${esc2(pr.question)}</h4>
+          <p><b>يحكم:</b> ${esc2(pr.rules)}</p>
+          <p class="sub"><b>إذا قوي:</b> ${esc2(pr.strong)}</p>
+          <p class="sub"><b>إذا ضعف:</b> ${esc2(pr.weak)}</p>
+          <p class="sub" style="color:var(--dim)"><b>ظلّه:</b> ${esc2(pr.shadow)}</p>
+        </div></td></tr>` : '');
+  }).join('');
 
   const houses = card(`الأوتاد والبيوت — ${c.houses.system_name}`,
     `<table><tbody>${angleRows}</tbody></table>

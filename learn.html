@@ -84,6 +84,18 @@
   </div>
 </div>
 
+<div class="card" id="depthCard">
+  <div class="card-top"><h2 class="card-title">دليل البيوت الاثني عشر</h2>
+    <span class="chip">اضغط أيّ بيت</span></div>
+  <div class="card-body" id="housesBox"><div class="msg">… أُحمّل</div></div>
+</div>
+
+<div class="card">
+  <div class="card-top"><h2 class="card-title">دليل البروج الاثني عشر</h2>
+    <span class="chip">اضغط أيّ برج</span></div>
+  <div class="card-body" id="signsBox"><div class="msg">… أُحمّل</div></div>
+</div>
+
 <div class="card">
   <div class="card-top"><h2 class="card-title">معجم المصطلحات</h2>
     <span class="chip" id="count"></span></div>
@@ -118,6 +130,39 @@ function draw(filter) {
     ? keys.map(k => `<div class="lesson" id="${slug(k)}"><h3>${k}</h3><p>${TERMS[k]}</p></div>`).join('')
     : '<div class="msg">لا مصطلح بهذا الاسم.</div>';
 }
+
+API('depth', withLevel({}))
+  .then(r => {
+    $('housesBox').innerHTML = Object.entries(r.houses).map(([n, h]) => `
+      <div class="lesson" style="cursor:pointer" data-open="h${n}">
+        <h3>البيت ${n} — ${h.name}</h3>
+        <p style="color:var(--gold);font-family:Amiri,serif;font-size:1.02rem">${h.question}</p>
+        <div id="h${n}" style="display:none;margin-top:10px">
+          <p><b>يحكم:</b> ${h.rules}</p>
+          <p><b>إذا قوي:</b> ${h.strong}</p>
+          <p><b>إذا ضعف:</b> ${h.weak}</p>
+          <p style="color:var(--muted)"><b>ظلّه:</b> ${h.shadow}</p>
+        </div>
+      </div>`).join('');
+    $('signsBox').innerHTML = Object.entries(r.signs).map(([n, g], i) => `
+      <div class="lesson" style="cursor:pointer" data-open="s${i}">
+        <h3>${n}</h3>
+        <p class="note" style="margin:0 0 8px">${g.element} · ${g.mode} · حاكمه ${g.ruler}</p>
+        <p>${g.core}</p>
+        <div id="s${i}" style="display:none;margin-top:10px">
+          <p><b>ما يُعطيه:</b> ${g.gift}</p>
+          <p><b>ثمنه:</b> ${g.cost}</p>
+          <p style="color:var(--muted)"><b>من البدن:</b> ${g.body}</p>
+        </div>
+      </div>`).join('');
+    document.querySelectorAll('[data-open]').forEach(el => {
+      el.onclick = () => {
+        const t = document.getElementById(el.dataset.open);
+        t.style.display = t.style.display === 'none' ? '' : 'none';
+      };
+    });
+  })
+  .catch(() => {});
 
 API('glossary')
   .then(r => {

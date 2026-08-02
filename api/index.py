@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import interpret, monthly, mundane, plain, timelords, transits  # noqa: E402
+from falak import depth, interpret, monthly, mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -217,6 +217,16 @@ def route_chart(q):
                                      for b in alt["bodies"]],
                           "dominants": alt["dominants"]}
     return _apply_level(out, q)
+
+
+def route_depth(q):
+    """المرجع: ملفّ كل بيت وكل برج بعمق."""
+    return _apply_level({
+        "houses": {str(k): v for k, v in depth.HOUSES.items()},
+        "signs": depth.SIGNS_DEEP,
+        "planet_in_house": {p: {str(h): t for h, t in tbl.items()}
+                            for p, tbl in depth.PLANET_IN_HOUSE.items()},
+    }, q)
 
 
 def route_glossary(q):
@@ -457,6 +467,7 @@ ROUTES = {
     "bulletin": route_bulletin,
     "chart": route_chart,
     "glossary": route_glossary,
+    "depth": route_depth,
     "hours": route_hours,
     "month": route_month,
     "elections": route_elections,

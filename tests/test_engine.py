@@ -543,3 +543,76 @@ def test_timelords_api():
     assert 1 <= d["profection"]["house"] <= 12
     assert d["solar_return"]["moment_text"].startswith("2026-05-1")
     assert len(d["profection_table"]) == 91
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٣ — نصوص العمق
+# ══════════════════════════════════════════════════════════════════
+def test_all_houses_have_full_profile():
+    from falak import depth
+    assert len(depth.HOUSES) == 12
+    for h, d in depth.HOUSES.items():
+        assert d.get("name"), h
+        for k in ("rules", "question", "strong", "weak", "shadow"):
+            assert d.get(k) and len(d[k]) > 20, (h, k)
+
+
+def test_all_signs_have_full_profile():
+    from falak import depth
+    assert len(depth.SIGNS_DEEP) == 12
+    for s, d in depth.SIGNS_DEEP.items():
+        for k in ("element", "mode", "ruler", "core", "gift", "cost", "body"):
+            assert d.get(k), (s, k)
+        assert len(d["core"]) > 40 and len(d["gift"]) > 30, s
+
+
+def test_seven_planets_written_in_all_houses():
+    """السبعة التقليدية لها نصّ مكتوب في كل بيت — لا تركيب آلي."""
+    from falak import depth
+    for p in ("الشمس", "القمر", "عطارد", "الزهرة", "المريخ", "المشتري", "زحل"):
+        assert p in depth.PLANET_IN_HOUSE, p
+        assert len(depth.PLANET_IN_HOUSE[p]) == 12, p
+        for h, t in depth.PLANET_IN_HOUSE[p].items():
+            assert len(t) > 45, (p, h)
+
+
+def test_house_texts_are_distinct():
+    """لا نصّين متطابقين — دليل أنها مكتوبة لا مركّبة."""
+    from falak import depth
+    seen = set()
+    for p, tbl in depth.PLANET_IN_HOUSE.items():
+        for h, t in tbl.items():
+            assert t not in seen, f"{p}/{h} مكرّر"
+            seen.add(t)
+    assert len(seen) == 84
+
+
+def test_jupiter_saturn_written_in_all_signs():
+    from falak import interpret as I
+    for tbl in (I.JUPITER_IN_SIGN, I.SATURN_IN_SIGN):
+        assert len(tbl) == 12
+        assert len(set(tbl.values())) == 12
+        for s, t in tbl.items():
+            assert len(t) > 40, s
+
+
+def test_reading_includes_profiles():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    c = dispatch('/api/chart', q(date="1990-05-17", time="08:30",
+                                 city="حلب", both="0"))
+    pr = c["reading"]["profiles"]
+    assert pr["houses"] and pr["signs"]
+    any_h = next(iter(pr["houses"].values()))
+    assert any_h["question"] and any_h["shadow"]
+
+
+def test_depth_route():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    d = dispatch('/api/depth', {})
+    assert len(d["houses"]) == 12 and len(d["signs"]) == 12
+    assert sum(len(v) for v in d["planet_in_house"].values()) == 84
