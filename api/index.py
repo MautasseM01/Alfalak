@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import interpret, monthly, mundane, plain, transits  # noqa: E402
+from falak import interpret, monthly, mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -328,6 +328,50 @@ def route_elections(q):
     return _apply_level(out, q)
 
 
+
+def route_timelords(q):
+    """
+    أرباب الأزمنة: الفردارات والتسيير السنوي والعودة الشمسية.
+      /api/timelords?date=1990-05-17&time=08:30&city=حلب[&for=2026-08-02][&live=دمشق]
+    """
+    lat, lon, tzname, label = resolve_place(q)
+    when, tzinfo = parse_birth(q, tzname, lon)
+    natal = chart.compute(when, lat, lon, "whole", tzname,
+                          minor_aspects=False, tz_info=tzinfo)
+
+    # الموضع الذي يقيم فيه صاحب الخريطة الآن (للعودة الشمسية)
+    live = _one(q, "live")
+    if live:
+        hit = atlas.find(live)
+        if not hit:
+            raise ApiError(f"لم أجد مدينة الإقامة «{live}».")
+        rlat, rlon, rtz, rlabel = hit["lat"], hit["lon"], hit["tz"], hit["label"]
+    else:
+        rlat, rlon, rtz, rlabel = lat, lon, tzname, label
+
+    fd = _one(q, "for")
+    tz = ZoneInfo(rtz)
+    moment = (datetime.fromisoformat(fd).replace(tzinfo=tz)
+              if fd else datetime.now(tz))
+
+    t = timelords.timelords(natal, moment, rlat, rlon, rtz)
+    t["text"] = timelords.render_text(t)
+    t["birth_place"] = _one(q, "city") or label
+    t["residence"] = rlabel
+    t["asked_for"] = moment.date().isoformat()
+    t["natal_summary"] = {
+        "asc": natal["angles"]["الطالع"]["text"],
+        "sun": next(b["text"] for b in natal["bodies"] if b["name"] == "الشمس"),
+        "moon": next(b["text"] for b in natal["bodies"] if b["name"] == "القمر"),
+        "sect": natal["sect"],
+    }
+    if _one(q, "table", "1") == "1":
+        t["profection_table"] = timelords.profection_years(
+            datetime.fromisoformat(natal["when_utc"]),
+            natal["angles"]["الطالع"]["lon"], 0, 90)
+    return _apply_level(t, q)
+
+
 def route_monthly(q):
     """النشرة الشهرية: سرد الشهر ومعناه بثلاثة ألسنة."""
     lat, lon, tzname, label = resolve_place(q)
@@ -417,6 +461,7 @@ ROUTES = {
     "month": route_month,
     "elections": route_elections,
     "monthly": route_monthly,
+    "timelords": route_timelords,
 }
 
 

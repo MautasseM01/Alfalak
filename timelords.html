@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أرباب الأزمنة — الفَلَك</title>
+<meta name="description" content="الفردارات والتسيير السنوي والعودة الشمسية — أيّ كوكب يحكم هذه السنة من عمرك.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.life{display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--line);margin:6px 0 4px}
+.life i{display:block;position:relative;cursor:default;transition:.15s}
+.life i:hover{filter:brightness(1.35)}
+.life i span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;color:#0d1220;font-weight:600;white-space:nowrap;overflow:hidden}
+.life i.now{outline:2px solid var(--gold);outline-offset:-2px;z-index:2}
+.axis{display:flex;font-size:.68rem;color:var(--dim);font-variant-numeric:tabular-nums}
+.axis span{text-align:center}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.big .b{padding:15px 16px;border-radius:13px;background:rgba(255,255,255,.03);
+  border:1px solid var(--line);border-inline-start:3px solid var(--gold)}
+.big .b .k{font-size:.74rem;color:var(--muted);display:block;margin-bottom:3px}
+.big .b .v{font-size:1.25rem;color:var(--gold);font-family:Amiri,serif;font-weight:700}
+.big .b .s{font-size:.79rem;color:var(--muted);display:block;margin-top:5px;line-height:1.7}
+.ptab{max-height:340px;overflow:auto}
+.ptab tr.now td{background:rgba(217,180,91,.13);color:var(--gold)}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/timelords.html" class="on">أرباب الأزمنة</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">أرباب الأزمنة</h2>
+<p class="lede">
+  خريطة الميلاد تقول <em>ما أنت</em>، ولا تقول <em>متى</em>. وأرباب الأزمنة جواب «متى»:
+  تقسيم العمر على الكواكب، فيتولّى كلٌّ منها فترة يصبغها بطبعه.
+  الفردارات فارسية نقلها أبو معشر، والتسيير أقدم منها.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="date">تاريخ الميلاد</label><input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة الميلاد</label><input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">مكان الميلاد</label>
+        <input type="text" id="city" placeholder="حلب، دمشق…" autocomplete="off"></div>
+      <div class="field"><label for="live">مكان إقامتك الآن</label>
+        <input type="text" id="live" placeholder="للعودة الشمسية — اتركه إن لم تنتقل" autocomplete="off"></div>
+      <div class="field"><label for="forDate">احسب لتاريخ</label><input type="date" id="forDate"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">احسب</button>
+      <button class="btn ghost" id="today">اليوم</button>
+      <button class="btn ghost" id="save">حفظ ميلادي</button>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  الفردارات من التراث الفارسي، نقلها أبو معشر البلخي وابن أبي الرجال.
+  والتسيير والعودة الشمسية من أصول صناعة الأحكام.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+
+const $ = id => document.getElementById(id);
+const out = $('out');
+const COLORS = {
+  'الشمس':'#e0b34a','القمر':'#b9c6e0','عطارد':'#8fa5d8','الزهرة':'#5fc7a1',
+  'المريخ':'#e08a7d','المشتري':'#c9a227','زحل':'#7c8aa6',
+  'الرأس':'#9b7fd4','الذنب':'#6b7794'
+};
+const esc2 = t => String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+cityInput($('city'));
+cityInput($('live'));
+
+async function load() {
+  const date = $('date').value, city = $('city').value.trim();
+  if (!date || !city) {
+    out.innerHTML = '<div class="card"><div class="msg err">أدخل تاريخ ميلادك ومكانه.</div></div>';
+    return;
+  }
+  store.set('natal', { date, time: $('time').value || '12:00', city });
+  store.set('tl', { live: $('live').value.trim() });
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب أرباب الأزمنة</div></div>';
+  try {
+    const d = await API('timelords', withLevel({
+      date, time: $('time').value, city,
+      live: $('live').value.trim(), for: $('forDate').value,
+    }));
+    render(d);
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`;
+  }
+}
+
+function lifeBar(table, currentPlanet, currentFrom) {
+  const total = table.reduce((s, f) => s + f.years, 0);
+  const bars = table.map(f => {
+    const w = (f.years / total * 100).toFixed(2);
+    const isNow = f.planet === currentPlanet && f.age_from === currentFrom;
+    return `<i style="width:${w}%;background:${COLORS[f.planet]||'#888'}"
+             class="${isNow?'now':''}" title="${f.planet} — ${f.age_from}–${f.age_to} سنة">
+             <span>${f.years>=8?f.planet:''}</span></i>`;
+  }).join('');
+  const ticks = table.map(f =>
+    `<span style="width:${(f.years/total*100).toFixed(2)}%">${f.age_from}</span>`).join('');
+  return `<div class="life">${bars}</div><div class="axis">${ticks}</div>`;
+}
+
+function render(d) {
+  const f = d.firdaria, p = d.profection, yl = d.year_lord_natal, sr = d.solar_return;
+
+  const cards = `
+    <div class="big">
+      <div class="b"><span class="k">الفردار الأكبر</span>
+        <span class="v">${esc2(f.major.planet)}</span>
+        <span class="s">${f.major.age_from}–${f.major.age_to} سنة من عمرك<br>${esc2(f.major.meaning)}</span></div>
+      ${f.minor ? `<div class="b"><span class="k">الفردار الأصغر</span>
+        <span class="v">${esc2(f.minor.planet)}</span>
+        <span class="s">${f.minor.age_from}–${f.minor.age_to} سنة<br>${esc2(f.minor.meaning)}</span></div>` : ''}
+      <div class="b"><span class="k">سيّد السنة</span>
+        <span class="v">${esc2(p.lord)}</span>
+        <span class="s">سنتك الـ${p.age + 1} · البيت ${p.house} · ${esc2(p.sign)}</span></div>
+      <div class="b"><span class="k">سيّد الشهر</span>
+        <span class="v">${esc2(p.month_lord)}</span>
+        <span class="s">البيت ${p.month_house} · ${esc2(p.month_sign)}</span></div>
+    </div>`;
+
+  const rows = (d.profection_table || []).map(r =>
+    `<tr class="${r.age === p.age ? 'now' : ''}"><td class="num">${r.age}</td>
+     <td class="num">${r.from}</td><td class="num">${r.house}</td>
+     <td>${esc2(r.sign)}</td><td>${esc2(r.lord)}</td>
+     <td style="color:var(--muted);font-size:.79rem">${esc2(r.house_name.split(':')[1])}</td></tr>`).join('');
+
+  out.innerHTML = `
+  <div class="card">
+    <div class="card-top">
+      <h2 class="card-title">${esc2(d.birth_place)} — ${esc2(d.asked_for)}</h2>
+      <div class="chips">
+        <span class="chip gold">${esc2(d.natal_summary.asc)}</span>
+        <span class="chip">☉ ${esc2(d.natal_summary.sun)}</span>
+        <span class="chip">خريطة ${esc2(d.sect)}</span>
+      </div>
+    </div>
+    <div class="card-body">${cards}</div>
+    <div class="actions">
+      <button class="btn" id="copy">نسخ النصّ</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-top"><h2 class="card-title">دورة الفردارات ${q('الفردارات')}</h2>
+      <span class="chip">٧٥ سنة كاملة</span></div>
+    <div class="card-body">
+      ${lifeBar(d.firdaria_table, f.major.planet, f.major.age_from)}
+      <p class="note" style="margin-top:16px">
+        قسّم الفرس العمر على تسعة أرباب، لكلٍّ مدّة معلومة تجمع خمسًا وسبعين سنة،
+        ثم تعود الدورة. والإطار الذهبي هو فردارك الجاري.
+        وكل فردار أكبر ينقسم على سبعة فردارات صغرى تفصّل داخله.
+      </p>
+      <table style="margin-top:12px"><thead><tr>
+        <th>الكوكب</th><th>من سنّ</th><th>إلى</th><th>من تاريخ</th><th>إلى</th></tr></thead>
+      <tbody>${d.firdaria_table.map(x =>
+        `<tr class="${x.planet===f.major.planet && x.age_from===f.major.age_from ? 'now':''}">
+          <td>${esc2(x.planet)}</td><td class="num">${x.age_from}</td>
+          <td class="num">${x.age_to}</td>
+          <td class="num">${x.start.slice(0,10)}</td><td class="num">${x.end.slice(0,10)}</td>
+        </tr>`).join('')}</tbody></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-top"><h2 class="card-title">التسيير السنوي</h2></div>
+    <div class="card-body">
+      <p>${esc2(p.note)}</p>
+      ${yl ? `<div class="alert note" style="margin-top:12px">
+        <strong>حال سيّد سنتك في خريطة ميلادك</strong><br>
+        ${esc2(yl.name)} في ${esc2(yl.text)}، البيت ${yl.house}${yl.dignity && yl.dignity!=='—' ? '، '+esc2(yl.dignity) : ''}${yl.retro ? '، وهو متراجع' : ''}.
+      </div>` : ''}
+      <p class="note" style="margin-top:12px">${esc2(p.month_house_name)} — سيّد شهرك ${esc2(p.month_lord)}.</p>
+      ${rows ? `<div class="ptab" style="margin-top:16px"><table>
+        <thead><tr><th>العمر</th><th>من</th><th>البيت</th><th>البرج</th><th>سيّدها</th><th>معناها</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>` : ''}
+    </div>
+  </div>
+
+  ${sr ? `<div class="card">
+    <div class="card-top"><h2 class="card-title">العودة الشمسية ${sr.year}</h2>
+      <div class="chips"><span class="chip gold">${esc2(sr.moment_text)}</span>
+        <span class="chip">${esc2(d.residence)}</span></div></div>
+    <div class="card-body">
+      <p>${esc2(sr.note)}</p>
+      <table style="margin-top:14px"><thead><tr><th></th><th>الكوكب</th><th>الموضع</th><th>البيت</th><th></th></tr></thead>
+      <tbody>${sr.bodies.map(b =>
+        `<tr><td class="sym">${b.symbol}</td><td>${esc2(b.name)}</td>
+         <td class="num">${esc2(b.text)}</td><td class="num">${b.house}</td>
+         <td>${b.retro?'<span class="retro">متراجع</span>':''}</td></tr>`).join('')}</tbody></table>
+      <p class="note" style="margin-top:14px">
+        الشمس تعود إلى درجة ميلادك مرّة كل سنة، وليس ذلك يوم ميلادك بالضبط بل قد
+        يسبقه أو يتأخّر ساعات. وخريطة تلك اللحظة — مرسومة لمكان إقامتك لا لمكان
+        ميلادك — هي خريطة سنتك.
+      </p>
+    </div>
+  </div>` : ''}`;
+
+  $('copy').onclick = e => copyText(d.text, e.target, 'نسخ النصّ');
+}
+
+$('go').onclick = load;
+$('today').onclick = () => { $('forDate').value = todayISO(); load(); };
+$('save').onclick = () => {
+  store.set('natal', { date: $('date').value, time: $('time').value, city: $('city').value.trim() });
+  const b = $('save'); b.textContent = '✓ حُفظ'; b.classList.add('ok');
+  setTimeout(() => { b.textContent = 'حفظ ميلادي'; b.classList.remove('ok'); }, 1600);
+};
+['date','time','live','forDate'].forEach(id => $(id).onchange = () => { if ($('date').value && $('city').value) load(); });
+$('city').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
+});
+
+/* استعادة الميلاد المحفوظ من أي صفحة */
+const n = store.get('natal', null) || (store.get('charts', [])[0] || null);
+const tl = store.get('tl', {});
+if (n && n.date) {
+  $('date').value = n.date; $('time').value = n.time || '12:00'; $('city').value = n.city || '';
+}
+if (tl.live) $('live').value = tl.live;
+$('forDate').value = todayISO();
+if (n && n.date && n.city) load();
+</script>
+</body>
+</html>

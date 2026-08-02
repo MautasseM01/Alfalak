@@ -461,3 +461,85 @@ def test_api_level_changes_text():
     assert p["text"] != e["text"]
     assert p["level"] == "plain" and e["level"] == "expert"
     assert "تثليث" in e["text"] and "منسجمة" in p["text"]
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٢ — أرباب الأزمنة
+# ══════════════════════════════════════════════════════════════════
+def test_firdaria_cycle_is_75_years():
+    """المجموع المشهور لدورة الفردارات خمس وسبعون سنة."""
+    from falak import timelords as T
+    assert sum(T.FIRDARIA_YEARS[p] for p in T.DAY_ORDER) == 75
+    assert sum(T.FIRDARIA_YEARS[p] for p in T.NIGHT_ORDER) == 75
+
+
+def test_firdaria_starts_by_sect():
+    """النهارية تبدأ بالشمس والليلية بالقمر."""
+    from falak import timelords as T
+    assert T.DAY_ORDER[0] == "الشمس"
+    assert T.NIGHT_ORDER[0] == "القمر"
+    b = datetime(1990, 5, 17, tzinfo=UTC)
+    assert T.firdaria(b, True)[0]["planet"] == "الشمس"
+    assert T.firdaria(b, False)[0]["planet"] == "القمر"
+
+
+def test_firdaria_subperiods():
+    """كل فردار أكبر ينقسم سبعة أقسام متساوية، إلا العقدتين."""
+    from falak import timelords as T
+    tbl = T.firdaria(datetime(1990, 5, 17, tzinfo=UTC), True, 75)
+    for f in tbl:
+        if f["planet"] in T.NO_SUB:
+            assert f["subs"] == []
+        else:
+            assert len(f["subs"]) == 7
+            assert f["subs"][0]["planet"] == f["planet"]
+
+
+def test_firdaria_periods_are_contiguous():
+    from falak import timelords as T
+    tbl = T.firdaria(datetime(1990, 5, 17, tzinfo=UTC), True, 75)
+    for a, b in zip(tbl, tbl[1:]):
+        assert a["end"] == b["start"]
+        assert a["age_to"] == b["age_from"]
+
+
+def test_profection_returns_to_first_house_every_12_years():
+    from falak import timelords as T
+    b = datetime(1990, 5, 17, tzinfo=UTC)
+    for age in (0, 12, 24, 36, 48):
+        when = b + __import__("datetime").timedelta(days=age * 365.2425 + 1)
+        assert T.profection(b, when, 101.36)["house"] == 1, age
+    when = b + __import__("datetime").timedelta(days=6 * 365.2425 + 1)
+    assert T.profection(b, when, 101.36)["house"] == 7
+
+
+def test_profection_lord_matches_sign_ruler():
+    from falak import timelords as T
+    b = datetime(1990, 5, 17, tzinfo=UTC)
+    when = datetime(2026, 8, 2, tzinfo=UTC)
+    p = T.profection(b, when, 101.36)
+    assert p["lord"] == dig.DOMICILE[p["sign"]]
+
+
+def test_solar_return_lands_near_birthday(natal):
+    """الشمس تعود إلى درجة ميلادها قرب يوم الميلاد لا بعيدًا عنه."""
+    from falak import timelords as T
+    sun = next(b["lon"] for b in natal["bodies"] if b["name"] == "الشمس")
+    m = T.solar_return_moment(sun, 2026)
+    assert m.month == 5 and 15 <= m.day <= 19
+    # وموضع الشمس عندها يساوي موضعها الميلادي
+    from falak.ephem import lon_of, _wrap180
+    assert abs(_wrap180(lon_of("الشمس", m) - sun)) < 0.001
+
+
+def test_timelords_api():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/timelords',
+                 q(date="1990-05-17", time="08:30", city="حلب", live="دمشق"))
+    assert d["firdaria"]["major"]["planet"]
+    assert 1 <= d["profection"]["house"] <= 12
+    assert d["solar_return"]["moment_text"].startswith("2026-05-1")
+    assert len(d["profection_table"]) == 91
