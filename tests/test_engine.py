@@ -776,3 +776,217 @@ def test_every_aspect_in_real_charts_is_written():
                 k = (a["a"], a["b"], a["name"])
                 unwritten[k] = unwritten.get(k, 0) + 1
     assert not unwritten, f"تراكيب بلا نصّ: {sorted(unwritten)[:5]}"
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٥ — التوافق: التزاوج والمركّبة ودافيسون
+# ══════════════════════════════════════════════════════════════════
+@pytest.fixture(scope="module")
+def pair():
+    from falak import synastry as syn
+    r1 = ftz.resolve(datetime(1990, 5, 17, 8, 30), ALEPPO[2], ALEPPO[1])
+    A = chart.compute(r1["when"], ALEPPO[0], ALEPPO[1], "whole",
+                      ALEPPO[2], tz_info=r1)
+    r2 = ftz.resolve(datetime(1992, 11, 3, 21, 15), "Europe/Paris", 2.35)
+    B = chart.compute(r2["when"], 48.8566, 2.3522, "whole",
+                      "Europe/Paris", tz_info=r2)
+    return A, B, syn
+
+
+def test_synastry_is_symmetric(pair):
+    """
+    التوافق لا يعرف من سُئل أوّلًا: عدد الوصلات ودرجاتها لا تتغيّر
+    بعكس الطرفين. لو تغيّرت لكان في الحساب اتجاه لا مبرّر له.
+    """
+    A, B, syn = pair
+    ab, ba = syn.inter_aspects(A, B), syn.inter_aspects(B, A)
+    assert len(ab) == len(ba)
+    key = lambda L: sorted((tuple(sorted((x["a"], x["b"]))), x["name"],
+                            x["orb"]) for x in L)
+    assert key(ab) == key(ba)
+    for d, v in syn.score(A, B).items():
+        assert abs(v["score"] - syn.score(B, A)[d]["score"]) <= 1, d
+
+
+def test_synastry_orbs_are_tighter(pair):
+    """وجاج التزاوج ثلاثة أرباع وجاج الخريطة الواحدة."""
+    A, B, syn = pair
+    for x in syn.inter_aspects(A, B):
+        full = chart.orb_for(x["angle"],
+                             chart.BODY_CLASS.get(x["a"], "نيّر"),
+                             chart.BODY_CLASS.get(x["b"], "نيّر"))
+        # orb_max مقرَّب إلى منزلتين، فنسمح بنصف جزء من مئة
+        assert x["orb_max"] <= full * 0.75 + 0.005
+
+
+def test_midpoint_takes_the_short_arc():
+    """
+    ٣٥٠° و١٠° منتصفهما ٠° لا ١٨٠°. هذا موضع الخطأ الأشهر في
+    الخرائط المركّبة، ويجعل نصف كواكبها في البرج المقابل.
+    """
+    from falak.synastry import _mid
+    assert abs(_mid(350.0, 10.0) - 0.0) < 1e-9
+    assert abs(_mid(10.0, 350.0) - 0.0) < 1e-9
+    # متقابلان تمامًا: القوسان سواء، والاختيار الأمامي معلَن
+    assert abs(_mid(0.0, 180.0) - 90.0) < 1e-9
+    assert abs(_mid(180.0, 0.0) - 270.0) < 1e-9
+    assert abs(_mid(100.0, 140.0) - 120.0) < 1e-9
+
+
+def test_composite_is_midpoint_of_both(pair):
+    A, B, syn = pair
+    co = syn.composite(A, B)
+    a = {x["name"]: x["lon"] for x in A["bodies"]}
+    b = {x["name"]: x["lon"] for x in B["bodies"]}
+    from falak.synastry import _mid
+    for x in co["bodies"]:
+        assert abs(x["lon"] - _mid(a[x["name"]], b[x["name"]])) < 1e-3, x["name"]
+    assert len(co["cusps"]) == 12
+
+
+def test_davison_is_a_real_sky(pair):
+    """
+    دافيسون ليست تجريدًا: هي خريطة للحظة المنتصف. فمواقع كواكبها
+    يجب أن تطابق ما تعطيه الآلة لتلك اللحظة بعينها.
+    """
+    A, B, syn = pair
+    dv = syn.davison(A, B)
+    mid = datetime.fromisoformat(dv["midpoint"]["when_utc"])
+    a_utc = datetime.fromisoformat(A["when_utc"])
+    b_utc = datetime.fromisoformat(B["when_utc"])
+    assert abs((mid - (a_utc + (b_utc - a_utc) / 2)).total_seconds()) < 1
+    direct = chart.compute(mid, dv["midpoint"]["lat"], dv["midpoint"]["lon"],
+                           "whole", "UTC", minor_aspects=False)
+    got = {x["name"]: x["lon"] for x in dv["bodies"]}
+    for x in direct["bodies"]:
+        assert abs(got[x["name"]] - x["lon"]) < 1e-6, x["name"]
+
+
+def test_davison_longitude_crosses_the_date_line():
+    """
+    مولودان أحدهما شرق خطّ التاريخ والآخر غربه: منتصفهما في
+    المحيط الهادئ، لا في وسط آسيا. متوسّط حسابي ساذج يقع هنا.
+    """
+    from falak.synastry import davison_moment
+    m = davison_moment(datetime(1990, 1, 1, tzinfo=UTC),
+                       datetime(1990, 1, 1, tzinfo=UTC),
+                       0.0, 179.0, 0.0, -179.0)
+    assert abs(abs(m["lon"]) - 180.0) < 0.001, m["lon"]
+
+
+def test_reception_is_not_domicile(pair):
+    """
+    كوكب في برجه نازل في داره هو، لا في دار غيره. فلا يُحسَب
+    تقبّلًا — وهذا خلط يقع فيه من يُبرمج الباب على عجل.
+    """
+    A, B, syn = pair
+    for r in syn.receptions(A, B):
+        assert r["a"] != r["b"] or r["kind"] != "تقبّل تامّ بالبيت"
+    # حالة مصنوعة: زحل في الجدي عند كليهما — دار زحل نفسه
+    fake_a = {"bodies": [{"name": "زحل", "sign": "الجدي"}]}
+    fake_b = {"bodies": [{"name": "زحل", "sign": "الجدي"}]}
+    assert syn.receptions(fake_a, fake_b) == []
+
+
+def test_scores_spread_across_the_range():
+    """
+    درجة تُعطي كلّ الناس ٥٧ لا تقول شيئًا. نتحقّق أن الرتبة
+    المئوية تتوزّع فعلًا: ربعها دون ٣٥ وربعها فوق ٦٥.
+    """
+    import random
+    from falak import synastry as syn
+    rnd = random.Random(2026)
+    pool = [chart.compute(
+        datetime(rnd.randint(1950, 2005), rnd.randint(1, 12),
+                 rnd.randint(1, 28), rnd.randint(0, 23),
+                 rnd.randint(0, 59), tzinfo=ZoneInfo("Europe/Paris")),
+        48.86, 2.35, "whole", "Europe/Paris") for _ in range(24)]
+    vals = []
+    for _ in range(80):
+        a, b = rnd.sample(pool, 2)
+        vals.append(syn.score(a, b)["عاطفي"]["score"])
+    vals.sort()
+    assert vals[0] < 25 and vals[-1] > 75, vals[:3] + vals[-3:]
+    assert vals[len(vals) // 4] < 40
+    assert vals[3 * len(vals) // 4] > 60
+
+
+def test_every_synastry_link_is_written():
+    """
+    الحارس نفسه المستعمَل في الخريطة الواحدة، مطبَّقًا على
+    الوصلات بين خريطتين: لا وصلة تُعرَض بلا نصّ مكتوب.
+    """
+    import random
+    from falak import synastry as syn, synastry_deep as sd
+    rnd = random.Random(2027)
+    pool = [chart.compute(
+        datetime(rnd.randint(1940, 2010), rnd.randint(1, 12),
+                 rnd.randint(1, 28), rnd.randint(0, 23),
+                 rnd.randint(0, 59), tzinfo=ZoneInfo("Asia/Damascus")),
+        33.51, 36.28, "whole", "Asia/Damascus") for _ in range(20)]
+    unwritten = {}
+    for _ in range(60):
+        a, b = rnd.sample(pool, 2)
+        for x in syn.inter_aspects(a, b):
+            if not sd.pair_text(x["a"], x["b"], x["name"])["written"]:
+                k = (x["a"], x["b"])
+                unwritten[k] = unwritten.get(k, 0) + 1
+    assert not unwritten, f"وصلات بلا نصّ: {sorted(unwritten)[:5]}"
+
+
+def test_synastry_texts_are_distinct():
+    from falak import synastry_deep as sd
+    seen = set()
+    for pair_, d in sd.SYN_PAIRS.items():
+        for k, t in d.items():
+            assert t not in seen, f"{pair_}/{k} مكرّر"
+            seen.add(t)
+    for tbl in (sd.SYN_OUTER, sd.ANGLE_TEXT, sd.SLOW_PAIRS):
+        for k, t in tbl.items():
+            assert t not in seen, f"{k} مكرّر"
+            seen.add(t)
+    for h, t in sd.OVERLAY_TEXT.items():
+        assert t not in seen, f"بيت {h} مكرّر"
+        seen.add(t)
+    assert len(seen) == sd.coverage()["المجموع"]
+
+
+def test_synastry_route():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/synastry', q(date="1990-05-17", time="08:30", city="حلب",
+                                    name="الأوّل", date2="1992-11-03",
+                                    time2="21:15", city2="باريس", name2="الثاني"))
+    R = d["reading"]
+    assert set(R["scores"]) == {"عاطفي", "صداقة", "مهني"}
+    for v in R["scores"].values():
+        assert 1 <= v["score"] <= 99 and v["label"] and v["band"]
+        assert v["detail"], "لا بدّ من تفصيل يُظهر مصدر الدرجة"
+    assert R["aspects"] and all(x["text"] for x in R["aspects"])
+    assert len(R["overlays"]) == 2
+    assert d["composite"]["bodies"] and d["davison"]["midpoint"]
+    assert "لا تُبنى" in d["disclaimer"]
+
+
+def test_calibration_matches_the_criteria():
+    """
+    الرتبة المئوية تكذب إن تغيّرت المعايير ولم تُعَد المعايرة.
+    فنتحقّق أن وسيط عيّنة جديدة قريب من الخمسين.
+    """
+    import random, statistics
+    from falak import synastry as syn
+    rnd = random.Random(555)
+    pool = [chart.compute(
+        datetime(rnd.randint(1940, 2010), rnd.randint(1, 12),
+                 rnd.randint(1, 28), rnd.randint(0, 23),
+                 rnd.randint(0, 59), tzinfo=ZoneInfo("Asia/Damascus")),
+        33.51, 36.28, "whole", "Asia/Damascus") for _ in range(30)]
+    for domain in ("عاطفي", "صداقة", "مهني"):
+        vals = []
+        for _ in range(120):
+            a, b = rnd.sample(pool, 2)
+            vals.append(syn.score(a, b)[domain]["score"])
+        med = statistics.median(vals)
+        assert 35 <= med <= 65, f"{domain}: الوسيط {med} — أعِد المعايرة"

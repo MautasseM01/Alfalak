@@ -219,6 +219,67 @@ def route_chart(q):
     return _apply_level(out, q)
 
 
+def _side(q: dict, suffix: str):
+    """يقرأ معطيات أحد الطرفين: date2/time2/city2 مثلًا."""
+    sub = {}
+    for k in ("date", "time", "city", "lat", "lon", "tz", "name"):
+        v = _one(q, k + suffix)
+        if v is not None:
+            sub[k] = [v]
+    return sub
+
+
+def route_synastry(q):
+    """
+    التوافق بين خريطتين: التزاوج والمركّبة ودافيسون وثلاثة موازين.
+
+    المعطيات: date/time/city للأوّل، وdate2/time2/city2 للثاني،
+    وname وname2 اختياريان.
+    """
+    from falak import synastry as syn
+
+    q1 = _side(q, "")
+    q2 = _side(q, "2")
+    if not q2.get("date"):
+        raise ApiError("لا بدّ من مولد ثانٍ: date2 و time2 و city2.")
+
+    def build(sub, who):
+        lat, lon, tzname, label = resolve_place(sub)
+        when, tzinfo = parse_birth(sub, tzname, lon)
+        c = chart.compute(when, lat, lon, _one(q, "system", "whole"),
+                          tzname, minor_aspects=True, tz_info=tzinfo)
+        c["place"] = _one(sub, "city") or label
+        c["name"] = _one(sub, "name") or who
+        c["tz_describe"] = ftz.describe(tzinfo)
+        return c
+
+    A = build(q1, "الأوّل")
+    B = build(q2, "الثاني")
+
+    out = {
+        "a": {"name": A["name"], "place": A["place"],
+              "when_local": A["when_local"], "bodies": A["bodies"],
+              "angles": A["angles"], "houses": A["houses"],
+              "warnings": A["warnings"]},
+        "b": {"name": B["name"], "place": B["place"],
+              "when_local": B["when_local"], "bodies": B["bodies"],
+              "angles": B["angles"], "houses": B["houses"],
+              "warnings": B["warnings"]},
+        "reading": syn.read(A, B, A["name"], B["name"]),
+        "inter_aspects": syn.inter_aspects(A, B),
+    }
+    if _one(q, "composite", "1") == "1":
+        out["composite"] = syn.composite(A, B)
+    if _one(q, "davison", "1") == "1":
+        out["davison"] = syn.davison(A, B)
+    out["disclaimer"] = (
+        "لا تُبنى على هذه الصفحة قرارات زواج ولا فراق ولا شراكة. "
+        "الخريطة تصف ميلًا وطبعًا، ولا تعرف ما تعرفانه أنتما عن "
+        "بعضكما، ولا ما يصنعه الاختيار والمعاملة."
+    )
+    return _apply_level(out, q)
+
+
 def route_depth(q):
     """المرجع: ملفّ كل بيت وكل برج، والكواكب في البيوت، والزوايا."""
     from falak import aspects_deep as adeep
@@ -477,6 +538,7 @@ ROUTES = {
     "elections": route_elections,
     "monthly": route_monthly,
     "timelords": route_timelords,
+    "synastry": route_synastry,
 }
 
 

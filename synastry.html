@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>التوافق بين خريطتين — الفَلَك</title>
+<meta name="description" content="التزاوج بعجلة مزدوجة، والخريطة المركّبة وخريطة دافيسون، وثلاثة موازين: عاطفي وصداقة ومهني.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.who{padding:14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+.who h3{margin:0 0 10px;font-size:.95rem;color:var(--gold);font-weight:600}
+.who.b{border-inline-start:3px solid var(--gold-dim)}
+.gauge{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.gcard{padding:15px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.gcard .lbl{font-size:.86rem;color:var(--muted)}
+.gcard .num{font-family:Amiri,serif;font-size:2.5rem;line-height:1.1;color:var(--gold)}
+.gcard .bnd{font-size:.84rem;color:var(--text);margin-top:2px}
+.gcard .nte{font-size:.76rem;color:var(--muted);margin-top:4px}
+.bar{height:7px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin:9px 0 4px}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold))}
+.why{margin-top:12px;display:none}
+.why.show{display:block}
+.why table{width:100%;font-size:.8rem}
+.why td{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.05)}
+.why .w{font-variant-numeric:tabular-nums;text-align:start;white-space:nowrap}
+.w.pos{color:var(--pos)} .w.neg{color:var(--neg)}
+.link{background:none;border:none;color:var(--gold);font:inherit;font-size:.8rem;cursor:pointer;padding:0;text-decoration:underline dotted}
+.item{padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.item h4{margin:0 0 4px;font-size:.94rem;color:var(--text);font-weight:600}
+.item .th{color:var(--gold);opacity:.85;font-size:.84rem;margin:0 0 6px}
+.item p{margin:0;font-size:.88rem;line-height:1.85}
+.item .sub{color:var(--muted);font-size:.79rem;margin-top:5px}
+.ovl{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.ovl .o{padding:11px 13px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);font-size:.84rem;line-height:1.75}
+.ovl .o b{color:var(--gold)}
+.rec{padding:12px 14px;border-radius:10px;border:1px solid var(--gold-dim);
+  background:rgba(217,180,91,.06);margin-bottom:9px;font-size:.86rem;line-height:1.8}
+.rec .k{color:var(--gold);font-weight:600}
+.warn{border-inline-start:3px solid var(--neg);padding:10px 13px;border-radius:8px;
+  background:rgba(224,138,125,.06);font-size:.84rem;line-height:1.8;color:var(--text)}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/synastry.html" class="on">التوافق</a>
+    <a href="/timelords.html">أرباب الأزمنة</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">التوافق بين خريطتين</h2>
+<p class="lede">
+  تُوضع الخريطتان إحداهما فوق الأخرى، فيُنظر في زوايا كواكب كلٍّ إلى كواكب الآخر،
+  وفي أيّ بيوت كلٍّ وقعت كواكب صاحبه. ومعها ثلاثة موازين — عاطفي وصداقة ومهني —
+  ومع كلّ ميزان تفصيلٌ يُظهر من أين جاءت درجته.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="two">
+      <div class="who">
+        <h3>الأوّل</h3>
+        <div class="form">
+          <div class="field"><label for="name1">الاسم</label>
+            <input type="text" id="name1" placeholder="اختياري"></div>
+          <div class="field"><label for="date1">تاريخ الميلاد</label>
+            <input type="date" id="date1"></div>
+          <div class="field"><label for="time1">الساعة</label>
+            <input type="time" id="time1" value="12:00"></div>
+          <div class="field"><label for="city1">مدينة الميلاد</label>
+            <input type="text" id="city1" placeholder="حلب…" autocomplete="off"></div>
+        </div>
+      </div>
+      <div class="who b">
+        <h3>الثاني</h3>
+        <div class="form">
+          <div class="field"><label for="name2">الاسم</label>
+            <input type="text" id="name2" placeholder="اختياري"></div>
+          <div class="field"><label for="date2">تاريخ الميلاد</label>
+            <input type="date" id="date2"></div>
+          <div class="field"><label for="time2">الساعة</label>
+            <input type="time" id="time2" value="12:00"></div>
+          <div class="field"><label for="city2">مدينة الميلاد</label>
+            <input type="text" id="city2" placeholder="باريس…" autocomplete="off"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">احسب التوافق</button>
+      <button class="btn ghost" id="swap">اعكس الطرفين</button>
+      <div class="seg" id="viewSeg">
+        <button data-v="syn" aria-pressed="true">التزاوج</button>
+        <button data-v="comp" aria-pressed="false">المركّبة</button>
+        <button data-v="dav" aria-pressed="false">دافيسون</button>
+      </div>
+    </div>
+    <p class="note" style="margin-top:12px">
+      ساعة الميلاد تهمّ هنا أكثر ممّا تهمّ في الخريطة الواحدة: وصلات الطالع
+      ووسط السماء وتراكب البيوت كلّها تتغيّر بتغيّر الساعة. فإن كانت مقدَّرة،
+      اقرأ الوصلات بين الكواكب وحدها ودع الباقي.
+    </p>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  الحساب بمكتبة Swiss Ephemeris · الموازين رتبة مئوية مقابل ستّة آلاف زوج عشوائي.<br>
+  الخريطة تصف ميلًا، والعِشرة تصنعها المعاملة.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/wheel.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+initLevelSwitch(() => { if (D) load(); });
+pageIntro('synastry');
+const $ = id => document.getElementById(id);
+const out = $('out');
+const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let D = null, view = 'syn';
+const card = (title, body, chips) =>
+  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
+   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+
+cityInput($('city1'));
+cityInput($('city2'));
+
+document.querySelectorAll('#viewSeg button').forEach(b => {
+  b.onclick = () => {
+    view = b.dataset.v;
+    document.querySelectorAll('#viewSeg button').forEach(x =>
+      x.setAttribute('aria-pressed', x.dataset.v === view ? 'true' : 'false'));
+    if (D) render(D);
+  };
+});
+
+function form() {
+  return {
+    name: $('name1').value.trim(), date: $('date1').value,
+    time: $('time1').value || '12:00', city: $('city1').value.trim(),
+    name2: $('name2').value.trim(), date2: $('date2').value,
+    time2: $('time2').value || '12:00', city2: $('city2').value.trim(),
+  };
+}
+
+async function load() {
+  const f = form();
+  if (!f.date || !f.city || !f.date2 || !f.city2) {
+    out.innerHTML = '<div class="card"><div class="msg err">أدخل التاريخ والمدينة للطرفين.</div></div>';
+    return;
+  }
+  store.set('syn', f);
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب الخريطتين والوصلات بينهما</div></div>';
+  try {
+    D = await API('synastry', withLevel(f));
+    render(D);
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${esc(e.message)}</div></div>`;
+  }
+}
+
+function gauge(key, s) {
+  const id = 'why_' + key.replace(/\s/g, '');
+  const rows = s.detail.map(d => `
+    <tr><td class="w ${d.weight >= 0 ? 'pos' : 'neg'}">${d.weight > 0 ? '+' : ''}${d.weight}</td>
+      <td>${esc(d.pair)}${d.aspect !== 'موضع' && d.aspect !== 'تقبّل' ? ' — ' + esc(d.aspect) : ''}
+        ${d.orb != null ? `<small style="color:var(--muted)"> (${d.orb}°)</small>` : ''}
+        <div style="color:var(--muted);font-size:.75rem">${esc(d.why)}</div></td></tr>`).join('');
+  return `<div class="gcard">
+    <div class="lbl">${esc(s.label)}</div>
+    <div class="num">${s.score}</div>
+    <div class="bar"><i style="width:${s.score}%"></i></div>
+    <div class="bnd">${esc(s.band)} — ${esc(s.band_note)}</div>
+    <div class="nte">${esc(s.scale)}</div>
+    <button class="link" data-why="${id}">لماذا هذه الدرجة؟ (${s.count} بندًا)</button>
+    <div class="why" id="${id}"><table><tbody>${rows}</tbody></table>
+      <p class="nte" style="margin-top:8px">الصافي ${s.net} = موجب ${s.plus} − سالب ${s.minus}.</p>
+    </div>
+  </div>`;
+}
+
+function render(d) {
+  const R = d.reading;
+  const A = d.a, B = d.b;
+  const warns = [...(A.warnings || []), ...(B.warnings || [])];
+
+  const head = card(`${esc(A.name)} و${esc(B.name)}`,
+    `<p class="note">${esc(A.name)} — ${esc(A.place)} · ${A.when_local.slice(0,16).replace('T',' ')}<br>
+       ${esc(B.name)} — ${esc(B.place)} · ${B.when_local.slice(0,16).replace('T',' ')}</p>
+     ${warns.length ? `<div class="warn" style="margin-top:10px">${warns.map(esc).join('<br>')}</div>` : ''}
+     <p style="margin-top:12px;line-height:1.9">${esc(R.verdict)}</p>`);
+
+  const scores = card('الموازين الثلاثة',
+    `<div class="gauge">${Object.entries(R.scores).map(([k, s]) => gauge(k, s)).join('')}</div>`);
+
+  let wheelCard = '';
+  if (view === 'syn') {
+    wheelCard = card('العجلة المزدوجة',
+      doubleWheelSVG(A, B, d.inter_aspects, { size: 660 }),
+      `<span class="chip gold">${R.aspect_count['كبرى']} وصلة كبرى</span>`);
+  } else if (view === 'comp' && d.composite) {
+    const c = d.composite;
+    wheelCard = card('الخريطة المركّبة',
+      `<p class="note">${esc(c.note)}</p>
+       <table style="margin-top:12px"><thead><tr><th>الجرم</th><th>الموضع</th><th>البيت</th></tr></thead>
+       <tbody>${c.bodies.map(x => `<tr><td>${x.symbol} ${esc(x.name)}</td>
+         <td>${esc(x.text)}</td><td class="num">${x.house}</td></tr>`).join('')}</tbody></table>`,
+      `<span class="chip gold">الطالع ${esc(c.angles['الطالع'].text)}</span>`);
+  } else if (view === 'dav' && d.davison) {
+    const c = d.davison;
+    wheelCard = card('خريطة دافيسون',
+      `<p class="note">${esc(c.note)}</p>
+       <p class="note">لحظة المنتصف: ${c.midpoint.when_utc.slice(0,16).replace('T',' ')} ت.ع ·
+         موضع المنتصف: ${c.midpoint.lat}°، ${c.midpoint.lon}°</p>
+       <div style="margin-top:12px">${wheelSVG(c, { size: 600 })}</div>`,
+      `<span class="chip gold">الطالع ${esc(c.angles['الطالع'].text)}</span>`);
+  }
+
+  const aspects = card('أقوى الوصلات بينكما',
+    `<div>${R.aspects.map(x => `<div class="item">
+        <h4>${esc(x.title)} — ${esc(x.aspect)}</h4>
+        ${x.theme ? `<p class="th">${esc(x.theme)}</p>` : ''}
+        <p>${esc(x.text)}</p>
+        <p class="sub">وجاج ${x.orb}° · ${esc(x.polarity)}</p>
+      </div>`).join('')}</div>`,
+    `<span class="chip">${R.aspect_count['الكلّ']} وصلة بالكلّ</span>`);
+
+  const overlays = card('تراكب البيوت — أين يقع كلٌّ من حياة الآخر',
+    R.overlays.map(blk => `
+      <h3 style="font-family:Amiri,serif;color:var(--gold);margin:16px 0 10px">${esc(blk.label)}</h3>
+      <div class="ovl">${blk.items.map(o => `<div class="o">
+        <b>${o.symbol} ${esc(o.body)}</b> في البيت ${o.house} — ${esc(o.text)}</div>`).join('')}</div>`).join(''));
+
+  const rec = R.receptions.length ? card('التقبّل',
+    `<p class="note" style="margin-bottom:12px">${esc(R.reception_note)}</p>
+     ${R.receptions.map(r => `<div class="rec"><span class="k">${esc(r.kind)}</span> —
+       ${esc(r.note)}</div>`).join('')}`) : '';
+
+  const src = card('المصادر والحدود',
+    Object.entries(R.sources).map(([k, v]) =>
+      `<div class="sec"><h3>${esc(k)}</h3><p>${esc(v)}</p></div>`).join('') +
+    `<div class="warn" style="margin-top:14px">${esc(d.disclaimer)}</div>`);
+
+  out.innerHTML = head + scores + wheelCard + aspects + overlays + rec + src;
+
+  out.querySelectorAll('[data-why]').forEach(b => {
+    b.onclick = () => {
+      const t = document.getElementById(b.dataset.why);
+      t.classList.toggle('show');
+      b.textContent = t.classList.contains('show') ? 'إخفاء التفصيل' : b.textContent;
+    };
+  });
+}
+
+$('go').onclick = load;
+$('swap').onclick = () => {
+  const g = id => $(id).value;
+  const a = [g('name1'), g('date1'), g('time1'), g('city1')];
+  ['name1','date1','time1','city1'].forEach((id, i) =>
+    $(id).value = [g('name2'), g('date2'), g('time2'), g('city2')][i]);
+  ['name2','date2','time2','city2'].forEach((id, i) => $(id).value = a[i]);
+  if (D) load();
+};
+
+const s = store.get('syn', {});
+if (s.date) {
+  $('name1').value = s.name || ''; $('date1').value = s.date;
+  $('time1').value = s.time || '12:00'; $('city1').value = s.city || '';
+  $('name2').value = s.name2 || ''; $('date2').value = s.date2 || '';
+  $('time2').value = s.time2 || '12:00'; $('city2').value = s.city2 || '';
+  load();
+}
+</script>
+</body>
+</html>
