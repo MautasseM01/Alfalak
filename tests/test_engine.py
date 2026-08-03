@@ -1503,3 +1503,201 @@ def test_every_page_loads_the_shared_navigation():
         assert "/assets/nav.js" in html, os.path.basename(p)
         assert 'meta name="description"' in html, os.path.basename(p)
         assert 'name="viewport"' in html, os.path.basename(p)
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٩ — الجيوتِش
+# ══════════════════════════════════════════════════════════════════
+def test_lahiri_is_defined_by_spica():
+    """
+    أينامشا لاهيري مُعرَّفة بأن السماك الأعزل على ١٨٠° نجمية —
+    ومن هنا اسمها «تشيترا باكشا». فإن أخطأنا هذا أخطأنا كلّ شيء،
+    ولا مجال للجدال فيه.
+    """
+    import swisseph as swe
+    from falak import jyotish as jy
+    for year in (1900, 2000, 2100):
+        t = datetime(year, 1, 1, 12, tzinfo=UTC)
+        jy._sid("lahiri")
+        L = swe.fixstar_ut("Spica", ephem.to_jd(t),
+                           swe.FLG_SWIEPH | swe.FLG_SIDEREAL)[0][0] % 360
+        assert abs(L - 180.0) < 0.02, (year, L)
+
+
+def test_ayanamsha_matches_the_published_table():
+    """قيم التقويم الهندي الرسمي، إلى أقلّ من دقيقة قوسية."""
+    from falak import jyotish as jy
+    for when, want in [(datetime(1900, 1, 1, tzinfo=UTC), 22.4594),
+                       (datetime(1950, 1, 1, tzinfo=UTC), 23.1589),
+                       (datetime(2000, 1, 1, tzinfo=UTC), 23.8531)]:
+        assert abs(jy.ayanamsha(when, "lahiri") - want) < 0.01, when
+
+
+def test_sidereal_equals_mean_tropical_minus_ayanamsha():
+    """
+    ظننّا أن النجمي = الاستوائي ناقص الأينامشا، فخالفنا الحساب
+    بـ١٤ ثانية قوسية. والسبب اهتزاز محور الأرض: الاستوائي الظاهري
+    يحمله والأينامشا تُقاس من الاعتدال المتوسّط. فالمعادلة الصحيحة
+    تستعمل الموضع **بلا اهتزاز** — وتصحّ إلى الصفر.
+    """
+    import swisseph as swe
+    from falak import jyotish as jy
+    when = datetime(2000, 1, 1, 12, tzinfo=UTC)
+    jd = ephem.to_jd(when)
+    jy._sid("lahiri")
+    ay = jy.ayanamsha(when)
+    for body in (swe.SUN, swe.MOON, swe.MARS):
+        mean = swe.calc_ut(jd, body, swe.FLG_SWIEPH | swe.FLG_NONUT)[0][0] % 360
+        sid = swe.calc_ut(jd, body,
+                          swe.FLG_SWIEPH | swe.FLG_SIDEREAL)[0][0] % 360
+        assert abs((mean - sid) % 360 - ay) < 1e-6, body
+        app = swe.calc_ut(jd, body, swe.FLG_SWIEPH)[0][0] % 360
+        # ومع الاهتزاز يبقى فارق يُقاس بالثواني — وهذا صواب لا خطأ
+        assert 1 < abs((app - sid) % 360 - ay) * 3600 < 25, body
+
+
+def test_nakshatra_division_is_exact():
+    from falak import jyotish as jy
+    assert len(jy.NAKSHATRAS) == 27
+    assert abs(jy.NAK_ARC - (13 + 20 / 60)) < 1e-12
+    assert jy.nakshatra_of(0.001)["index"] == 1
+    assert jy.nakshatra_of(359.999)["index"] == 27
+    assert jy.nakshatra_of(0.0)["pada"] == 1
+    assert jy.nakshatra_of(jy.NAK_ARC - 1e-6)["pada"] == 4
+    # لا فجوة ولا تداخل: كل درجة في منزلة واحدة
+    prev = 0
+    for step in range(0, 3600):
+        i = jy.nakshatra_of(step / 10.0)["index"]
+        assert i in (prev, prev + 1) or (prev == 27 and i == 1) or prev == 0
+        prev = i
+
+
+def test_nakshatra_star_may_fall_outside_its_division():
+    """
+    مفاجأة كشفها التحقّق الخارجي: نجم المنزلة ليس دائمًا داخل
+    حدودها. فالمنازل كانت غير متساوية ثم سُوّيت إلى ١٣°٢٠′، فبقيت
+    الأسماء على نجومها وخرج بعضها. نُثبّت هذا لئلّا يُظنّ خطأً
+    ويُصحَّح تصحيحًا يُفسد الحساب.
+    """
+    from falak import jyotish as jy
+    when = datetime(2000, 1, 1, 12, tzinfo=UTC)
+    inside, outside = [], []
+    for idx in jy.YOGATARA:
+        y = jy.yogatara(idx, when)
+        if not y:
+            continue
+        (inside if y["inside"] else outside).append((idx, y["offset"]))
+    assert inside and outside, "لا بدّ من الحالتين معًا"
+    # السماك الرامح — نجم سْواتي — أبعدها: نحو ست درجات
+    swati = jy.yogatara(15, when)
+    assert not swati["inside"] and 5 < swati["offset"] < 8
+    # والسماك الأعزل داخل تشيترا تمامًا، فهو مرجع الأينامشا
+    assert jy.yogatara(14, when)["inside"]
+    for idx, off in outside:
+        assert jy.yogatara(idx, when)["note"].startswith("النجم خارج")
+
+
+def test_arabic_mansions_are_paired_with_every_nakshatra():
+    """الوصل الذي يخصّنا: لكل منزلة هندية مقابلها العربي."""
+    from falak import jyotish as jy
+    for n in jy.NAKSHATRAS:
+        assert len(n) == 4 and all(n), n
+        assert n[1] in jy.DASHA_ORDER, f"ربّ غير معروف: {n[1]}"
+    arabics = [n[2] for n in jy.NAKSHATRAS]
+    assert len(set(arabics)) == 27, "منزلة عربية مكرّرة"
+
+
+def test_vimshottari_cycle_and_continuity():
+    from falak import jyotish as jy
+    assert sum(jy.DASHA_YEARS.values()) == 120
+    birth = datetime(1990, 5, 17, 5, 30, tzinfo=UTC)
+    c = jy.compute(birth, 36.2021, 37.1343, "lahiri", "UTC")
+    moon = next(b for b in c["bodies"] if b["name"] == "القمر")
+    d = jy.vimshottari(birth, moon["lon"])
+    ps = d["periods"]
+    for i in range(len(ps) - 1):
+        assert ps[i]["end"] == ps[i + 1]["start"], i
+    assert ps[0]["planet"] == d["start_lord"] == moon["nakshatra"]["lord"]
+    assert abs(sum(p["years"] for p in ps[1:10]) - 120.0) < 1e-6
+    assert ps[9]["planet"] == ps[0]["planet"]
+    for p in ps[:3]:
+        subs = p["sub"]
+        assert len(subs) == 9
+        assert subs[0]["planet"] == p["planet"]     # تبدأ الصغرى بربّ الكبرى
+        # الادّعاء الأقوى: **التواريخ** تنطبق تمامًا. أمّا حقل «السنوات»
+        # فمقرَّب إلى أربع منازل للعرض، فمجموعه يفرق بجزء من عشرة آلاف —
+        # وهو فرق عرضٍ لا فرق حساب.
+        assert subs[0]["start"] == p["start"]
+        assert subs[-1]["end"] == p["end"]
+        for i in range(8):
+            assert subs[i]["end"] == subs[i + 1]["start"], (p["planet"], i)
+        assert abs(sum(s["years"] for s in subs) - p["years"]) < 1e-3
+
+
+def test_navamsa_follows_the_standard_division():
+    """
+    D9: أوّل نافامشا الحمل هو الحمل، وأوّل نافامشا الثور هو الجدي.
+    وهذا محكّ يفصل الحساب الصحيح عن قسمة ساذجة.
+    """
+    from falak import jyotish as jy
+    assert jy.varga(0.0, 9) == "الحمل"
+    assert jy.varga(30.0, 9) == "الجدي"
+    assert jy.varga(60.0, 9) == "الميزان"
+    assert jy.varga(120.0, 9) == "الحمل"
+    assert jy.varga(1.0, 1) == "الحمل" and jy.varga(31.0, 1) == "الثور"
+
+
+def test_jyotish_exaltations_are_sidereal():
+    from falak import jyotish as jy
+    assert jy.dignity_of("الشمس", "الحمل", 10.0)["kind"] == "الذروة"
+    assert jy.dignity_of("الشمس", "الميزان", 10.0)["kind"] == "الهبوط"
+    assert jy.dignity_of("زحل", "الميزان", 20.0)["kind"] == "الذروة"
+    assert jy.dignity_of("المشتري", "الجدي", 5.0)["kind"] == "الهبوط"
+    assert jy.dignity_of("الشمس", "الأسد", 5.0)["kind"] == "المثلّث الأصلي"
+    assert jy.dignity_of("القمر", "السرطان", 15.0)["kind"] == "بيته"
+
+
+def test_jyotish_route_shows_the_shift_before_being_asked():
+    """
+    أوّل ما يصدم القارئ العربي أن برجه تغيّر. فلا بدّ أن يُشرح
+    في الجواب نفسه، لا أن يُترك ليظنّ الحساب خاطئًا.
+    """
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/jyotish', q(date="1990-05-17", time="08:30", city="حلب"))
+    cmp_ = d["compare_tropical"]
+    assert cmp_["bodies"] and cmp_["note"]
+    assert "خطأ" in cmp_["note"]                 # ينفي الخطأ صراحةً
+    moved = [n for n, v in cmp_["bodies"].items() if v["moved"]]
+    assert len(moved) >= 5, "الفرق نحو ٢٤ درجة، فأكثرها يتراجع برجًا"
+    assert len(d["bodies"]) == 9 and d["lagna"]["nakshatra"]
+    assert d["dasha"]["periods"] and d["dasha"]["now"]["major"]
+    assert d["gist"] and len(d["gist"]["lines"]) >= 3
+    for b in d["bodies"]:
+        assert b["nakshatra"]["arabic_mansion"], b["name"]
+
+    lst = dispatch('/api/jyotish', q(list="1"))
+    assert len(lst["nakshatras"]) == 27
+    assert len(lst["ayanamshas"]) >= 3
+
+
+def test_ayanamsha_choice_actually_changes_the_chart():
+    """المفتاح ليس زينة: تغييره يُزحزح المواضع فعلًا."""
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    a = dispatch('/api/jyotish', q(date="1990-05-17", time="08:30",
+                                   city="حلب", ayanamsha="lahiri"))
+    b = dispatch('/api/jyotish', q(date="1990-05-17", time="08:30",
+                                   city="حلب", ayanamsha="raman"))
+    assert a["ayanamsha"]["value"] != b["ayanamsha"]["value"]
+    la = {x["name"]: x["lon"] for x in a["bodies"]}
+    lb = {x["name"]: x["lon"] for x in b["bodies"]}
+    diffs = [abs(la[k] - lb[k]) for k in la]
+    assert 1.0 < max(diffs) < 2.0, "راما يفرق عن لاهيري بنحو درجة ونصف"
+    with pytest.raises(Exception):
+        dispatch('/api/jyotish', q(date="1990-05-17", city="حلب",
+                                   ayanamsha="لا-يوجد"))

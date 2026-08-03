@@ -329,10 +329,70 @@ def monthly(data: dict) -> dict:
                  "وتحت هذا: كل حدث بيومه وساعته وما يعنيه.")
 
 
+# ══════════════════════════════════════════════════════════════
+# ٩ — الجيوتِش
+#
+# أوّل ما يصدم القارئ العربي هنا أن برجه تغيّر. فالخلاصة تبدأ به
+# قبل كل شيء، وتشرحه قبل أن يُسأل — لا بعد أن يظنّ الحساب خاطئًا.
+# ══════════════════════════════════════════════════════════════
+def jyotish(data: dict) -> dict:
+    by = {b["name"]: b for b in data.get("bodies", [])}
+    sun = by.get("الشمس", {})
+    moon = by.get("القمر", {})
+    lag = data.get("lagna") or {}
+    cmp_ = data.get("compare_tropical") or {}
+    moved = [n for n, v in (cmp_.get("bodies") or {}).items() if v.get("moved")]
+    nak = (moon.get("nakshatra") or {})
+
+    lines = []
+    trop_sun = (cmp_.get("bodies") or {}).get("الشمس", {}).get("tropical")
+    if sun and trop_sun and trop_sun != sun.get("sign"):
+        lines.append(
+            f"انتبه أوّلًا: برجك هنا غير الذي تعرفه. شمسك في "
+            f"{trop_sun} بالحساب العربي والغربي، وفي {sun.get('sign')} "
+            "بالحساب الهندي."
+        )
+        lines.append(
+            "وليس أحدهما خطأً: هذا يقيس من نقطة اعتدال الربيع، وذاك "
+            "من النجوم نفسها. والنقطتان تباعدتا مع القرون حتى صار "
+            "بينهما نحو أربع وعشرين درجة — أي برج تقريبًا."
+        )
+    elif sun:
+        lines.append(
+            f"شمسك في {sun.get('sign')} بالحساب الهندي — وهو نفسه "
+            "برجك في الحساب العربي، وهذا يقع لمن وُلد في أوّل الشهر."
+        )
+    if moved and len(moved) > 1:
+        lines.append(
+            f"وقد تغيّر برج {len(moved)} من تسعة أجرام، فلا تُفاجَأ."
+        )
+
+    if nak:
+        lines.append(
+            f"وأهمّ ما في هذه المدرسة موضع قمرك: في منزلة "
+            f"{nak.get('name')} — وهي عند العرب {nak.get('arabic_mansion')}، "
+            "النجوم نفسها بلغتين. ومن هذه المنزلة تُحسَب فترات عمرك كلّها."
+        )
+
+    now = (data.get("dasha") or {}).get("now") or {}
+    maj = now.get("major") or {}
+    if maj.get("planet"):
+        lines.append(
+            f"وتعيش الآن فترة يقودها {maj['planet']}، "
+            f"من {maj.get('start_year')} إلى {maj.get('end_year')}."
+        )
+
+    then = ("وتحت هذا: الكواكب التسعة ومواضعها، وجدول يقابل بين "
+            "الحسابين، وفترات عمرك بتواريخها.")
+    return _wrap("خلاصة خريطتك الهندية", lines, then)
+
+
+
 ROUTES = {
     "bulletin": bulletin, "chart": chart, "synastry": synastry,
     "search": search, "horary": horary, "hours": hours,
     "timelords": timelords, "monthly": monthly,
+    "jyotish": jyotish,
 }
 
 

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="خريطتك بالحساب الهندي (الجيوتِش): المنطقة النجمية، والنكشترا السبع والعشرون مقابلةً بمنازل العرب، وفترات العمر (الدشا).">
+<title>الخريطة الهندية — الجيوتِش — الفَلَك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.shift{border-inline-start:3px solid var(--gold);padding:15px 18px;border-radius:10px;
+  background:rgba(217,180,91,.07);line-height:1.95;font-size:.92rem;margin-bottom:18px}
+.shift b{color:var(--gold)}
+.cmp td.was{color:var(--muted)}
+.cmp td.now{color:var(--gold);font-weight:600}
+.cmp tr.same td.now{color:var(--muted);font-weight:400}
+.nak{font-size:.83rem}
+.nak b{color:var(--gold);font-weight:600}
+.nak small{color:var(--dim);display:block}
+.dasha{display:grid;gap:7px}
+.dp{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);font-size:.87rem}
+.dp.on{border-color:var(--gold);background:rgba(217,180,91,.1)}
+.dp .pl{font-family:Amiri,serif;font-size:1.15rem;color:var(--gold);min-width:62px}
+.dp .yr{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.dp .sub{grid-column:1/-1;margin-top:8px;padding-top:8px;
+  border-top:1px dashed var(--line);display:none;font-size:.8rem;line-height:1.9}
+.dp.open .sub{display:block}
+.varga{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.vg{padding:13px 15px;border-radius:11px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);font-size:.83rem}
+.vg h4{margin:0 0 8px;color:var(--gold);font-size:.92rem}
+.vg div{display:flex;justify-content:space-between;padding:3px 0;
+  border-bottom:1px solid rgba(255,255,255,.04)}
+.dig-up{color:var(--pos)} .dig-down{color:var(--neg)}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/elections.html">الاختيارات</a>
+    <a href="/horary.html">المسائل</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/jyotish.html" class="on">الهندي</a>
+    <a href="/synastry.html">التوافق</a>
+    <a href="/timelords.html">أرباب الأزمنة</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/api.html">الواجهة البرمجية</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">خريطتك بالحساب الهندي</h2>
+<p class="lede">
+  السماء نفسها، مقيسةً من نقطة أخرى. الهنود يقيسون من النجوم الثابتة، والعرب
+  والغربيّون من نقطة اعتدال الربيع — وقد تباعدت النقطتان مع القرون حتى صار
+  بينهما نحو أربع وعشرين درجة. فأكثر أبراجك ستتراجع برجًا، وهذا ليس خطأً.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="name">الاسم (اختياري)</label>
+        <input type="text" id="name" placeholder="لتمييز الخريطة"></div>
+      <div class="field"><label for="date">تاريخ الميلاد</label>
+        <input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة الميلاد</label>
+        <input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">مكان الميلاد</label>
+        <input type="text" id="city" placeholder="حلب، دمشق…" autocomplete="off"></div>
+      <div class="field"><label for="ayan">مذهب القياس (أينامشا)</label>
+        <select id="ayan"></select></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">احسب الخريطة الهندية</button>
+      <a class="btn ghost" id="toArab" href="/chart.html">انظرها بالحساب العربي</a>
+      <button class="btn ghost" id="_share">انسخ رابط هذه النتيجة</button>
+    </div>
+    <p class="note" style="margin-top:12px" id="ayanNote"></p>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  الحساب بمكتبة Swiss Ephemeris على المنطقة النجمية · أينامشا لاهيري افتراضًا.<br>
+  المصادر: بريهات باراشارا هورا شاسترا، وبريهات جاتاكا لڤاراها ميهيرا.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+initLevelSwitch(() => { if (D) load(); });
+const $ = id => document.getElementById(id);
+const out = $('out');
+const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const card = (title, body, chips) =>
+  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
+   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+let D = null, AYANS = {};
+
+cityInput($('city'));
+
+API('jyotish', { list: '1' }).then(r => {
+  AYANS = r.ayanamshas;
+  $('ayan').innerHTML = Object.entries(r.ayanamshas)
+    .map(([k, v]) => `<option value="${k}">${esc(v.name)} — ${v.value.toFixed(2)}°</option>`).join('');
+  const s = urlState(['ayanamsha']);
+  if (s.ayanamsha) $('ayan').value = s.ayanamsha;
+  showAyanNote();
+});
+
+function showAyanNote() {
+  const a = AYANS[$('ayan').value];
+  $('ayanNote').textContent = a
+    ? a.note + ' وفرقه عن الحساب العربي اليوم ' + a.value.toFixed(2) + ' درجة.'
+    : '';
+}
+$('ayan').onchange = () => { showAyanNote(); if (D) load(); };
+
+function form() {
+  return { name: $('name').value.trim(), date: $('date').value,
+           time: $('time').value || '12:00', city: $('city').value.trim(),
+           ayanamsha: $('ayan').value };
+}
+
+async function load() {
+  const f = form();
+  if (!f.date || !f.city) {
+    out.innerHTML = '<div class="card"><div class="msg err">أدخل تاريخ الميلاد ومكانه.</div></div>';
+    return;
+  }
+  pushState(f);
+  $('toArab').href = '/chart.html?date=' + f.date + '&time=' + f.time
+                   + '&city=' + encodeURIComponent(f.city);
+  const w = waitBox(out, ['أحسب المواقع النجمية…', 'أُحدّد المنازل…',
+                          'أحسب فترات العمر…'], 900);
+  try { D = await API('jyotish', withLevel(f)); w.finish(); render(D); }
+  catch (e) { w.fail(e.message); }
+}
+
+const DIGCLASS = { 'الذروة': 'dig-up', 'المثلّث الأصلي': 'dig-up',
+                   'بيته': 'dig-up', 'الهبوط': 'dig-down' };
+
+function render(d) {
+  const cmp = d.compare_tropical;
+  const moved = Object.entries(cmp.bodies).filter(([, v]) => v.moved);
+
+  const head = card(`${esc(d.name || 'الخريطة الهندية')} — ${esc(d.place)}`,
+    `<div class="shift">
+       <b>لماذا تغيّر برجي؟</b> ${esc(cmp.note)}
+     </div>
+     <p class="note">${d.when_local.slice(0,16).replace('T',' — ')} · ${esc(d.tz_describe)}</p>
+     <p style="margin-top:10px">${esc(d.house_system)}</p>`,
+    `<span class="chip gold">اللَغْنا ${esc(d.lagna.text)}</span>
+     <span class="chip">${esc(d.ayanamsha.name)} ${esc(d.ayanamsha.text)}</span>`);
+
+  const cmpCard = card('الحسابان جنبًا إلى جنب',
+    `<table class="cmp"><thead><tr><th>الجرم</th>
+       <th>بالحساب العربي</th><th>بالحساب الهندي</th></tr></thead>
+     <tbody>${Object.entries(cmp.bodies).map(([n, v]) =>
+       `<tr class="${v.moved ? '' : 'same'}"><td>${esc(n)}</td>
+        <td class="was">${esc(v.tropical)}</td>
+        <td class="now">${esc(v.sidereal)}${v.moved ? ' ←' : ''}</td></tr>`).join('')}
+     </tbody></table>
+     <p class="note" style="margin-top:12px">تغيّر برج ${moved.length} من
+       ${Object.keys(cmp.bodies).length}. والطالع عندك
+       ${esc(cmp.ascendant)} عربيًّا و${esc(d.lagna.sign)} هنديًّا.</p>`);
+
+  const bodies = card('الكواكب التسعة',
+    `<div class="scrollx"><table>
+      <thead><tr><th>الجرم</th><th>الموضع</th><th>البيت</th>
+        <th>المنزلة النجمية</th><th>عند العرب</th><th>الحال</th></tr></thead>
+      <tbody>${d.bodies.map(b => `<tr>
+        <td>${esc(b.name)} <small style="color:var(--dim)">${esc(b.sanskrit)}</small></td>
+        <td class="num">${esc(b.short)} ${esc(b.sign)}</td>
+        <td class="num">${b.house}</td>
+        <td class="nak"><b>${esc(b.nakshatra.name)}</b>
+          <small>الربع ${b.nakshatra.pada}</small></td>
+        <td class="nak">${esc(b.nakshatra.arabic_mansion)}
+          <small>${esc(b.nakshatra.star)}</small></td>
+        <td class="${DIGCLASS[b.dignity.kind] || ''}">${esc(b.dignity.kind)}
+          ${b.retro ? '<span class="retro">راجع</span>' : ''}</td>
+      </tr>`).join('')}</tbody></table></div>
+     <p class="note" style="margin-top:14px">
+       العمودان الرابع والخامس هما ما لا تجده في موقع هندي ولا غربي:
+       منازل الهنود السبع والعشرون ومنازل العرب الثماني والعشرون
+       <strong>نجومها واحدة</strong> — سُمّيت بلغتين.</p>`);
+
+  const dn = d.dasha.now;
+  const dasha = card('فترات عمرك — الدشا',
+    `<p style="line-height:1.95">${esc(d.dasha.balance_note)}</p>
+     <div class="dasha" style="margin-top:14px">
+       ${d.dasha.periods.map((p, i) => {
+         const on = dn.major && dn.major.start === p.start;
+         return `<div class="dp ${on ? 'on' : ''}" data-i="${i}">
+           <span class="pl">${esc(p.planet)}</span>
+           <span>${on ? '<b style="color:var(--gold)">أنت هنا الآن</b> · ' : ''}
+             ${p.years.toFixed(1)} سنة${p.partial ? ' (ما بقي منها)' : ''}</span>
+           <span class="yr">${p.start_year} – ${p.end_year}</span>
+           <div class="sub">${(p.sub || []).map(s =>
+             `${esc(s.planet)}: ${s.start.slice(0,7)} → ${s.end.slice(0,7)}`).join(' · ')}</div>
+         </div>`;
+       }).join('')}
+     </div>
+     <p class="note" style="margin-top:12px">اضغط أيّ فترة لترى ما بداخلها.</p>`,
+    dn.major ? `<span class="chip gold">الآن: ${esc(dn.major.planet)}${
+      dn.minor ? ' / ' + esc(dn.minor.planet) : ''}</span>` : '');
+
+  const vargas = Object.keys(d.vargas).length ? card('الخرائط المقسَّمة (الفَرغا)',
+    `<p class="note" style="margin-bottom:14px">
+       الخريطة الأولى تعِد، والمقسَّمة تُثبت أو تنقض. وأشهرها التاسعة
+       (نافامْشا) وتُقرأ مع الأولى دائمًا.</p>
+     <div class="varga">${Object.entries(d.vargas).map(([n, v]) => `
+       <div class="vg"><h4>D${n} — ${esc(v.name.split('—')[1] || v.name)}</h4>
+         <div><span>اللَغْنا</span><b style="color:var(--gold)">${esc(v.lagna)}</b></div>
+         ${Object.entries(v.bodies).map(([b, sg]) =>
+           `<div><span>${esc(b)}</span><span>${esc(sg)}</span></div>`).join('')}
+       </div>`).join('')}</div>`) : '';
+
+  out.innerHTML = gistHTML(d.gist) + head + cmpCard + bodies + dasha + vargas;
+  out.querySelectorAll('.dp').forEach(el => {
+    el.onclick = () => el.classList.toggle('open');
+  });
+  initShare();
+}
+
+$('go').onclick = load;
+
+const s = urlState(['date', 'time', 'city', 'name', 'ayanamsha']);
+if (s.date) {
+  $('date').value = s.date; $('time').value = s.time || '12:00';
+  $('city').value = s.city || ''; $('name').value = s.name || '';
+  setTimeout(load, 350);
+}
+initShare();
+</script>
+</body>
+</html>

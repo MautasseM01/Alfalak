@@ -25,7 +25,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import apikeys, depth, gist, horary, ics, interpret, monthly  # noqa: E402
+from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
+from falak import jyotish, monthly  # noqa: E402
 from falak import mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
@@ -286,6 +287,77 @@ def route_synastry(q):
         "الخريطة تصف ميلًا وطبعًا، ولا تعرف ما تعرفانه أنتما عن "
         "بعضكما، ولا ما يصنعه الاختيار والمعاملة."
     )
+    return _apply_level(out, q)
+
+
+def route_jyotish(q):
+    """
+    الجيوتِش: الخريطة الهندية بالمنطقة النجمية.
+
+      /api/jyotish?date=&time=&city=[&ayanamsha=lahiri&vargas=9,10]
+      /api/jyotish?list=1   لمذاهب الأينامشا والمنازل السبع والعشرين
+    """
+    if _one(q, "list") == "1":
+        now = datetime.now(ephem.UTC)
+        return {
+            "ayanamshas": {k: {"name": v["name"], "note": v["note"],
+                               "value": round(jyotish.ayanamsha(now, k), 4)}
+                           for k, v in jyotish.AYANAMSHAS.items()},
+            "nakshatras": [
+                {"index": i + 1, "name": n[0], "lord": n[1],
+                 "arabic_mansion": n[2], "star": n[3],
+                 "from": round(i * jyotish.NAK_ARC, 4),
+                 "to": round((i + 1) * jyotish.NAK_ARC, 4),
+                 "yogatara": jyotish.yogatara(i + 1, now)}
+                for i, n in enumerate(jyotish.NAKSHATRAS)],
+            "vargas": jyotish.VARGAS,
+            "dasha_years": jyotish.DASHA_YEARS,
+            "note": ("المنازل السبع والعشرون عند الهنود والثماني "
+                     "والعشرون عند العرب نجومها واحدة — والعمود الثالث "
+                     "يُقابل بينهما."),
+        }
+
+    lat, lon, tzname, label = resolve_place(q)
+    when, tzinfo = parse_birth(q, tzname, lon)
+    ayan = _one(q, "ayanamsha", jyotish.DEFAULT_AYANAMSHA)
+    if ayan not in jyotish.AYANAMSHAS:
+        raise ApiError(f"مذهب أينامشا غير معروف: {ayan}. المتاح: "
+                       + "، ".join(jyotish.AYANAMSHAS))
+    try:
+        vg = [int(x) for x in (_one(q, "vargas", "9,10") or "").split(",") if x]
+    except ValueError:
+        raise ApiError("vargas أعداد مفصولة بفواصل، مثل 9,10")
+
+    out = jyotish.compute(when, lat, lon, ayan, tzname, vargas=vg)
+    out["place"] = _one(q, "city") or label
+    out["name"] = _one(q, "name", "")
+    out["tz_describe"] = ftz.describe(tzinfo)
+    out["warnings"] = (tzinfo or {}).get("warnings") or []
+
+    moon = next(b for b in out["bodies"] if b["name"] == "القمر")
+    out["dasha"] = jyotish.vimshottari(
+        datetime.fromisoformat(out["when_utc"]), moon["lon"],
+        levels=int(_one(q, "levels", "2")))
+    out["dasha"]["now"] = jyotish.current_dasha(
+        out["dasha"], datetime.now(ephem.UTC))
+
+    # الفرق عن الخريطة الاستوائية — أوّل ما يسأل عنه القارئ
+    trop = chart.compute(when, lat, lon, "whole", tzname,
+                         minor_aspects=False, tz_info=tzinfo)
+    tby = {b["name"]: b["sign"] for b in trop["bodies"]}
+    out["compare_tropical"] = {
+        "system": "العربي/الغربي الاستوائي",
+        "ascendant": trop["angles"]["الطالع"]["sign"],
+        "bodies": {b["name"]: {"sidereal": b["sign"],
+                               "tropical": tby.get(b["name"], ""),
+                               "moved": tby.get(b["name"]) != b["sign"]}
+                   for b in out["bodies"] if b["name"] in tby},
+        "note": ("الفرق بين المقياسين نحو "
+                 f"{out['ayanamsha']['value']:.1f} درجة اليوم. فأكثر "
+                 "الأجرام تتراجع برجًا واحدًا — وليس هذا خطأً في أحد "
+                 "المقياسين، بل اختلاف في نقطة البداية: الاعتدال "
+                 "الربيعي هناك، والنجوم الثابتة هنا."),
+    }
     return _apply_level(out, q)
 
 
@@ -639,6 +711,7 @@ ROUTES = {
     "synastry": route_synastry,
     "horary": route_horary,
     "search": route_search,
+    "jyotish": route_jyotish,
 }
 
 
