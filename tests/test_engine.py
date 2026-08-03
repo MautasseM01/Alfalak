@@ -2050,3 +2050,87 @@ def test_bazi_route_and_gist():
     lst = dispatch('/api/bazi', q(list="1"))
     assert len(lst["stems"]) == 10 and len(lst["branches"]) == 12
     assert len(lst["solar_terms"]) == 12
+
+
+# ══════════════════════════════════════════════════════════════════
+# ٢٢ — نصوص البازي
+# ══════════════════════════════════════════════════════════════════
+def test_bazi_texts_cover_every_combination():
+    """التغطية الكاملة: كل جذع وكل فرع وكل تركيب سيّد نفس × غالب."""
+    from falak import bazi as bz, bazi_deep as bd
+    for name, *_ in bz.STEMS:
+        d = bd.stem_text(name)
+        assert d and d["image"] and len(d["text"]) > 40 and d["cost"], name
+    for name, *_ in bz.BRANCHES:
+        d = bd.branch_text(name)
+        assert d and d["season"] and d["hours"] and len(d["text"]) > 30, name
+    # خمسة عناصر × خمسة غالبة = خمسة وعشرون تركيبًا، كلّها مكتوبة
+    for me in bz.ELEMENTS:
+        for dom in bz.ELEMENTS:
+            t = bd.day_master_text(me, dom)
+            assert t and len(t) > 50, (me, dom)
+    assert len(bd.DAY_MASTER) == 25
+    for e in bz.ELEMENTS:
+        r = bd.remedy(e)
+        assert all(r.get(k) for k in ("colors", "directions", "work", "habits")), e
+
+
+def test_bazi_texts_are_distinct():
+    from falak import bazi_deep as bd
+    for tbl, field in [(bd.STEM_DEEP, "text"), (bd.STEM_DEEP, "cost"),
+                       (bd.BRANCH_DEEP, "text")]:
+        vals = [v[field] for v in tbl.values()]
+        assert len(set(vals)) == len(vals), field
+    assert len(set(bd.DAY_MASTER.values())) == 25
+    assert len(set(bd.TEN_GODS_DEEP.values())) == len(bd.TEN_GODS_DEEP)
+
+
+def test_bazi_texts_are_not_borrowed_from_the_other_schools():
+    """
+    الشرط نفسه المفروض على الجيوتِش: لا نقل بين المدارس. والبازي
+    أبعدها عن الاثنتين — لا كواكب فيه ولا بروج.
+    """
+    from falak import bazi_deep as bd, depth, jyotish_deep as jd
+    arabic = {t for tbl in depth.PLANET_IN_HOUSE.values() for t in tbl.values()}
+    indian = {t for tbl in jd.GRAHA_BHAVA.values() for t in tbl.values()}
+    chinese = set(bd.DAY_MASTER.values())
+    chinese |= {v["text"] for v in bd.STEM_DEEP.values()}
+    chinese |= {v["text"] for v in bd.BRANCH_DEEP.values()}
+    assert not (chinese & arabic) and not (chinese & indian)
+
+
+def test_every_ten_god_name_has_a_written_text():
+    """كل اسم يُخرجه المحرّك لا بدّ أن يجد نصًّا — وإلا ظهر فارغًا."""
+    from falak import bazi as bz, bazi_deep as bd
+    names = set()
+    for dm, *_ in bz.STEMS:
+        for other, *_ in bz.STEMS:
+            g = bz.ten_god(dm, other)
+            if g.get("name"):
+                names.add(g["name"])
+    names.add("سيّد النفس")
+    for n in names:
+        assert bd.god_text(n), n
+    assert names <= set(bd.TEN_GODS_DEEP)
+
+
+def test_bazi_route_carries_the_readings_and_remedies():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/bazi', q(date="1990-05-17", time="08:30",
+                                city="حلب", sex="m"))
+    assert d["day_master_reading"] and len(d["day_master_reading"]) > 50
+    for p in d["pillars"]:
+        assert p["stem"]["deep"]["image"] and p["stem"]["deep"]["text"]
+        assert p["branch"]["deep"]["season"] and p["branch"]["deep"]["text"]
+    for g in d["ten_gods"]:
+        assert g["god"].get("reading"), g["pillar"]
+    # النقص يُكمَّل: باب عمليّ لا يوجد في المدرستين الأخريين
+    assert d["remedies"] and d["remedy_note"]
+    for e, r in d["remedies"].items():
+        assert r["colors"] and r["work"] and r["habits"]
+    assert d["luck"]["what_is_it"]
+    for c in d["luck"]["cycles"]:
+        assert c["god"].get("reading")

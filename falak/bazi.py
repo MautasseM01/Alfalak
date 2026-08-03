@@ -300,6 +300,7 @@ def compute(when_local: datetime, tzname: str = "") -> dict:
     ds, db = day_pillar(day_date)
     hs = hour_stem(ds, hb)
 
+    from . import bazi_deep as bd
     pillars = [
         {"key": "السنة", "role": "الأصل والأجداد وأوّل العمر",
          "stem": _stem_info(ys), "branch": _branch_info(yb)},
@@ -310,6 +311,10 @@ def compute(when_local: datetime, tzname: str = "") -> dict:
         {"key": "الساعة", "role": "الولد وآخر العمر وما تُخلّفه",
          "stem": _stem_info(hs), "branch": _branch_info(hb)},
     ]
+
+    for p in pillars:
+        p["stem"]["deep"] = bd.stem_text(p["stem"]["name"])
+        p["branch"]["deep"] = bd.branch_text(p["branch"]["name"])
 
     # ── ميزان العناصر الخمسة ──
     tally = {e: 0.0 for e in ELEMENTS}
@@ -333,10 +338,13 @@ def compute(when_local: datetime, tzname: str = "") -> dict:
             gods.append({"pillar": p["key"], "stem": p["stem"]["name"],
                          "god": {"name": "سيّد النفس",
                                  "note": "أنت. وإليه يُقاس كل ما سواه.",
+                                 "reading": bd.god_text("سيّد النفس"),
                                  "element": p["stem"]["element"]}})
         else:
+            g = ten_god(ds, p["stem"]["name"])
+            g["reading"] = bd.god_text(g.get("name", ""))
             gods.append({"pillar": p["key"], "stem": p["stem"]["name"],
-                         "god": ten_god(ds, p["stem"]["name"])})
+                         "god": g})
 
     return {
         "when_local": when_local.isoformat(),
@@ -370,6 +378,16 @@ def compute(when_local: datetime, tzname: str = "") -> dict:
         "weakest": ordered[-1][0],
         "missing": [e for e, v in balance.items() if v["weight"] == 0],
         "ten_gods": gods,
+        "day_master_reading": bd.day_master_text(
+            _stem_info(ds)["element"], ordered[0][0]),
+        "remedies": {e: bd.remedy(e)
+                     for e in ([x for x, v in balance.items()
+                                if v["weight"] == 0]
+                               or [ordered[-1][0]])},
+        "remedy_note": (
+            "ما نقص من العناصر يُطلَب لا يُشتكى منه: في المهنة "
+            "والمكان واللون والعادة. وهذا باب عمليّ في هذه المدرسة "
+            "لا نظير له في العربية ولا الهندية."),
     }
 
 
@@ -415,9 +433,14 @@ def luck_cycles(chart: dict, male: bool, count: int = 8) -> dict:
             "stem": _stem_info(s), "branch": _branch_info(b),
             "god": ten_god(chart["pillars"][2]["stem"]["name"], s),
         })
+    from . import bazi_deep as bd
+    for c in out:
+        c["god"]["reading"] = bd.god_text(c["god"].get("name", ""))
+        c["stem"]["deep"] = bd.stem_text(c["stem"]["name"])
     return {
         "forward": forward,
         "start_age": round(start_age, 1),
+        "what_is_it": bd.LUCK_NOTE,
         "direction_note": (
             f"{'ذكر' if male else 'أنثى'} وُلد في سنة "
             f"{ys['polarity']}، فدورات حظّه تسير "

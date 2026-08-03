@@ -44,6 +44,16 @@
 .lc.on{border-color:var(--gold);background:rgba(217,180,91,.1)}
 .lc .cn2{font-size:1.25rem;color:var(--gold);font-family:"Noto Serif",serif}
 .lc .ages{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.pl .im{font-size:.78rem;color:var(--gold-dim);padding:0 8px 8px;font-family:Amiri,serif}
+.stx{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.87rem;line-height:1.85}
+.stx b{color:var(--gold)}
+.stx .cost{color:var(--muted);font-size:.83rem;display:block;margin-top:4px}
+.rem{padding:14px 16px;border-radius:12px;border:1px solid var(--gold-dim);
+  background:rgba(217,180,91,.06);margin-bottom:10px;font-size:.87rem;line-height:1.85}
+.rem h4{margin:0 0 8px;color:var(--gold);font-size:1rem;font-family:Amiri,serif}
+.rem div{padding:3px 0}
+.dmr{border-inline-start:3px solid var(--gold);padding:14px 17px;border-radius:10px;
+  background:rgba(217,180,91,.07);font-size:.95rem;line-height:1.95;margin-top:14px}
 </style>
 </head>
 <body>
@@ -190,10 +200,22 @@ function render(d) {
         <div class="ar">${esc(p.branch.name)}</div>
         <div class="el" style="color:${ELCOLOR[p.branch.element]}">${esc(p.branch.element)} · ${esc(p.branch.polarity)}</div>
         <div class="an">${esc(p.branch.animal)}</div>
+        ${p.stem.deep && p.stem.deep.image ? `<div class="im">${esc(p.stem.deep.image)}</div>` : ''}
         <div class="role">${esc(p.role)}</div>
       </div>`;
     }).join('')}</div>
-     <p class="note" style="margin-top:14px">${esc(d.day_master.note)}</p>`);
+     <p class="note" style="margin-top:14px">${esc(d.day_master.note)}</p>
+     ${d.day_master_reading ? `<div class="dmr">${esc(d.day_master_reading)}</div>` : ''}
+     <div style="margin-top:16px">${d.pillars.map(p => p.stem.deep && p.stem.deep.text
+       ? `<div class="stx"><b>${esc(p.stem.name)} — ${esc(p.stem.deep.image)}</b>
+          (عمود ${esc(p.key)})<br>${esc(p.stem.deep.text)}
+          <span class="cost">وثمنه: ${esc(p.stem.deep.cost)}</span></div>` : '').join('')}
+     </div>
+     <div style="margin-top:8px">${d.pillars.map(p => p.branch.deep && p.branch.deep.text
+       ? `<div class="stx"><b>${esc(p.branch.name)} (${esc(p.branch.animal)})</b> —
+          ${esc(p.branch.deep.season)} · ${esc(p.branch.deep.hours)}<br>
+          ${esc(p.branch.deep.text)}</div>` : '').join('')}
+     </div>`);
 
   const maxPct = Math.max(...Object.values(d.elements).map(e => e.pct));
   const elements = card('ميزان العناصر الخمسة',
@@ -219,13 +241,26 @@ function render(d) {
        سيّد نفسك: أيُولّدك، أم تُولّده، أم تقهره، أم يقهرك، أم هو مثلك؟</p>
      ${d.ten_gods.map(g => `<div class="god">
        <b>${esc(g.pillar)} (${esc(g.stem)})</b> — ${esc(g.god.name || '')}:
-       ${esc(g.god.note || '')}</div>`).join('')}`);
+       ${esc(g.god.note || '')}
+       ${g.god.reading ? `<br><span style="color:var(--muted)">${esc(g.god.reading)}</span>` : ''}
+     </div>`).join('')}`);
+
+  const rem = d.remedies && Object.keys(d.remedies).length ? card('ما ينقصك، وكيف يُطلَب',
+    `<p class="note" style="margin-bottom:14px">${esc(d.remedy_note)}</p>
+     ${Object.entries(d.remedies).map(([e, r]) => `<div class="rem">
+       <h4>${esc(e)}</h4>
+       <div><b style="color:var(--gold)">الألوان:</b> ${esc(r.colors)}</div>
+       <div><b style="color:var(--gold)">الجهات:</b> ${esc(r.directions)}</div>
+       <div><b style="color:var(--gold)">ما يوافقه من العمل:</b> ${esc(r.work)}</div>
+       <div><b style="color:var(--gold)">وما يُعين عليه:</b> ${esc(r.habits)}</div>
+     </div>`).join('')}`) : '';
 
   let luck = '';
   if (d.luck) {
     const nowAge = (new Date().getFullYear()) - new Date(d.when_local).getFullYear();
     luck = card('دورات الحظّ — عشرًا عشرًا',
-      `<p style="line-height:1.9">${esc(d.luck.direction_note)}</p>
+      `${d.luck.what_is_it ? `<p style="line-height:1.9;margin-bottom:12px">${esc(d.luck.what_is_it)}</p>` : ''}
+       <p style="line-height:1.9">${esc(d.luck.direction_note)}</p>
        <p class="note" style="margin:8px 0 14px">${esc(d.luck.start_note)}</p>
        ${d.luck.cycles.map(c => {
          const on = nowAge >= c.from_age && nowAge < c.to_age;
@@ -244,7 +279,7 @@ function render(d) {
     luck = card('دورات الحظّ', `<p class="note">${esc(d.luck_note)}</p>`);
   }
 
-  out.innerHTML = gistHTML(d.gist) + head + pillars + elements + gods + luck;
+  out.innerHTML = gistHTML(d.gist) + head + pillars + elements + gods + rem + luck;
   initShare();
 }
 
