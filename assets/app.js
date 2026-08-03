@@ -189,3 +189,102 @@ const shiftISO = (iso, days) => {
   d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
+
+/* ══════════════════════════════════════════════════════════════
+   الخلاصة — أوّل ما تراه العين
+
+   قاعدة الصفحة: لا يُعرَض جدول قبل جملة. فمن دخل الموقع أوّل مرّة
+   يقرأ سطرين يفهمهما، ثم يختار أن ينزل أو لا ينزل.
+   ══════════════════════════════════════════════════════════════ */
+function gistHTML(g) {
+  if (!g || !g.lines || !g.lines.length) return '';
+  const e = t => String(t == null ? '' : t)
+    .replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  return `<div class="gist">
+    <h3>${e(g.title)}</h3>
+    ${g.lines.map(l => `<p>${e(l)}</p>`).join('')}
+    ${g.then ? `<p style="color:var(--muted);font-size:.87rem">${e(g.then)}</p>` : ''}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   الانتظار — تقدّم يُقاس لا دوران أبديّ
+
+   الدوران الأبديّ يقول «لم أُعلَّق» ولا يقول «كم بقي». والبحث عندنا
+   قد يبلغ أربع ثوانٍ، وهي دهر أمام شاشة صامتة. فنعرض خطوات معلومة
+   وشريطًا يتقدّم بتقدير مبنيّ على قياس فعليّ لا على تخمين.
+   ══════════════════════════════════════════════════════════════ */
+function waitBox(el, steps, expectMs) {
+  const e = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  el.innerHTML = `<div class="card"><div class="wait">
+    <div class="step" id="_wstep">${e(steps[0])}</div>
+    <div class="bar"><i id="_wbar"></i></div>
+    <div class="hint" id="_whint"></div>
+  </div></div>`;
+  const bar = document.getElementById('_wbar');
+  const step = document.getElementById('_wstep');
+  const hint = document.getElementById('_whint');
+  const t0 = Date.now();
+  let done = false;
+
+  const tick = setInterval(() => {
+    if (done) return;
+    const dt = Date.now() - t0;
+    /* نقترب من ٩٢٪ ولا نبلغ المئة: الوصول إلى المئة قبل الجواب كذب */
+    const pct = Math.min(92, 100 * (1 - Math.exp(-dt / (expectMs * 0.55))));
+    bar.style.width = pct.toFixed(0) + '%';
+    const i = Math.min(steps.length - 1, Math.floor(dt / (expectMs / steps.length)));
+    step.textContent = steps[i];
+    if (dt > expectMs * 2) hint.textContent = 'أطول من المعتاد… ما زلت أعمل.';
+  }, 220);
+
+  return {
+    finish() { done = true; clearInterval(tick); bar.style.width = '100%'; },
+    fail(msg) {
+      done = true; clearInterval(tick);
+      el.innerHTML = `<div class="card"><div class="msg err">${e(msg)}</div></div>`;
+    },
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   الروابط تُشارَك وتُستعاد
+
+   كان من حسب خريطته لا يستطيع أن يُرسلها لصاحبه: الصفحة لا تحمل
+   ما فيها في عنوانها. فصارت المعطيات في العنوان، فيُنسخ ويُرسَل
+   ويُحفظ في المفضّلة ويعود كما هو.
+   ══════════════════════════════════════════════════════════════ */
+function urlState(fields) {
+  const p = new URLSearchParams(location.search);
+  const out = {};
+  fields.forEach(f => { const v = p.get(f); if (v) out[f] = v; });
+  return out;
+}
+
+function pushState(obj) {
+  const p = new URLSearchParams();
+  Object.entries(obj).forEach(([k, v]) => {
+    if (v !== '' && v != null) p.set(k, v);
+  });
+  const url = location.pathname + (p.toString() ? '?' + p : '');
+  history.replaceState(null, '', url);
+}
+
+function shareButton(label) {
+  return `<button class="btn ghost" id="_share">${label || 'انسخ رابط هذه النتيجة'}</button>`;
+}
+
+function initShare() {
+  const b = document.getElementById('_share');
+  if (!b) return;
+  b.onclick = async () => {
+    const url = location.href;
+    try {
+      if (navigator.share) { await navigator.share({ url }); return; }
+      await navigator.clipboard.writeText(url);
+      const old = b.textContent;
+      b.textContent = 'نُسخ ✓';
+      setTimeout(() => (b.textContent = old), 1600);
+    } catch (e) { /* المستخدم ألغى المشاركة — لا شيء يُقال */ }
+  };
+}

@@ -1381,3 +1381,125 @@ def test_calendar_route_returns_a_file():
         body = r.body.decode("utf-8")
         assert body.startswith("BEGIN:VCALENDAR") and body.endswith("END:VCALENDAR\r\n")
         assert r.filename.endswith(".ics")
+
+
+# ══════════════════════════════════════════════════════════════════
+# ١٨ — الخلاصة: الشرط الذي يجعلها خلاصة
+# ══════════════════════════════════════════════════════════════════
+def _gist_cases():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    return [
+        ('bulletin', dispatch('/api/bulletin', q(city="دمشق"))),
+        ('chart', dispatch('/api/chart', q(date="1990-05-17", time="08:30",
+                                           city="حلب"))),
+        ('hours', dispatch('/api/hours', q(city="دمشق"))),
+        ('timelords', dispatch('/api/timelords', q(date="1990-05-17",
+                                                   time="08:30", city="حلب"))),
+        ('monthly', dispatch('/api/monthly', q(year="2026", month="8",
+                                               city="دمشق"))),
+        ('horary', dispatch('/api/horary', q(city="دمشق", date="2026-08-01",
+                                             time="11:20",
+                                             question="هل أتزوّج فلانًا؟"))),
+        ('synastry', dispatch('/api/synastry',
+                              q(date="1990-05-17", time="08:30", city="حلب",
+                                date2="1992-11-03", time2="21:15",
+                                city2="باريس"))),
+        ('search', dispatch('/api/search', q(city="دمشق", days="45",
+                                             purpose="العقود والتوقيع"))),
+    ]
+
+
+def test_every_main_route_has_a_gist():
+    for name, d in _gist_cases():
+        g = d.get("gist")
+        assert g, f"{name} بلا خلاصة"
+        assert g["title"] and g["lines"], name
+        assert len(g["lines"]) >= 2, f"{name}: سطر واحد ليس خلاصة"
+
+
+def test_gist_contains_no_jargon_at_all():
+    """
+    الشرط الذي يجعل الخلاصة خلاصة: ألّا تحتاج هي نفسها شرحًا.
+
+    والفحص ليس بحثًا عن كلمات في قائمة — بل: نُمرّر نصّ الخلاصة على
+    مُبسّط المصطلحات، فإن **غيّر فيه حرفًا** فقد تسرّب مصطلح. أي إن
+    الخلاصة يجب أن تكون نقطة ثابتة للمُبسِّط.
+    """
+    from falak import plain
+    leaks = []
+    for name, d in _gist_cases():
+        g = d["gist"]
+        for txt in [g["title"], g.get("then", "")] + g["lines"]:
+            if txt and plain.simplify(txt) != txt:
+                leaks.append((name, txt[:70]))
+    assert not leaks, f"مصطلحات تسرّبت إلى الخلاصة: {leaks[:3]}"
+
+
+def test_gist_speaks_to_someone_who_knows_nothing():
+    """
+    مقياس عمليّ: جمل قصيرة، ولا رموز فلكية، ولا درجات وأرقام قوسية.
+    فمن رأى «١١° ٢٢′ السرطان» في الخلاصة لم يُخاطَب بلغته.
+    """
+    import re
+    for name, d in _gist_cases():
+        g = d["gist"]
+        joined = " ".join(g["lines"])
+        assert "°" not in joined and "′" not in joined, name
+        assert not re.search(r"[☉☾☿♀♂♃♄♅♆♇☊⚸⚷]", joined), name
+        for line in g["lines"]:
+            assert len(line) < 400, f"{name}: سطر أطول من أن يكون خلاصة"
+
+
+def test_gist_failure_never_breaks_the_answer():
+    """الخلاصة زينة لا أساس: إن سقطت لم تُسقط الجواب معها."""
+    from falak import gist
+    assert gist.for_route("chart", {}) is None or isinstance(
+        gist.for_route("chart", {}), dict)
+    assert gist.for_route("لا-يوجد", {"x": 1}) is None
+
+
+def test_home_page_advertises_nothing_that_is_missing():
+    """
+    كانت البوّابة تعِد بثلاث أدوات «قريبًا» وهي منشورة من أسابيع،
+    وتربطها بـ href="#". فلا رابط ميت ولا وعد مؤجَّل.
+    """
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    html = open(os.path.join(root, "index.html"), encoding="utf-8").read()
+    assert 'href="#"' not in html
+    assert "soon" not in html
+    import re
+    for href in re.findall(r'href="(/[^"]*\.html)"', html):
+        assert os.path.exists(os.path.join(root, href.lstrip("/"))), href
+
+
+def test_navigation_covers_every_page_exactly_once():
+    """
+    التصفّح صار في ملفّ واحد (assets/nav.js) لأنه كان مكرّرًا في
+    اثنتي عشرة صفحة، فكل إضافة تعني اثني عشر تعديلًا — ونسينا
+    رابطًا مرّة فعلًا. فنتحقّق أن كل صفحة مذكورة، ومرّة واحدة.
+    """
+    import os, re, glob
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    nav = open(os.path.join(root, "assets/nav.js"), encoding="utf-8").read()
+    listed = re.findall(r"\['(/[a-z]+\.html)'", nav)
+    assert len(listed) == len(set(listed)), "رابط مكرّر في الأبواب"
+    pages = {os.path.basename(p) for p in glob.glob(os.path.join(root, "*.html"))}
+    pages.discard("index.html")            # الرئيسة لها زرّها الخاصّ
+    missing = pages - {x.lstrip("/") for x in listed}
+    assert not missing, f"صفحات خارج التصفّح: {missing}"
+    for href in listed:
+        assert os.path.exists(os.path.join(root, href.lstrip("/"))), href
+
+
+def test_every_page_loads_the_shared_navigation():
+    import os, glob
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for p in glob.glob(os.path.join(root, "*.html")):
+        html = open(p, encoding="utf-8").read()
+        assert "/assets/nav.js" in html, os.path.basename(p)
+        assert 'meta name="description"' in html, os.path.basename(p)
+        assert 'name="viewport"' in html, os.path.basename(p)

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="النشرة الفلكية اليومية بالعربية: منزلة القمر، وأوقات الشروق والغروب، وخلو المسار، ونصّ جاهز للنسخ.">
 <title>النشرة الفلكية اليومية — الفَلَك</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +14,7 @@
 <canvas class="stars" id="stars"></canvas>
 <div class="wrap">
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <a class="brand" href="/">
     <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
       <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
@@ -85,6 +86,7 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
 <script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
@@ -134,7 +136,7 @@ function render(d) {
     ...s.retrogrades.map(r => `<span class="chip neg">℞ ${r}</span>`),
   ].join('');
 
-  out.innerHTML =
+  out.innerHTML = gistHTML(d.gist) +
     `<div class="card">
       <div class="card-top">
         <h2 class="card-title">${d.date} — ${d.place}</h2>

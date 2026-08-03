@@ -25,7 +25,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import apikeys, depth, horary, ics, interpret, monthly  # noqa: E402
+from falak import apikeys, depth, gist, horary, ics, interpret, monthly  # noqa: E402
 from falak import mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
@@ -714,6 +714,9 @@ def route_v1(path: str, query: dict, headers: dict | None = None):
                 f"وطلبت {d}. استخرج مفتاحًا أوسع أو قسّم البحث.", 403)
 
     data = ROUTES[name](query)
+    g = gist.for_route(name, data)
+    if g:
+        data = {**data, "gist": g}
     return {
         "ok": True,
         "version": API_VERSION,
@@ -867,7 +870,12 @@ def dispatch(path: str, query: dict, headers: dict | None = None):
     fn = ROUTES.get(name)
     if not fn:
         raise ApiError(f"مسار غير معروف: {name}. المتاح: " + "، ".join(ROUTES), 404)
-    return fn(query)
+    out = fn(query)
+    if isinstance(out, dict):
+        g = gist.for_route(name, out)
+        if g:
+            out["gist"] = g
+    return out
 
 
 # ── الملفات الثابتة ──────────────────────────────────────────────

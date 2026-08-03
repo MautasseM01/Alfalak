@@ -38,7 +38,7 @@
 <canvas class="stars" id="stars"></canvas>
 <div class="wrap">
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <a class="brand" href="/">
     <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
       <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
@@ -120,6 +120,7 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
 <script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
@@ -174,9 +175,15 @@ async function load() {
     f.birthcity = $('birthcity').value.trim();
   }
   store.set('elec', f);
-  out.innerHTML = `<div class="card"><div class="msg">… أمسح ${f.days} يومًا يومًا يومًا</div></div>`;
-  try { D = await API('search', withLevel(f)); render(D); }
-  catch (e) { out.innerHTML = `<div class="card"><div class="msg err">${esc(e.message)}</div></div>`; }
+  // التقدير مبنيّ على قياس: نحو ٤٠ جزءًا من الألف لكل يوم
+  const w = waitBox(out, [
+    'أحسب مواقع القمر والكواكب…',
+    `أُقيّم ${f.days} يومًا واحدًا واحدًا…`,
+    'أختار أفضل ساعة في كل يوم…',
+    'أُرتّب النتائج…',
+  ], Math.max(1200, f.days * 40));
+  try { D = await API('search', withLevel(f)); w.finish(); render(D); }
+  catch (e) { w.fail(e.message); }
 }
 
 function dayRow(r, i) {
@@ -230,7 +237,7 @@ function render(d) {
   const worst = card('وما يُتجنّب',
     `<div class="best">${d.worst.map((r, i) => dayRow(r, 100 + i)).join('')}</div>`);
 
-  out.innerHTML = head + best + worst;
+  out.innerHTML = gistHTML(d.gist) + head + best + worst;
   out.querySelectorAll('.day').forEach(el => {
     el.onclick = () => $('det' + el.dataset.i).classList.toggle('show');
   });

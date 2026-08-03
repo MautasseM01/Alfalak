@@ -49,7 +49,7 @@ pre{background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:10px;
 <canvas class="stars" id="stars"></canvas>
 <div class="wrap">
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <a class="brand" href="/">
     <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
       <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
@@ -195,6 +195,7 @@ pre{background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:10px;
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
 <script>
 starfield('stars');
 const $ = id => document.getElementById(id);

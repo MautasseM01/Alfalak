@@ -50,7 +50,7 @@
 <canvas class="stars" id="stars"></canvas>
 <div class="wrap">
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <a class="brand" href="/">
     <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
       <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
@@ -138,6 +138,7 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
 <script src="/assets/wheel.js"></script>
 <script src="/assets/plain.js"></script>
 <script>
@@ -272,7 +273,7 @@ function render(d) {
       `<div class="sec"><h3>${esc(k)}</h3><p>${esc(v)}</p></div>`).join('') +
     `<div class="warn" style="margin-top:14px">${esc(d.disclaimer)}</div>`);
 
-  out.innerHTML = head + scores + wheelCard + aspects + overlays + rec + src;
+  out.innerHTML = gistHTML(d.gist) + head + scores + wheelCard + aspects + overlays + rec + src;
 
   out.querySelectorAll('[data-why]').forEach(b => {
     b.onclick = () => {

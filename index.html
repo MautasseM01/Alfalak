@@ -14,7 +14,7 @@
 <canvas class="stars" id="stars"></canvas>
 <div class="wrap">
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <a class="brand" href="/">
     <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
       <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
@@ -42,41 +42,77 @@
   </nav>
 </div>
 
-<h2 class="page">أدوات فلكية بالعربية</h2>
+<h2 class="page">ماذا تريد أن تعرف؟</h2>
 <p class="lede">
-  مواقع ظاهرية دقيقة كما تُرى من موقف الراصد تحت القبّة، محسوبة لحظيًا لأي يوم وأي مكان.
-  لا اشتراك، ولا حساب، ولا إعلانات.
+  أدوات فلكية بالعربية، محسوبة لحظيًّا لأيّ يوم وأيّ مكان — بلا اشتراك ولا حساب ولا إعلانات.
+  ولستَ مضطرًّا أن تعرف شيئًا عن الفلك: كل صفحة تبدأ بسطرين يفهمهما من لم يقرأ في هذا قطّ.
 </p>
 
-<div class="card">
+<div class="ask">
+  <a class="q" href="/bulletin.html">
+    <span class="i">☾</span>
+    <b>كيف يومي؟</b>
+    <em>حال السماء اليوم، وما يصلح فيه وما يُؤجَّل</em>
+  </a>
+  <a class="q" href="/chart.html">
+    <span class="i">⊕</span>
+    <b>من أنا؟</b>
+    <em>خريطة مولدك وقراءتها — تحتاج تاريخ ميلادك وساعته ومكانه</em>
+  </a>
+  <a class="q" href="/elections.html">
+    <span class="i">◷</span>
+    <b>متى أفعل هذا؟</b>
+    <em>أفضل يوم وساعة لأمر تنويه، عبر الشهور القادمة</em>
+  </a>
+  <a class="q" href="/synastry.html">
+    <span class="i">♡</span>
+    <b>هل نتوافق؟</b>
+    <em>خريطتان معًا: الحبّ والصحبة والشراكة، وما رفع كل درجة</em>
+  </a>
+  <a class="q" href="/horary.html">
+    <span class="i">؟</span>
+    <b>عندي سؤال محيّر</b>
+    <em>جواب من خريطة اللحظة التي وقع فيها سؤالك — وقد لا يكون له جواب</em>
+  </a>
+  <a class="q" href="/learn.html">
+    <span class="i">✦</span>
+    <b>أريد أن أفهم هذا العلم</b>
+    <em>البيوت والبروج والزوايا مشروحة، ومعجم لكل مصطلح</em>
+  </a>
+</div>
+
+<div class="card" style="margin-top:22px">
   <div class="card-top">
     <h2 class="card-title">السماء الآن</h2>
     <div class="chips" id="nowChips"></div>
   </div>
   <div class="card-body">
+    <p class="note" id="nowGist" style="margin:0 0 14px"></p>
     <div id="nowTable" class="msg">… أقرأ السماء</div>
   </div>
 </div>
 
-<div class="grid">
-  <a class="tile" href="/bulletin.html">
-    <div class="ico">☾</div>
-    <h3>النشرة الفلكية اليومية</h3>
-    <p>برج القمر ومنزلته، الزوايا بأوقاتها، خلو المسار، والاختيارات الصحية — لأي يوم تختاره.</p>
-  </a>
-  <a class="tile" href="/chart.html">
-    <div class="ico">⊕</div>
-    <h3>خريطة الميلاد والطالع</h3>
-    <p>الكواكب في بروجها وبيوتها، الأوتاد، الزوايا والكرامات، بنظامَي البيوت الكاملة وبلاسيدوس.</p>
-  </a>
-  <a class="tile" href="/ephemeris.html">
-    <div class="ico">✧</div>
-    <h3>مواقع الكواكب</h3>
-    <p>جدول المواقع لأي لحظة، مع الرجوع وطور القمر — يطابق الجداول الفلكية المعتمدة.</p>
-  </a>
-  <a class="tile soon" href="#"><div class="ico">◑</div><h3>النشرة الشهرية</h3><p>انتقالات الكواكب، الأقمار الجديدة والأبدار، والرجوع، وأفضل أيام الشهر.</p></a>
-  <a class="tile soon" href="#"><div class="ico">♡</div><h3>التوافق بين خريطتين</h3><p>التوافق العاطفي والصداقة والمهني، والخريطة المركّبة.</p></a>
-  <a class="tile soon" href="#"><div class="ico">↻</div><h3>العبور والعودة الشمسية</h3><p>عبور الكواكب على خريطتك، وخريطة سنتك القادمة.</p></a>
+<div class="card">
+  <div class="card-top"><h2 class="card-title">وفيه أيضًا</h2></div>
+  <div class="card-body">
+    <div class="grid">
+      <a class="tile" href="/monthly.html"><div class="ico">◑</div>
+        <h3>النشرة الشهرية</h3>
+        <p>أحداث الشهر كلّه: الانتقالات والكسوف والرجوع، بثلاثة أساليب في الصياغة.</p></a>
+      <a class="tile" href="/hours.html"><div class="ico">◔</div>
+        <h3>ساعات الكواكب</h3>
+        <p>اثنتا عشرة ساعة نهارًا ومثلها ليلًا، لكلٍّ كوكبها وما تصلح له.</p></a>
+      <a class="tile" href="/timelords.html"><div class="ico">↻</div>
+        <h3>أرباب الأزمنة</h3>
+        <p>أيّ فترة من عمرك تعيش الآن، ومتى تنتهي، وخريطة سنتك القادمة.</p></a>
+      <a class="tile" href="/ephemeris.html"><div class="ico">✧</div>
+        <h3>مواقع الكواكب</h3>
+        <p>جدول المواقع لأي لحظة، مع الرجوع وطور القمر.</p></a>
+      <a class="tile" href="/api.html"><div class="ico">⌘</div>
+        <h3>الواجهة البرمجية والتقويم</h3>
+        <p>ابنِ على الفَلَك، أو أدخِل السماء إلى تقويم هاتفك باشتراك واحد.</p></a>
+    </div>
+  </div>
 </div>
 
 <footer>
@@ -86,11 +122,19 @@
 </div>
 
 <script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
 <script src="/assets/plain.js"></script>
 <script>
 starfield('stars');
 initGlossary();
 initLevelSwitch(() => { if (typeof load === 'function') load(); });
+
+// خلاصة اليوم من النشرة — سطر واحد يفهمه كل زائر
+API('bulletin', withLevel({ city: 'دمشق' }))
+  .then(d => {
+    const g = d.gist;
+    if (g && g.lines) document.getElementById('nowGist').textContent = g.lines[0];
+  }).catch(() => {});
 
 API('ephemeris', withLevel({ tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' }))
   .then(d => {

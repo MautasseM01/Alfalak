@@ -215,3 +215,168 @@ footer{text-align:center;color:var(--dim);font-size:.76rem;margin-top:34px;line-
 @media(max-width:700px){
   .seg.levelsw{margin-inline-start:0;width:100%;justify-content:center}
 }
+
+/* ══════════════════════════════════════════════════════════════
+   التصفّح بالأبواب  —  انظر assets/nav.js
+   ══════════════════════════════════════════════════════════════ */
+nav.doors{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+nav.doors .home{
+  color:var(--muted);text-decoration:none;font-size:.86rem;padding:8px 13px;
+  border-radius:10px;transition:.15s;white-space:nowrap
+}
+nav.doors .home:hover{color:var(--text);background:rgba(255,255,255,.05)}
+nav.doors .home.cur{background:var(--gold);color:#15100a;font-weight:600}
+.door{position:relative}
+.door>button{
+  display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;
+  font:inherit;font-size:.86rem;color:var(--muted);padding:8px 13px;border-radius:10px;
+  transition:.15s;white-space:nowrap
+}
+.door>button:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.door>button svg{transition:transform .18s;opacity:.65}
+.door.open>button{color:var(--text);background:rgba(255,255,255,.06)}
+.door.open>button svg{transform:rotate(180deg)}
+.door.on>button{color:var(--gold)}
+.door.on::after{
+  content:"";position:absolute;inset-inline:13px;bottom:1px;height:2px;
+  background:var(--gold);border-radius:2px
+}
+.door .menu{
+  display:none;position:absolute;inset-inline-end:0;top:calc(100% + 7px);z-index:40;
+  min-width:270px;padding:9px;border-radius:14px;
+  background:var(--panel2);border:1px solid var(--line2);
+  box-shadow:0 20px 46px rgba(0,0,0,.6)
+}
+.door.open .menu{display:block;animation:dropin .14s ease-out}
+@keyframes dropin{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.door .menu .hint{
+  margin:2px 9px 8px;font-size:.75rem;color:var(--dim);line-height:1.65;
+  padding-bottom:8px;border-bottom:1px solid var(--line)
+}
+.door .menu a{
+  display:block;text-decoration:none;padding:9px 10px;border-radius:9px;transition:.13s
+}
+.door .menu a:hover{background:rgba(217,180,91,.09)}
+.door .menu a.cur{background:rgba(217,180,91,.13)}
+.door .menu .n{display:block;color:var(--text);font-size:.88rem;font-weight:600}
+.door .menu a.cur .n{color:var(--gold)}
+.door .menu .w{display:block;color:var(--dim);font-size:.76rem;line-height:1.6;margin-top:1px}
+
+/* زرّ القائمة على الجوّال */
+.burger{display:none;background:none;border:1px solid var(--line2);border-radius:11px;
+  padding:9px 11px;cursor:pointer;flex-direction:column;gap:4px}
+.burger span{display:block;width:19px;height:2px;background:var(--muted);border-radius:2px;
+  transition:.18s}
+.topbar.open .burger span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.topbar.open .burger span:nth-child(2){opacity:0}
+.topbar.open .burger span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+@media(max-width:860px){
+  .topbar{flex-wrap:nowrap;align-items:center}
+  .burger{display:flex}
+  nav.doors{
+    display:none;order:3;width:100%;flex-direction:column;align-items:stretch;gap:2px;
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line)
+  }
+  .topbar.open nav.doors{display:flex}
+  nav.doors .home{padding:11px 13px}
+  .door>button{width:100%;justify-content:space-between;padding:11px 13px}
+  .door.on::after{display:none}
+  .door.on>button{background:rgba(217,180,91,.1)}
+  .door .menu{
+    position:static;display:none;min-width:0;margin:2px 0 6px;
+    background:rgba(255,255,255,.025);box-shadow:none;border-color:var(--line)
+  }
+  .door.open .menu{display:block}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   الخلاصة  —  أوّل ما تراه العين، وبلا مصطلح واحد
+   ══════════════════════════════════════════════════════════════ */
+.gist{
+  border-radius:16px;padding:20px 22px;margin-bottom:20px;
+  background:linear-gradient(180deg,rgba(217,180,91,.09),rgba(217,180,91,.03));
+  border:1px solid var(--gold-dim)
+}
+.gist h3{
+  font-family:Amiri,serif;font-size:1.05rem;color:var(--gold);
+  margin:0 0 9px;font-weight:700
+}
+.gist p{margin:0 0 9px;font-size:1rem;line-height:1.95;color:var(--text)}
+.gist p:last-child{margin-bottom:0}
+.gist .more{
+  background:none;border:none;color:var(--gold);font:inherit;font-size:.83rem;
+  cursor:pointer;padding:0;text-decoration:underline dotted;margin-top:4px
+}
+.gist ul{margin:6px 0 0;padding-inline-start:20px;font-size:.92rem;line-height:1.9}
+@media(max-width:600px){
+  .gist{padding:16px 15px;border-radius:14px}
+  .gist p{font-size:.95rem}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   الانتظار: تقدّم حقيقي لا دوران أبديّ
+   ══════════════════════════════════════════════════════════════ */
+.wait{padding:26px 22px;text-align:center}
+.wait .bar{
+  height:5px;border-radius:99px;background:rgba(255,255,255,.07);
+  overflow:hidden;margin:14px auto 10px;max-width:340px
+}
+.wait .bar i{
+  display:block;height:100%;border-radius:99px;width:0;
+  background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+  transition:width .35s ease-out
+}
+.wait .step{color:var(--muted);font-size:.87rem}
+.wait .hint{color:var(--dim);font-size:.78rem;margin-top:8px}
+
+/* ══════════════════════════════════════════════════════════════
+   الجوّال: الجداول والعجلة والنماذج
+   ══════════════════════════════════════════════════════════════ */
+@media(max-width:600px){
+  .form{grid-template-columns:1fr}
+  .row{flex-direction:column;align-items:stretch}
+  .row .btn{width:100%}
+  .seg{width:100%}
+  .seg button{flex:1}
+  /* الجداول العريضة تُمرَّر أفقيًّا بدل أن تكسر الصفحة */
+  .card-body>table,.scrollx{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .wheel{margin-inline:-8px}
+  h2.page{font-size:1.42rem}
+  p.lede{font-size:.88rem}
+  .topbar{padding:12px 0 10px;margin-bottom:18px}
+  .brand h1{font-size:1.3rem}
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   البوّابة — أسئلة لا قائمة
+
+   الزائر لا يعرف أنه يريد «التزاوج»، بل يعرف أنه يريد أن يعرف
+   هل يتوافق مع فلان. فالبطاقات تسأل بلغته، والمصطلح يأتي بعد.
+   ══════════════════════════════════════════════════════════════ */
+.ask{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:13px}
+.ask .q{
+  display:block;text-decoration:none;color:inherit;padding:20px 22px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(24,34,60,.85),rgba(16,23,42,.85));
+  border:1px solid var(--line);transition:.17s
+}
+.ask .q:hover,.ask .q:focus-visible{
+  border-color:var(--gold-dim);background:rgba(217,180,91,.07);
+  transform:translateY(-2px);outline:none
+}
+.ask .q:focus-visible{box-shadow:0 0 0 2px var(--gold)}
+.ask .i{
+  display:block;font-size:1.6rem;color:var(--gold);line-height:1;
+  margin-bottom:10px;font-family:Amiri,serif
+}
+.ask .q b{
+  display:block;font-family:Amiri,serif;font-size:1.28rem;color:var(--text);
+  font-weight:700;margin-bottom:5px
+}
+.ask .q em{display:block;font-style:normal;color:var(--muted);font-size:.85rem;line-height:1.75}
+@media(max-width:600px){
+  .ask{grid-template-columns:1fr;gap:10px}
+  .ask .q{padding:16px 17px}
+  .ask .q b{font-size:1.15rem}
+}
