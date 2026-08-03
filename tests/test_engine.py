@@ -2282,3 +2282,178 @@ def test_synastry_route_carries_all_three_schools():
                   q(date="1990-05-17", city="حلب", date2="1992-11-03",
                     city2="باريس", schools="0"))
     assert "jyotish" not in d2 and "bazi" not in d2
+
+
+# ══════════════════════════════════════════════════════════════════
+# ٢٤ — التلميع: الطباعة والوصول ومحرّكات البحث
+# ══════════════════════════════════════════════════════════════════
+def _pages():
+    import glob, os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return {os.path.basename(p): open(p, encoding="utf-8").read()
+            for p in glob.glob(os.path.join(root, "*.html"))}
+
+
+def _root():
+    import os
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def test_every_page_is_reachable_by_keyboard_first():
+    """
+    رابط التخطّي أوّل ما يبلغه التبويب. وبدونه يلزم من يتصفّح
+    بلوحة المفاتيح أن يمرّ على أربعة عشر رابطًا في كل صفحة قبل
+    أن يبلغ ما جاء لأجله.
+    """
+    for name, html in _pages().items():
+        assert 'class="skip"' in html, name
+        assert 'href="#main"' in html, name
+        assert 'id="main"' in html, name
+        # ويأتي قبل الشريط في ترتيب المستند
+        assert html.index('class="skip"') < html.index('class="topbar"'), name
+
+
+def test_no_form_control_without_a_label():
+    import re
+    for name, html in _pages().items():
+        ids = set(re.findall(r'<label for="([^"]+)"', html))
+        for m in re.finditer(r'<(input|select|textarea)[^>]*id="([^"]+)"', html):
+            assert m.group(2) in ids, f"{name}: {m.group(2)} بلا تسمية"
+
+
+def test_stylesheet_honours_user_preferences():
+    css = open(_root() + "/assets/style.css", encoding="utf-8").read()
+    # من طلب تقليل الحركة فلا حركة — ويهمّ من يُصيبه الدُّوار منها
+    assert "prefers-reduced-motion" in css
+    assert "canvas.stars{display:none}" in css.replace(" ", "")
+    assert "prefers-contrast" in css
+    # حلقة تركيز ظاهرة على كل ما يُتنقَّل إليه
+    assert "focus-visible" in css
+    for sel in ("a:focus-visible", "button:focus-visible", "input:focus-visible"):
+        assert sel in css, sel
+    assert ".sr-only" in css
+
+
+def test_print_stylesheet_makes_a_readable_sheet():
+    """
+    الطباعة ليست لقطة شاشة: تُخفى الأزرار والشريط، وتُقلَب الخلفية
+    بيضاء، ويُفتح كل ما كان مطويًّا — فالورقة لا يُضغَط عليها.
+    """
+    css = open(_root() + "/assets/style.css", encoding="utf-8").read()
+    assert "@media print" in css
+    block = css[css.index("@media print"):]
+    flat = block.replace(" ", "").replace("\n", "")
+    assert "background:#fff!important" in flat
+    for hidden in ("canvas.stars", ".topbar", ".btn", "nav", "footer"):
+        assert hidden in block, hidden
+    assert "break-inside:avoid" in flat        # لا تنقطع بطاقة بين صفحتين
+    assert "display:table-header-group" in flat  # عنوان الجدول يتكرّر
+    assert 'a[href^="http"]::after' in block   # الورق لا يُنقَر، فيُطبع العنوان
+    assert "@page" in block
+
+
+def test_search_engine_files_exist_and_are_valid():
+    import os, xml.dom.minidom as minidom
+    root = _root()
+    sm = os.path.join(root, "sitemap.xml")
+    rb = os.path.join(root, "robots.txt")
+    assert os.path.exists(sm) and os.path.exists(rb)
+    doc = minidom.parse(sm)          # يسقط إن كان XML فاسدًا
+    locs = [n.firstChild.data for n in doc.getElementsByTagName("loc")]
+    assert len(locs) == len(_pages())
+    assert all(u.startswith("https://alfalak.vercel.app") for u in locs)
+    assert len(set(locs)) == len(locs)
+    robots = open(rb, encoding="utf-8").read()
+    assert "Sitemap: https://alfalak.vercel.app/sitemap.xml" in robots
+    # مسارات الواجهة تُرجع JSON لا صفحات، فلا تُفهرَس
+    assert "Disallow: /api/" in robots
+
+
+def test_every_page_has_social_and_canonical_metadata():
+    import re
+    for name, html in _pages().items():
+        for tag in ('rel="canonical"', 'og:title', 'og:description',
+                    'og:image', 'og:url', 'twitter:card', 'theme-color'):
+            assert tag in html, f"{name}: ينقصه {tag}"
+        # العنوان القانوني يُطابق اسم الملفّ، فلا تتكرّر صفحة بعنوانين
+        canon = re.search(r'rel="canonical" href="([^"]+)"', html).group(1)
+        want = ("https://alfalak.vercel.app/"
+                + ("" if name == "index.html" else name))
+        assert canon == want, f"{name}: {canon}"
+        # ووصف اجتماعي غير فارغ ولا مكرّر للعنوان
+        desc = re.search(r'property="og:description" content="([^"]+)"', html)
+        assert desc and len(desc.group(1)) > 40, name
+
+
+def test_structured_data_is_valid_json_and_typed():
+    import json, re
+    for name, html in _pages().items():
+        blocks = re.findall(
+            r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
+        assert blocks, f"{name}: بلا بيانات منظّمة"
+        for b in blocks:
+            data = json.loads(b)      # يسقط إن كان JSON فاسدًا
+            assert data["@context"] == "https://schema.org"
+            assert data["@type"]
+        types = {json.loads(b)["@type"] for b in blocks}
+        if name == "index.html":
+            assert "WebSite" in types
+        else:
+            assert "BreadcrumbList" in types, name
+
+
+def test_share_image_exists_and_is_a_real_png():
+    import os
+    p = os.path.join(_root(), "assets", "share.png")
+    assert os.path.exists(p), "og:image مفقودة — فتظهر الروابط بلا صورة"
+    head = open(p, "rb").read(24)
+    assert head[:8] == b"\x89PNG\r\n\x1a\n", "ليست PNG صحيحة"
+    # الأبعاد من ترويسة IHDR
+    w = int.from_bytes(head[16:20], "big")
+    h = int.from_bytes(head[20:24], "big")
+    assert (w, h) == (1200, 630), (w, h)   # المقاس الذي تطلبه الشبكات
+
+
+def test_static_server_can_serve_the_new_file_types():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import read_static, MIME
+    assert ".xml" in MIME and ".svg" in MIME and ".txt" in MIME
+    for path, ctype in [("/sitemap.xml", "application/xml"),
+                        ("/robots.txt", "text/plain"),
+                        ("/assets/share.png", "image/png")]:
+        hit = read_static(path)
+        assert hit, f"{path} لا يُخدَم"
+        assert ctype in hit[1], (path, hit[1])
+
+
+def test_toolbar_is_wired_once_not_fourteen_times():
+    """
+    أوّل محاولة حقنت الشريط في كل صفحة بتعبير نمطيّ، فأصابت سطر
+    التحميل بدل سطر النتيجة وقطعت قوالب نصّية — فسقطت عشر صفحات.
+    فصار في موضع واحد: مُراقِب في app.js. ونحرس ألّا يعود التكرار.
+    """
+    js = open(_root() + "/assets/app.js", encoding="utf-8").read()
+    assert "function autoToolbar" in js and "MutationObserver" in js
+    assert "function toolbarHTML" in js and "function initToolbar" in js
+    assert "window.print()" in js
+    for name, html in _pages().items():
+        assert "toolbarHTML(" not in html, f"{name}: الشريط مكرّر في الصفحة"
+
+
+def test_every_page_script_parses():
+    """
+    حارس صريح: كل كتلة جافاسكربت في كل صفحة تُحلَّل بلا خطأ.
+    (كُتب بعد أن كسر تعبير نمطيّ عشر صفحات دفعةً واحدة.)
+    """
+    import re, subprocess, json, shutil
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node غير متوفّر")
+    for name, html in _pages().items():
+        for block in re.findall(r'<script>([\s\S]*?)</script>', html):
+            r = subprocess.run(
+                [node, "-e", "new Function(require('fs')"
+                             ".readFileSync(0,'utf8'));"],
+                input=block, capture_output=True, text=True)
+            assert r.returncode == 0, f"{name}: {r.stderr[:160]}"

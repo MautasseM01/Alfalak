@@ -1,0 +1,8 @@
+# الفَلَك — أدوات فلكية عربية
+User-agent: *
+Allow: /
+
+# مسارات الواجهة تُرجع JSON لا صفحات، فلا فائدة من فهرستها
+Disallow: /api/
+
+Sitemap: https://alfalak.vercel.app/sitemap.xml

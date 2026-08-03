@@ -288,3 +288,112 @@ function initShare() {
     } catch (e) { /* المستخدم ألغى المشاركة — لا شيء يُقال */ }
   };
 }
+
+/* ══════════════════════════════════════════════════════════════
+   الطباعة والحفظ والمشاركة
+
+   الطباعة هنا ليست زينة: من حسب خريطته أراد ورقةً يقرؤها ويُريها
+   غيره. وقواعد الطباعة في style.css تُخفي الشريط والأزرار، وتقلب
+   الخلفية بيضاء، وتفتح كل ما كان مطويًّا — فالورقة لا يُضغَط عليها.
+   ══════════════════════════════════════════════════════════════ */
+function toolbarHTML(opts = {}) {
+  const e = t => String(t).replace(/[&<>]/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  return `<div class="row toolbar" style="margin-top:18px">
+    <button class="btn ghost" id="_print">اطبع أو احفظ PDF</button>
+    <button class="btn ghost" id="_share">${e(opts.share || 'انسخ رابط هذه النتيجة')}</button>
+    ${opts.svg ? '<button class="btn ghost" id="_img">نزّل العجلة صورة</button>' : ''}
+  </div>`;
+}
+
+function initToolbar() {
+  initShare();
+  const p = document.getElementById('_print');
+  if (p) p.onclick = () => window.print();
+
+  const im = document.getElementById('_img');
+  if (im) im.onclick = () => {
+    const svg = document.querySelector('#out svg');
+    if (!svg) return;
+    /* نُثبّت الألوان قبل التصدير: المتغيّرات CSS لا تعبر إلى الملفّ،
+       فلو صدّرناه كما هو خرجت الصورة بلا ألوان. */
+    const clone = svg.cloneNode(true);
+    const cs = getComputedStyle(document.documentElement);
+    const vars = ['--gold', '--gold-dim', '--text', '--muted', '--dim',
+                  '--line', '--line2', '--pos', '--neg', '--neu', '--bg'];
+    let s = new XMLSerializer().serializeToString(clone);
+    vars.forEach(v => {
+      s = s.split(`var(${v})`).join(cs.getPropertyValue(v).trim() || '#888');
+    });
+    s = s.replace('<svg', '<svg style="background:#0a0f1d"');
+    const blob = new Blob([s], { type: 'image/svg+xml;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'alfalak.svg';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+}
+
+/* منطقة النتيجة تُعلن عن نفسها لقارئ الشاشة.
+   وبدون هذا، من يتصفّح بالقارئ يضغط «احسب» فلا يسمع شيئًا: المحتوى
+   تبدّل تحته وهو لا يدري. */
+function markLive(el) {
+  if (!el) return;
+  el.setAttribute('role', 'region');
+  el.setAttribute('aria-live', 'polite');
+  el.setAttribute('aria-busy', 'false');
+  el.setAttribute('tabindex', '-1');
+}
+
+function announce(msg) {
+  let n = document.getElementById('_announce');
+  if (!n) {
+    n = document.createElement('div');
+    n.id = '_announce';
+    n.className = 'sr-only';
+    n.setAttribute('role', 'status');
+    n.setAttribute('aria-live', 'polite');
+    document.body.appendChild(n);
+  }
+  n.textContent = msg;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   شريط الأدوات يُركَّب وحده
+
+   أوّل محاولة حقنت استدعاء toolbarHTML في كل صفحة بتعبير نمطيّ،
+   فأصابت **سطر التحميل** بدل سطر النتيجة في بعضها، وقطعت قالبًا
+   نصّيًّا في بعضها الآخر — فسقطت عشر صفحات دفعةً واحدة.
+
+   والصواب أن يكون في موضع واحد: مُراقِب يرى متى امتلأ #out
+   بنتيجة، فيُلحق الشريط في آخرها. لا تعديل في أيّ صفحة، ولا
+   تعبير نمطيّ يُخطئ موضعه.
+   ══════════════════════════════════════════════════════════════ */
+function autoToolbar() {
+  const out = document.getElementById('out');
+  if (!out || out.dataset.tb) return;
+  out.dataset.tb = '1';
+  markLive(out);
+
+  const attach = () => {
+    /* نتيجة حقيقية لا رسالة انتظار: بطاقة فيها جسم، لا msg وحدها */
+    const real = out.querySelector('.card .card-body, .gist');
+    const waiting = out.querySelector('.wait, .msg');
+    if (!real || waiting) return;
+    if (out.querySelector('.toolbar')) return;
+    const hasSvg = !!out.querySelector('svg');
+    out.insertAdjacentHTML('beforeend', toolbarHTML({ svg: hasSvg }));
+    initToolbar();
+    announce('تمّ الحساب. النتيجة معروضة أسفل النموذج.');
+  };
+
+  new MutationObserver(attach).observe(out, { childList: true, subtree: false });
+  attach();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', autoToolbar);
+} else {
+  autoToolbar();
+}

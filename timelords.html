@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>أرباب الأزمنة — الفَلَك</title>
 <meta name="description" content="الفردارات والتسيير السنوي والعودة الشمسية — أيّ كوكب يحكم هذه السنة من عمرك.">
+<link rel="canonical" href="https://alfalak.vercel.app/timelords.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/timelords.html">
+<meta property="og:title" content="أرباب الأزمنة — الفردارات والتسيير — الفَلَك">
+<meta property="og:description" content="الفردارات والتسيير السنوي والعودة الشمسية — أيّ كوكب يحكم هذه السنة من عمرك.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="أرباب الأزمنة — الفردارات والتسيير — الفَلَك">
+<meta name="twitter:description" content="الفردارات والتسيير السنوي والعودة الشمسية — أيّ كوكب يحكم هذه السنة من عمرك.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -27,9 +40,12 @@
 .ptab{max-height:340px;overflow:auto}
 .ptab tr.now td{background:rgba(217,180,91,.13);color:var(--gold)}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"أرباب الأزمنة","url":"https://alfalak.vercel.app/timelords.html","description":"الفردارات والتسيير السنوي والعودة الشمسية.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"أرباب الأزمنة","item":"https://alfalak.vercel.app/timelords.html"}]}</script>
 </head>
 <body>
 <canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <div class="wrap">
 
 <div class="topbar" id="topbar">
@@ -58,6 +74,11 @@
   </nav>
 </div>
 
+<div class="printhead">
+  <h1>الفَلَك — أرباب الأزمنة</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
 <h2 class="page">أرباب الأزمنة</h2>
 <p class="lede">
   خريطة الميلاد تقول <em>ما أنت</em>، ولا تقول <em>متى</em>. وأرباب الأزمنة جواب «متى»:
@@ -86,6 +107,7 @@
 
 <div id="out"></div>
 
+</main>
 <footer>
   الفردارات من التراث الفارسي، نقلها أبو معشر البلخي وابن أبي الرجال.
   والتسيير والعودة الشمسية من أصول صناعة الأحكام.
@@ -102,6 +124,7 @@ initLevelSwitch(() => { if (typeof load === 'function') load(); });
 
 const $ = id => document.getElementById(id);
 const out = $('out');
+markLive(out);
 const COLORS = {
   'الشمس':'#e0b34a','القمر':'#b9c6e0','عطارد':'#8fa5d8','الزهرة':'#5fc7a1',
   'المريخ':'#e08a7d','المشتري':'#c9a227','زحل':'#7c8aa6',

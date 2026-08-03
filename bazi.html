@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="أعمدتك الأربعة بالحساب الصيني (البازي): الجذوع والفروع، وميزان العناصر الخمسة، ودورات الحظّ — وسنتك تبدأ بقيام الربيع لا برأس السنة القمرية.">
 <title>الأعمدة الأربعة — البازي — الفَلَك</title>
+<link rel="canonical" href="https://alfalak.vercel.app/bazi.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/bazi.html">
+<meta property="og:title" content="الأعمدة الأربعة — البازي الصيني — الفَلَك">
+<meta property="og:description" content="أعمدتك الأربعة بالحساب الصيني (البازي): الجذوع والفروع، وميزان العناصر الخمسة، ودورات الحظّ — وسنتك تبدأ بقيام الربيع لا برأس السنة القمرية.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="الأعمدة الأربعة — البازي الصيني — الفَلَك">
+<meta name="twitter:description" content="أعمدتك الأربعة بالحساب الصيني (البازي): الجذوع والفروع، وميزان العناصر الخمسة، ودورات الحظّ — وسنتك تبدأ بقيام الربيع لا برأس السنة القمرية.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -55,9 +68,12 @@
 .dmr{border-inline-start:3px solid var(--gold);padding:14px 17px;border-radius:10px;
   background:rgba(217,180,91,.07);font-size:.95rem;line-height:1.95;margin-top:14px}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"الأعمدة الأربعة — البازي","url":"https://alfalak.vercel.app/bazi.html","description":"الأركان الأربعة الصينية وميزان العناصر الخمسة ودورات الحظّ، بحساب الفصول الشمسية.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"الأعمدة الأربعة — البازي","item":"https://alfalak.vercel.app/bazi.html"}]}</script>
 </head>
 <body>
 <canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <div class="wrap">
 
 <div class="topbar" id="topbar">
@@ -87,6 +103,11 @@
   </nav>
 </div>
 
+<div class="printhead">
+  <h1>الفَلَك — الأعمدة الأربعة</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
 <h2 class="page">أعمدتك الأربعة</h2>
 <p class="lede">
   لا دائرة هنا ولا بروج: أربعة أعمدة للسنة والشهر واليوم والساعة، لكلٍّ حرفان —
@@ -116,7 +137,6 @@
       <button class="btn" id="go">احسب الأعمدة</button>
       <a class="btn ghost" id="toArab" href="/chart.html">بالحساب العربي</a>
       <a class="btn ghost" id="toJy" href="/jyotish.html">بالحساب الهندي</a>
-      <button class="btn ghost" id="_share">انسخ الرابط</button>
     </div>
     <p class="note" style="margin-top:12px">
       اتّجاه دورات الحظّ يختلف بالجنس وجذع السنة — وهذه قاعدة منصوصة في
@@ -127,6 +147,7 @@
 
 <div id="out"></div>
 
+</main>
 <footer>
   الفصول الشمسية محسوبة من طول الشمس بمكتبة Swiss Ephemeris، لا من جداول مستوردة.<br>
   المصادر: «滴天髓» نُخبة أسرار السماء، و«三命通會».
@@ -142,6 +163,7 @@ initGlossary();
 initLevelSwitch(() => { if (D) load(); });
 const $ = id => document.getElementById(id);
 const out = $('out');
+markLive(out);
 const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const card = (title, body, chips) =>
   `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
@@ -280,7 +302,6 @@ function render(d) {
   }
 
   out.innerHTML = gistHTML(d.gist) + head + pillars + elements + gods + rem + luck;
-  initShare();
 }
 
 $('go').onclick = load;

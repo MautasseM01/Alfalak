@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>المسائل — الفَلَك</title>
 <meta name="description" content="خريطة اللحظة التي وقع فيها السؤال، بقواعد التراث: الاعتبارات قبل الحكم، والدليلان، والتمام بالاتّصال ونقل النور.">
+<link rel="canonical" href="https://alfalak.vercel.app/horary.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/horary.html">
+<meta property="og:title" content="المسائل — جواب من لحظة سؤالك — الفَلَك">
+<meta property="og:description" content="خريطة اللحظة التي وقع فيها السؤال، بقواعد التراث: الاعتبارات قبل الحكم، والدليلان، والتمام بالاتّصال ونقل النور.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="المسائل — جواب من لحظة سؤالك — الفَلَك">
+<meta name="twitter:description" content="خريطة اللحظة التي وقع فيها السؤال، بقواعد التراث: الاعتبارات قبل الحكم، والدليلان، والتمام بالاتّصال ونقل النور.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -36,9 +49,12 @@
 .warn{border-inline-start:3px solid var(--neg);padding:11px 14px;border-radius:8px;
   background:rgba(224,138,125,.06);font-size:.84rem;line-height:1.85}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"المسائل","url":"https://alfalak.vercel.app/horary.html","description":"حكم في مسألة من خريطة لحظة السؤال، بقواعد التراث والاعتبارات قبل الحكم.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"المسائل","item":"https://alfalak.vercel.app/horary.html"}]}</script>
 </head>
 <body>
 <canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <div class="wrap">
 
 <div class="topbar" id="topbar">
@@ -67,6 +83,11 @@
   </nav>
 </div>
 
+<div class="printhead">
+  <h1>الفَلَك — المسائل</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
 <h2 class="page">المسائل</h2>
 <p class="lede">
   مبنى هذا الباب أن السؤال إذا اضطرم في صدر صاحبه فسأل، كانت السماء في تلك
@@ -102,6 +123,7 @@
 
 <div id="out"></div>
 
+</main>
 <footer>
   الاعتبارات وقواعد التمام من «التفهيم» للبيروني و«البارع» لابن أبي الرجال.<br>
   البيوت على ريجومونتانوس، وهو مذهب أهل هذا الباب.
@@ -119,6 +141,7 @@ initLevelSwitch(() => { if (D) load(); });
 pageIntro('horary');
 const $ = id => document.getElementById(id);
 const out = $('out');
+markLive(out);
 const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const card = (title, body, chips) =>
   `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>

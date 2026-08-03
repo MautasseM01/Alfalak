@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>التوافق بين خريطتين — الفَلَك</title>
 <meta name="description" content="التزاوج بعجلة مزدوجة، والخريطة المركّبة وخريطة دافيسون، وثلاثة موازين: عاطفي وصداقة ومهني.">
+<link rel="canonical" href="https://alfalak.vercel.app/synastry.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/synastry.html">
+<meta property="og:title" content="التوافق بين خريطتين — الفَلَك">
+<meta property="og:description" content="التزاوج بعجلة مزدوجة، والخريطة المركّبة وخريطة دافيسون، وثلاثة موازين: عاطفي وصداقة ومهني.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="التوافق بين خريطتين — الفَلَك">
+<meta name="twitter:description" content="التزاوج بعجلة مزدوجة، والخريطة المركّبة وخريطة دافيسون، وثلاثة موازين: عاطفي وصداقة ومهني.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -58,9 +71,12 @@
 .warn{border-inline-start:3px solid var(--neg);padding:10px 13px;border-radius:8px;
   background:rgba(224,138,125,.06);font-size:.84rem;line-height:1.8;color:var(--text)}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"التوافق بين خريطتين","url":"https://alfalak.vercel.app/synastry.html","description":"التوافق بثلاث مدارس: الزوايا الغربية، والأشتا كوتا الهندية، وفروع البازي وعناصره.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"التوافق بين خريطتين","item":"https://alfalak.vercel.app/synastry.html"}]}</script>
 </head>
 <body>
 <canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <div class="wrap">
 
 <div class="topbar" id="topbar">
@@ -90,6 +106,11 @@
   </nav>
 </div>
 
+<div class="printhead">
+  <h1>الفَلَك — التوافق</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
 <h2 class="page">التوافق بين خريطتين</h2>
 <p class="lede">
   تُوضع الخريطتان إحداهما فوق الأخرى، فيُنظر في زوايا كواكب كلٍّ إلى كواكب الآخر،
@@ -148,6 +169,7 @@
 
 <div id="out"></div>
 
+</main>
 <footer>
   الحساب بمكتبة Swiss Ephemeris · الموازين رتبة مئوية مقابل ستّة آلاف زوج عشوائي.<br>
   الخريطة تصف ميلًا، والعِشرة تصنعها المعاملة.
@@ -165,6 +187,7 @@ initLevelSwitch(() => { if (D) load(); });
 pageIntro('synastry');
 const $ = id => document.getElementById(id);
 const out = $('out');
+markLive(out);
 const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let D = null, view = 'syn';
 const card = (title, body, chips) =>

@@ -1038,7 +1038,9 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MIME = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8",
         ".js": "application/javascript; charset=utf-8", ".json": "application/json; charset=utf-8",
         ".svg": "image/svg+xml", ".ico": "image/x-icon", ".png": "image/png",
-        ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8"}
+        ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8",
+        ".xml": "application/xml; charset=utf-8",
+        ".webmanifest": "application/manifest+json; charset=utf-8"}
 STATIC_OK = set(MIME)
 
 

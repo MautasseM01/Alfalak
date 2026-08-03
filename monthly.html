@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>النشرة الشهرية — الفَلَك</title>
 <meta name="description" content="نشرة فلكية شهرية لأي شهر: الانتقالات والرجوع والكسوف والتقميرات، وتقويم الاختيارات لثلاثين غرضًا.">
+<link rel="canonical" href="https://alfalak.vercel.app/monthly.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/monthly.html">
+<meta property="og:title" content="النشرة الفلكية الشهرية — الفَلَك">
+<meta property="og:description" content="نشرة فلكية شهرية لأي شهر: الانتقالات والرجوع والكسوف والتقميرات، وتقويم الاختيارات لثلاثين غرضًا.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="النشرة الفلكية الشهرية — الفَلَك">
+<meta name="twitter:description" content="نشرة فلكية شهرية لأي شهر: الانتقالات والرجوع والكسوف والتقميرات، وتقويم الاختيارات لثلاثين غرضًا.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -46,9 +59,12 @@
 .rank .r .days b.x{background:rgba(224,138,125,.16);color:var(--neg)}
 .rank .r small{color:var(--muted);font-size:.76rem;line-height:1.7;display:block}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"النشرة الفلكية الشهرية","url":"https://alfalak.vercel.app/monthly.html","description":"أحداث الشهر: الانتقالات والكسوف والرجوع، بثلاثة أساليب في الصياغة.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"النشرة الفلكية الشهرية","item":"https://alfalak.vercel.app/monthly.html"}]}</script>
 </head>
 <body>
 <canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <div class="wrap">
 
 <div class="topbar" id="topbar">
@@ -77,6 +93,11 @@
   </nav>
 </div>
 
+<div class="printhead">
+  <h1>الفَلَك — الشهرية</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
 <h2 class="page">النشرة الشهرية</h2>
 <p class="lede">
   أي شهر بين ١٨٠٠ و٢٤٠٠: انتقالات الكواكب ومحطّات رجوعها، الزوايا التامّة بأوقاتها،
@@ -131,6 +152,7 @@
 
 <div id="out"></div>
 
+</main>
 <footer>
   المواقع محسوبة بمكتبة Swiss Ephemeris. تقويم الاختيارات على قواعد
   «غاية الحكيم» و«التفهيم» وكتب الاختيارات العربية.
@@ -147,6 +169,7 @@ initLevelSwitch(() => { if (typeof load === 'function') load(); });
 pageIntro('monthly');
 const $ = id => document.getElementById(id);
 const out = $('out');
+markLive(out);
 const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const WD = ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'];
 const ICON = { ingress:'⇢', station:'℞', aspect:'∠', lunation:'☾', eclipse:'◐', season:'☀', combust:'☼' };
@@ -315,7 +338,7 @@ function render() {
 
   <div class="card">
     <div class="card-top"><h2 class="card-title">تقويم الشهر</h2>
-      <select id="focus" style="max-width:230px">${d.purposes.map(p=>
+      <label for="focus" class="sr-only">ركّز على باب</label><select id="focus" style="max-width:230px">${d.purposes.map(p=>
         `<option value="${esc2(p)}"${p===focusPurpose?' selected':''}>${esc2(p)}</option>`).join('')}</select>
     </div>
     <div class="card-body">

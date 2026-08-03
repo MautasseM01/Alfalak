@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>الاختيارات — متى أفعل؟ — الفَلَك</title>
 <meta name="description" content="ابحث عن أفضل يوم وساعة لأمرك عبر الشهور القادمة، مع تفصيل لكل درجة، ومع ترجيح بخريطة مولدك.">
+<link rel="canonical" href="https://alfalak.vercel.app/elections.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/elections.html">
+<meta property="og:title" content="متى أفعل؟ — علم الاختيارات — الفَلَك">
+<meta property="og:description" content="ابحث عن أفضل يوم وساعة لأمرك عبر الشهور القادمة، مع تفصيل لكل درجة، ومع ترجيح بخريطة مولدك.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="متى أفعل؟ — علم الاختيارات — الفَلَك">
+<meta name="twitter:description" content="ابحث عن أفضل يوم وساعة لأمرك عبر الشهور القادمة، مع تفصيل لكل درجة، ومع ترجيح بخريطة مولدك.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -33,9 +46,12 @@
 .legend span{display:flex;align-items:center;gap:5px}
 .legend b{width:11px;height:11px;border-radius:2px;display:inline-block}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"علم الاختيارات — متى أفعل؟","url":"https://alfalak.vercel.app/elections.html","description":"البحث عن أفضل يوم وساعة لأمرك عبر الشهور القادمة، بأسباب كل درجة.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"علم الاختيارات — متى أفعل؟","item":"https://alfalak.vercel.app/elections.html"}]}</script>
 </head>
 <body>
 <canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <div class="wrap">
 
 <div class="topbar" id="topbar">
@@ -64,6 +80,11 @@
   </nav>
 </div>
 
+<div class="printhead">
+  <h1>الفَلَك — الاختيارات</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
 <h2 class="page">متى أفعل؟</h2>
 <p class="lede">
   تقويم الشهر يُجيب عن «كيف حال هذا اليوم؟». وهذه الصفحة تُجيب عن السؤال المعكوس،
@@ -115,6 +136,7 @@
 
 <div id="out"></div>
 
+</main>
 <footer>
   الأغراض وشروطها من التراث الفلكي العربي · الساعات من «غاية الحكيم» و«التفهيم».<br>
   لا تُبنى على هذا قرارات لا رجعة فيها.
@@ -131,6 +153,7 @@ initLevelSwitch(() => { if (D) load(); });
 pageIntro('elections');
 const $ = id => document.getElementById(id);
 const out = $('out');
+markLive(out);
 const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const card = (title, body, chips) =>
   `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
