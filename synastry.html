@@ -42,6 +42,19 @@
 .rec{padding:12px 14px;border-radius:10px;border:1px solid var(--gold-dim);
   background:rgba(217,180,91,.06);margin-bottom:9px;font-size:.86rem;line-height:1.8}
 .rec .k{color:var(--gold);font-weight:600}
+.koota{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);margin-bottom:7px;font-size:.86rem}
+.koota.zero{border-inline-start:3px solid var(--neg)}
+.koota.full{border-inline-start:3px solid var(--pos)}
+.koota .nm{font-family:Amiri,serif;font-size:1.02rem;color:var(--gold);min-width:96px}
+.koota .pts{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.koota .dt{grid-column:1/-1;color:var(--muted);font-size:.81rem;line-height:1.75;margin-top:4px}
+.flagged{border-inline-start-color:var(--gold)!important;background:rgba(217,180,91,.06)}
+.brow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  padding:10px 13px;border-radius:9px;border:1px solid var(--line);margin-bottom:6px;font-size:.85rem}
+.brow .k{color:var(--gold);white-space:nowrap}
+.big{font-family:Amiri,serif;font-size:2.4rem;color:var(--gold);line-height:1.1}
 .warn{border-inline-start:3px solid var(--neg);padding:10px 13px;border-radius:8px;
   background:rgba(224,138,125,.06);font-size:.84rem;line-height:1.8;color:var(--text)}
 </style>
@@ -121,6 +134,8 @@
         <button data-v="syn" aria-pressed="true">التزاوج</button>
         <button data-v="comp" aria-pressed="false">المركّبة</button>
         <button data-v="dav" aria-pressed="false">دافيسون</button>
+        <button data-v="jy" aria-pressed="false">الهندي</button>
+        <button data-v="bz" aria-pressed="false">الصيني</button>
       </div>
     </div>
     <p class="note" style="margin-top:12px">
@@ -240,6 +255,61 @@ function render(d) {
        <tbody>${c.bodies.map(x => `<tr><td>${x.symbol} ${esc(x.name)}</td>
          <td>${esc(x.text)}</td><td class="num">${x.house}</td></tr>`).join('')}</tbody></table>`,
       `<span class="chip gold">الطالع ${esc(c.angles['الطالع'].text)}</span>`);
+  } else if (view === 'jy' && d.jyotish) {
+    const j = d.jyotish;
+    wheelCard = card('التوافق الهندي — الأشتا كوتا',
+      `<div style="text-align:center;padding:14px 0">
+         <div class="big">${j.total} <span style="font-size:.5em;color:var(--muted)">من ٣٦</span></div>
+         <div style="color:var(--text)">${esc(j.band)} — ${esc(j.band_note)}</div>
+       </div>
+       <p class="note">${esc(j.order_note || '')} ${esc(j.asymmetry_note)}</p>
+       <div style="margin-top:16px">${j.kootas.map(k => `
+         <div class="koota ${k.got === 0 ? 'zero' : k.got === k.max ? 'full' : ''}
+              ${k.flagged ? 'flagged' : ''}">
+           <span class="nm">${esc(k.name)}</span>
+           <span>${esc(k.detail)}</span>
+           <span class="pts">${k.got} / ${k.max}</span>
+           <span class="dt">${esc(k.note)}</span>
+         </div>`).join('')}</div>
+       <div class="warn" style="margin-top:16px">${esc(j.limits)}</div>
+       ${(j.mangal && (j.mangal.a.has || j.mangal.b.has)) ? `<p class="note"
+         style="margin-top:12px">مَنغَل دوشا — ${esc(d.a.name)}:
+         ${esc(j.mangal.a.note)} · ${esc(d.b.name)}: ${esc(j.mangal.b.note)}</p>` : ''}`,
+      `<span class="chip gold">${j.total}/36</span>`);
+  } else if (view === 'bz' && d.bazi) {
+    const z = d.bazi;
+    wheelCard = card('التوافق الصيني — الفروع والعناصر',
+      `<div style="text-align:center;padding:12px 0">
+         <div class="big">${z.score}</div>
+         <div style="color:var(--text)">${esc(z.band)}</div>
+       </div>
+       <h3 style="font-family:Amiri,serif;color:var(--gold);margin:18px 0 10px">
+         الأعمدة الأربعة</h3>
+       ${z.pillars.map(p => `<div class="brow">
+         <span class="k">${esc(p.pillar)}</span>
+         <span>${esc(p.a.animal)} × ${esc(p.b.animal)} — <b style="color:var(--gold)">${esc(p.relation.kind)}</b>
+           <br><small style="color:var(--muted)">${esc(p.relation.note)}</small></span>
+         <span class="pts" style="color:var(--dim)">وزنه ${p.weight}</span>
+       </div>`).join('')}
+       <h3 style="font-family:Amiri,serif;color:var(--gold);margin:18px 0 10px">
+         تكامل العناصر</h3>
+       <p class="note">${esc(z.elements.note)}</p>
+       <div style="margin-top:10px">${z.elements.fills.map(f =>
+         `<div class="brow"><span class="k">·</span><span>${esc(f)}</span><span></span></div>`).join('')
+         || '<p class="note">لا يُكمّل أحدكما نقص الآخر مباشرة.</p>'}</div>
+       <h3 style="font-family:Amiri,serif;color:var(--gold);margin:18px 0 10px">
+         سيّدا النفس</h3>
+       <p class="note">${esc(z.day_masters.note)}</p>
+       <div style="margin-top:10px">
+         <div class="brow"><span class="k">${esc(d.a.name)} يرى ${esc(d.b.name)}</span>
+           <span><b style="color:var(--gold)">${esc(z.day_masters.a_sees_b.name || '')}</b>
+             — ${esc(z.day_masters.a_sees_b.reading || '')}</span><span></span></div>
+         <div class="brow"><span class="k">${esc(d.b.name)} يرى ${esc(d.a.name)}</span>
+           <span><b style="color:var(--gold)">${esc(z.day_masters.b_sees_a.name || '')}</b>
+             — ${esc(z.day_masters.b_sees_a.reading || '')}</span><span></span></div>
+       </div>
+       <div class="warn" style="margin-top:16px">${esc(z.animals_note)}<br><br>${esc(z.limits)}</div>`,
+      `<span class="chip gold">${z.score}/100</span>`);
   } else if (view === 'dav' && d.davison) {
     const c = d.davison;
     wheelCard = card('خريطة دافيسون',
@@ -270,12 +340,28 @@ function render(d) {
      ${R.receptions.map(r => `<div class="rec"><span class="k">${esc(r.kind)}</span> —
        ${esc(r.note)}</div>`).join('')}`) : '';
 
+  const schools = (d.jyotish || d.bazi) ? card('المدارس الثلاث جنبًا إلى جنب',
+    `<p style="line-height:1.95">${esc(d.schools_note || '')}</p>
+     <div style="margin-top:16px">
+       <div class="brow"><span class="k">العربي / الغربي</span>
+         <span>عاطفي ${R.scores['عاطفي'].score} · صداقة ${R.scores['صداقة'].score}
+           · مهني ${R.scores['مهني'].score} <small style="color:var(--muted)">(رتبة مئوية)</small></span>
+         <span></span></div>
+       ${d.jyotish ? `<div class="brow"><span class="k">الهندي</span>
+         <span>${d.jyotish.total} من ٣٦ — ${esc(d.jyotish.band)}</span><span></span></div>` : ''}
+       ${d.bazi ? `<div class="brow"><span class="k">الصيني</span>
+         <span>${d.bazi.score} من ١٠٠ — ${esc(d.bazi.band)}</span><span></span></div>` : ''}
+     </div>
+     <p class="note" style="margin-top:12px">بدّل بالأزرار أعلى الصفحة
+       لترى تفصيل كل مدرسة.</p>`) : '';
+
   const src = card('المصادر والحدود',
     Object.entries(R.sources).map(([k, v]) =>
       `<div class="sec"><h3>${esc(k)}</h3><p>${esc(v)}</p></div>`).join('') +
     `<div class="warn" style="margin-top:14px">${esc(d.disclaimer)}</div>`);
 
-  out.innerHTML = gistHTML(d.gist) + head + scores + wheelCard + aspects + overlays + rec + src;
+  out.innerHTML = gistHTML(d.gist) + head + scores + schools + wheelCard
+                + aspects + overlays + rec + src;
 
   out.querySelectorAll('[data-why]').forEach(b => {
     b.onclick = () => {

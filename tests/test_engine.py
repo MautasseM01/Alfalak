@@ -2134,3 +2134,151 @@ def test_bazi_route_carries_the_readings_and_remedies():
     assert d["luck"]["what_is_it"]
     for c in d["luck"]["cycles"]:
         assert c["god"].get("reading")
+
+
+# ══════════════════════════════════════════════════════════════════
+# ٢٣ — التوافق بالمدرستين
+# ══════════════════════════════════════════════════════════════════
+def _two_jy():
+    from falak import jyotish as jy
+    a = jy.compute(datetime(1990, 5, 17, 8, 30,
+                            tzinfo=ZoneInfo("Asia/Damascus")),
+                   36.2, 37.13, "lahiri", "Asia/Damascus")
+    b = jy.compute(datetime(1992, 11, 3, 21, 15,
+                            tzinfo=ZoneInfo("Europe/Paris")),
+                   48.86, 2.35, "lahiri", "Europe/Paris")
+    return a, b
+
+
+def test_ashta_koota_totals_thirty_six():
+    from falak import jyotish_match as jm
+    a, b = _two_jy()
+    r = jm.ashta_koota(a, b)
+    assert sum(k["max"] for k in r["kootas"]) == 36 == r["max"]
+    assert len(r["kootas"]) == 8
+    for k in r["kootas"]:
+        assert 0 <= k["got"] <= k["max"], k["name"]
+        assert k["detail"] and k["note"]
+    assert abs(sum(k["got"] for k in r["kootas"]) - r["total"]) < 0.05
+    names = [k["name"] for k in r["kootas"]]
+    assert names == ["الفَرْنا", "الڤَشْيا", "التارا", "اليوني",
+                     "غْرَها مَيْتري", "الغانا", "البهاكوت", "النادي"]
+
+
+def test_koota_tables_are_complete_and_consistent():
+    from falak import jyotish as jy, jyotish_match as jm
+    assert len(jm.NAK_MATCH) == 27
+    for i, (animal, sex, gana, nadi) in enumerate(jm.NAK_MATCH):
+        assert animal and sex in ("ذكر", "أنثى")
+        assert gana in ("ديفا", "إنسان", "راكشاسا")
+        assert nadi in ("أولى", "وسطى", "أخيرة")
+    # حيوانات اليوني أربعة عشر لسبع وعشرين منزلة، فلا بدّ أن يبقى
+    # واحد بلا زوج: وهو **النمس** — وهذا منصوص عندهم لا سهو منّا.
+    # (ظننّاه خطأً أوّلًا، فتبيّن أن الجدول على صوابه.)
+    from collections import Counter
+    c = Counter(a for a, *_ in jm.NAK_MATCH)
+    assert len(c) == 14
+    singles = [k for k, v in c.items() if v == 1]
+    assert singles == ["النمس"], c
+    assert all(v == 2 for k, v in c.items() if k != "النمس")
+    assert sum(c.values()) == 27
+    # النادي موزّع بالتساوي: تسع لكلٍّ
+    n = Counter(x[3] for x in jm.NAK_MATCH)
+    assert set(n.values()) == {9}, n
+    # وكل برج له فَرْنا وڤَشْيا
+    for s in jy.ch.SIGNS if hasattr(jy, "ch") else chart.SIGNS:
+        assert s in jm.VARNA and s in jm.VASHYA
+
+
+def test_nadi_dosha_and_bhakoot_are_detected():
+    """أثقل بابين في النظام — لا بدّ أن يُمسَكا حين يقعان."""
+    from falak import jyotish_match as jm
+    # نادي واحد ⇒ صفر
+    same = jm._nadi(1, 6)          # أشويني وأردرا كلتاهما «أولى»
+    assert same["got"] == 0 and same["flagged"]
+    assert "مُبطِلات" in same["note"]      # ونقول إن لها مُبطِلات
+    diff = jm._nadi(1, 2)
+    assert diff["got"] == 8 and not diff["flagged"]
+    # البهاكوت: المسافات ٦/٨ و٥/٩ و٢/١٢ معسِّرة
+    assert jm._bhakoot("الحمل", "العقرب")["got"] == 0      # ٨ و٦
+    assert jm._bhakoot("الحمل", "الثور")["got"] == 0       # ٢ و١٢
+    assert jm._bhakoot("الحمل", "الجوزاء")["got"] == 7     # ٣ و١١
+
+
+def test_varna_is_flagged_as_caste_based():
+    """
+    باب الفَرْنا أصله طبقيّ. نحسبه لأنه من النظام، ونقول ما هو —
+    واختبار يمنع حذف هذا التصريح بسهو.
+    """
+    from falak import jyotish_match as jm
+    a, b = _two_jy()
+    r = jm.ashta_koota(a, b)
+    varna = next(k for k in r["kootas"] if k["name"] == "الفَرْنا")
+    assert varna["flagged"]
+    assert "طبقات" in varna["note"] and "لا نُقرّه" in varna["note"]
+    assert "طبقيّ" in r["limits"] and "ظلمه" in r["limits"]
+    assert r["asymmetry_note"]
+
+
+def test_chinese_branch_relations_are_exact():
+    from falak import bazi_match as bm
+    # التصادم بين المتقابلين على الدائرة
+    assert bm.branch_relation("زي", "وُو")["kind"] == "تصادم"
+    assert bm.branch_relation("تشِن", "شو")["kind"] == "تصادم"
+    # الوفاق السداسي
+    assert bm.branch_relation("زي", "تشو")["kind"] == "وفاق سداسي"
+    assert bm.branch_relation("وُو", "وَي")["kind"] == "وفاق سداسي"
+    # التآلف الثلاثي
+    assert bm.branch_relation("زي", "شِن")["kind"] == "تآلف ثلاثي"
+    assert bm.branch_relation("يِن", "شو")["kind"] == "تآلف ثلاثي"
+    assert bm.branch_relation("زي", "زي")["kind"] == "تطابق"
+    # كل الجداول متماثلة في الاتّجاهين
+    from falak import bazi as bz
+    for a, *_ in bz.BRANCHES:
+        for b, *_ in bz.BRANCHES:
+            assert (bm.branch_relation(a, b)["kind"]
+                    == bm.branch_relation(b, a)["kind"]), (a, b)
+
+
+def test_chinese_trines_and_clashes_cover_the_circle():
+    from falak import bazi as bz, bazi_match as bm
+    assert len(bm.TRINES) == 4
+    assert sorted(b for g, *_ in bm.TRINES for b in g) == sorted(
+        b for b, *_ in bz.BRANCHES)
+    assert len(bm.HARMONIES) == 6 and len(bm.CLASHES) == 6
+    # التصادم دائمًا بين فرعين تفصلهما ستّة مواضع
+    for a, b in bm.CLASHES:
+        assert (bz._BRANCH_I[a] - bz._BRANCH_I[b]) % 12 == 6
+
+
+def test_bazi_match_is_symmetric_in_score():
+    from falak import bazi as bz, bazi_match as bm
+    a = bz.compute(datetime(1990, 5, 17, 8, 30,
+                            tzinfo=ZoneInfo("Asia/Damascus")), "Asia/Damascus")
+    b = bz.compute(datetime(1992, 11, 3, 21, 15,
+                            tzinfo=ZoneInfo("Europe/Paris")), "Europe/Paris")
+    assert bm.compare(a, b)["score"] == bm.compare(b, a)["score"]
+    r = bm.compare(a, b, "أ", "ب")
+    assert len(r["pillars"]) == 4
+    assert r["elements"]["note"] and r["day_masters"]["note"]
+    assert "ربع الخريطة" in r["animals_note"]
+
+
+def test_synastry_route_carries_all_three_schools():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/synastry',
+                 q(date="1990-05-17", time="08:30", city="حلب", name="أ",
+                   date2="1992-11-03", time2="21:15", city2="باريس", name2="ب"))
+    assert d["reading"]["scores"]
+    assert d["jyotish"]["total"] <= 36 and len(d["jyotish"]["kootas"]) == 8
+    assert d["jyotish"]["order_note"] and d["jyotish"]["limits"]
+    assert d["bazi"]["score"] and d["bazi"]["pillars"]
+    assert "اختلافها هو الفائدة" in d["schools_note"]
+    # ويمكن إطفاؤها
+    d2 = dispatch('/api/synastry',
+                  q(date="1990-05-17", city="حلب", date2="1992-11-03",
+                    city2="باريس", schools="0"))
+    assert "jyotish" not in d2 and "bazi" not in d2

@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
 from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
-from falak import bazi, jyotish, monthly  # noqa: E402
+from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
 from falak import mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
@@ -278,6 +278,38 @@ def route_synastry(q):
         "reading": syn.read(A, B, A["name"], B["name"]),
         "inter_aspects": syn.inter_aspects(A, B),
     }
+    # ── المدرستان الأخريان: التوافق نفسه بعينين أخريين ──
+    if _one(q, "schools", "1") == "1":
+        try:
+            ja = jyotish.compute(datetime.fromisoformat(A["when_local"]),
+                                 A["lat"], A["lon"], "lahiri", A["tz"])
+            jb = jyotish.compute(datetime.fromisoformat(B["when_local"]),
+                                 B["lat"], B["lon"], "lahiri", B["tz"])
+            out["jyotish"] = {
+                **jyotish_match.ashta_koota(ja, jb),
+                "mangal": {"a": jyotish_match.mangal_dosha(ja),
+                           "b": jyotish_match.mangal_dosha(jb)},
+                "order_note": (
+                    f"حُسِب بترتيب: {A['name']} في موضع العروس و"
+                    f"{B['name']} في موضع العريس — لأن النظام غير "
+                    "متماثل ولا بدّ من ترتيب."),
+            }
+        except Exception as exc:
+            out["jyotish_error"] = str(exc)
+        try:
+            ba = bazi.compute(datetime.fromisoformat(A["when_local"]), A["tz"])
+            bb = bazi.compute(datetime.fromisoformat(B["when_local"]), B["tz"])
+            out["bazi"] = bazi_match.compare(ba, bb, A["name"], B["name"])
+        except Exception as exc:
+            out["bazi_error"] = str(exc)
+        out["schools_note"] = (
+            "ثلاث مدارس تنظر إلى الزوجين نفسيهما بثلاثة مقاييس "
+            "مختلفة تمامًا: الغربي بالزوايا، والهندي بمنازل القمر، "
+            "والصيني بالفروع والعناصر. ولا يُنتظَر أن تتّفق — "
+            "**واختلافها هو الفائدة**: كلٌّ يرى ما لا يراه الآخر. "
+            "فإن اتّفقت فذاك دليل، وإن اختلفت فاقرأ أيّها يصف "
+            "علاقتك أصدق وصف.")
+
     if _one(q, "composite", "1") == "1":
         out["composite"] = syn.composite(A, B)
     if _one(q, "davison", "1") == "1":
