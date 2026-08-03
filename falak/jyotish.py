@@ -312,8 +312,10 @@ def compute(when_local: datetime, lat: float, lon: float,
     varga_tables = {}
     for n in want:
         if n in VARGAS:
+            vd = jd.varga_text(n)
             varga_tables[str(n)] = {
                 "name": VARGAS[n],
+                "sanskrit": vd[0], "topic": vd[1], "reading": vd[2],
                 "lagna": varga(lagna, n),
                 "bodies": {b["name"]: varga(b["lon"], n) for b in bodies},
             }
@@ -390,6 +392,8 @@ def vimshottari(birth_utc: datetime, moon_lon: float,
             "start_year": t.year, "end_year": end.year,
             "partial": k == 0 and left < 0.999,
         }
+        from . import jyotish_deep as _jd
+        entry["deep"] = _jd.dasha_text(p)
         if levels >= 2:
             entry["sub"] = _antardasha(p, t, years)
         out.append(entry)

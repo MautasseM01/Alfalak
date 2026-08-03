@@ -1864,3 +1864,189 @@ def test_jyotish_route_carries_texts_and_yogas():
         assert b["bhava"]["sanskrit"] and b["bhava"]["rules"]
         assert b["nakshatra"]["deep"].get("gift"), b["name"]
     assert d["lagna"]["nakshatra"]["deep"].get("nature")
+
+
+# ══════════════════════════════════════════════════════════════════
+# ٢١ — البازي: الأركان الأربعة
+# ══════════════════════════════════════════════════════════════════
+def test_sexagenary_day_anchors_agree_across_a_century():
+    """
+    نقطتان معروفتان يفصل بينهما قرن. اتّفاقهما برهان على أن
+    التسلسل صحيح يومًا بيوم — واحتمال وقوعه مصادفةً واحد من ستّين.
+
+    (أدرجنا أوّلًا أربع قيم من الذاكرة فخالفتنا اثنتان، وتبيّن أن
+    الذاكرة هي المخطئة. فلا نُثبّت إلا ما نتحقّق منه.)
+    """
+    from falak import bazi as bz
+    assert bz.day_pillar(date(1900, 1, 1)) == ("جيا", "شو")     # 甲戌
+    assert bz.day_pillar(date(2000, 1, 1)) == ("وو", "وُو")      # 戊午
+    n = (date(2000, 1, 1) - date(1900, 1, 1)).days
+    assert n % 10 == 4 and n % 12 == 8
+
+
+def test_sexagenary_cycles_close():
+    from falak import bazi as bz
+    assert bz.year_pillar(1984) == ("جيا", "زي")
+    assert bz.year_pillar(2044) == bz.year_pillar(1984)
+    assert len({bz.year_pillar(1984 + i) for i in range(60)}) == 60
+    d0 = date(2000, 1, 1)
+    assert bz.day_pillar(d0) == bz.day_pillar(d0 + timedelta(days=60))
+    assert len({bz.day_pillar(d0 + timedelta(days=i))
+                for i in range(60)}) == 60
+
+
+def test_animal_years_people_know():
+    from falak import bazi as bz
+    for y, want in [(1984, "الفأر"), (1990, "الحصان"), (2000, "التنّين"),
+                    (2024, "التنّين"), (2025, "الأفعى"), (2026, "الحصان")]:
+        _s, b = bz.year_pillar(y)
+        assert bz.BRANCHES[bz._BRANCH_I[b]][2] == want, y
+
+
+def test_solar_terms_are_exact_degrees():
+    """الفصول ليست تواريخ محفوظة: هي لحظات بلوغ الشمس درجةً بعينها."""
+    from falak import bazi as bz
+    terms = bz.solar_terms(2026)
+    assert len(terms) == 12
+    for t in terms:
+        L = ephem.lon_of("الشمس", t["when_utc"])
+        assert abs(((L - t["degree"] + 180) % 360) - 180) < 1e-4, t["name"]
+    for i in range(11):
+        gap = (terms[i + 1]["when_utc"] - terms[i]["when_utc"]).days
+        assert 28 <= gap <= 33, (terms[i]["name"], gap)
+    assert terms[0]["name"] == "قيام الربيع"
+
+
+def test_year_begins_at_li_chun_not_lunar_new_year():
+    """
+    أشهر خطأ في هذا الباب: نسبة المولود إلى حيوان رأس السنة القمرية.
+    وسنة البازي تبدأ بقيام الربيع — وبينهما أسبوعان أحيانًا.
+    """
+    from falak import bazi as bz
+    tz = ZoneInfo("Asia/Shanghai")
+    lc = bz.li_chun(2025).astimezone(tz)
+    before = bz.compute(lc - timedelta(days=1), "Asia/Shanghai")
+    after = bz.compute(lc + timedelta(days=1), "Asia/Shanghai")
+    assert before["bazi_year"] == 2024 and before["animal"] == "التنّين"
+    assert after["bazi_year"] == 2025 and after["animal"] == "الأفعى"
+    # والتنبيه يظهر للقارئ لا يُكتَم
+    assert before["li_chun"]["before"]
+    assert "يُخطئ" in before["li_chun"]["note"]
+    assert not after["li_chun"]["before"]
+
+
+def test_month_begins_at_the_solar_term():
+    from falak import bazi as bz
+    tz = ZoneInfo("Asia/Shanghai")
+    terms = bz.solar_terms(2026)
+    for t in terms[1:5]:
+        edge = t["when_utc"].astimezone(tz)
+        a = bz.compute(edge - timedelta(hours=3), "Asia/Shanghai")
+        b = bz.compute(edge + timedelta(hours=3), "Asia/Shanghai")
+        assert (a["pillars"][1]["branch"]["name"]
+                != b["pillars"][1]["branch"]["name"]), t["name"]
+        assert b["pillars"][1]["branch"]["name"] == t["branch"]
+
+
+def test_late_zi_hour_rolls_to_the_next_day():
+    """من وُلد بعد الحادية عشرة ليلًا يُحسَب عمود يومه لليوم التالي."""
+    from falak import bazi as bz
+    tz = ZoneInfo("Asia/Shanghai")
+    a = bz.compute(datetime(2026, 3, 10, 22, 30, tzinfo=tz), "Asia/Shanghai")
+    b = bz.compute(datetime(2026, 3, 10, 23, 30, tzinfo=tz), "Asia/Shanghai")
+    assert not a["late_zi"] and b["late_zi"]
+    nxt = bz.day_pillar(date(2026, 3, 11))
+    assert (b["pillars"][2]["stem"]["name"],
+            b["pillars"][2]["branch"]["name"]) == nxt
+    assert b["pillars"][3]["branch"]["name"] == "زي"
+
+
+def test_five_tigers_and_five_rats_rules():
+    from falak import bazi as bz
+    assert bz.month_stem("جيا", "يِن") == "بينغ"
+    assert bz.month_stem("جي", "يِن") == "بينغ"
+    assert bz.month_stem("وو", "يِن") == "جيا"
+    assert bz.hour_stem("جيا", "زي") == "جيا"
+    assert bz.hour_stem("جي", "زي") == "جيا"
+    # والجذع يتسلسل مع الفرع
+    assert bz.hour_stem("جيا", "تشو") == "يي"
+
+
+def test_five_elements_cycles_are_closed():
+    from falak import bazi as bz
+    assert len(bz.ELEMENTS) == 5
+    for e in bz.ELEMENTS:
+        assert bz.GENERATES[e] in bz.ELEMENTS
+        assert bz.CONTROLS[e] in bz.ELEMENTS
+        assert bz.GENERATES[e] != e and bz.CONTROLS[e] != e
+    # الدورتان تعودان إلى نقطة البدء بعد خمس
+    for e in bz.ELEMENTS:
+        x = e
+        for _ in range(5):
+            x = bz.GENERATES[x]
+        assert x == e
+        y = e
+        for _ in range(5):
+            y = bz.CONTROLS[y]
+        assert y == e
+
+
+def test_ten_gods_are_measured_from_the_day_master():
+    from falak import bazi as bz
+    assert bz.ten_god("جيا", "جيا")["name"] == "أخ مُوازٍ"      # خشب/خشب
+    assert bz.ten_god("جيا", "يي")["name"] == "أخ مُنافس"
+    assert "أمّ" in bz.ten_god("جيا", "قوَي")["name"]            # الماء يُولّد الخشب
+    assert "إخراج" in bz.ten_god("جيا", "بينغ")["name"]         # الخشب يُولّد النار
+    assert "مال" in bz.ten_god("جيا", "وو")["name"]             # الخشب يقهر التراب
+    assert "سلطة" in bz.ten_god("جيا", "غِنغ")["name"]          # المعدن يقهر الخشب
+
+
+def test_luck_cycles_direction_depends_on_sex_and_year():
+    """قاعدة منصوصة عندهم: الاتّجاه يختلف بالجنس وقطبية جذع السنة."""
+    from falak import bazi as bz
+    yang = bz.compute(datetime(1990, 5, 17, 8, 30,
+                               tzinfo=ZoneInfo("Asia/Damascus")),
+                      "Asia/Damascus")
+    assert yang["pillars"][0]["stem"]["polarity"] == "يانغ"
+    assert bz.luck_cycles(yang, male=True)["forward"]
+    assert not bz.luck_cycles(yang, male=False)["forward"]
+    yin = bz.compute(datetime(1991, 5, 17, 8, 30,
+                              tzinfo=ZoneInfo("Asia/Damascus")),
+                     "Asia/Damascus")
+    assert yin["pillars"][0]["stem"]["polarity"] == "ين"
+    assert not bz.luck_cycles(yin, male=True)["forward"]
+    assert bz.luck_cycles(yin, male=False)["forward"]
+    m = bz.luck_cycles(yang, male=True)
+    assert 0 <= m["start_age"] <= 10
+    for i in range(len(m["cycles"]) - 1):
+        assert abs(m["cycles"][i + 1]["from_age"]
+                   - m["cycles"][i]["from_age"] - 10) < 0.01
+
+
+def test_bazi_route_and_gist():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    from falak import plain
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/bazi', q(date="1990-05-17", time="08:30",
+                                city="حلب", sex="m"))
+    assert len(d["pillars"]) == 4
+    for p in d["pillars"]:
+        assert p["stem"]["chinese"] and p["branch"]["chinese"] and p["role"]
+    assert d["day_master"]["element"] and d["animal"]
+    assert abs(sum(v["pct"] for v in d["elements"].values()) - 100) < 0.5
+    assert len(d["ten_gods"]) == 4
+    assert d["luck"]["cycles"] and d["luck"]["direction_note"]
+    g = d["gist"]
+    assert g and len(g["lines"]) >= 3
+    for t in [g["title"], g["then"]] + g["lines"]:
+        assert plain.simplify(t) == t, t
+
+    # بلا جنس: تُشرَح الحاجة ولا تُخفى
+    d2 = dispatch('/api/bazi', q(date="1990-05-17", city="حلب"))
+    assert "luck" not in d2 and "sex=" in d2["luck_note"]
+
+    lst = dispatch('/api/bazi', q(list="1"))
+    assert len(lst["stems"]) == 10 and len(lst["branches"]) == 12
+    assert len(lst["solar_terms"]) == 12

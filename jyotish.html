@@ -73,6 +73,7 @@
     <a href="/elections.html">الاختيارات</a>
     <a href="/horary.html">المسائل</a>
     <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/bazi.html">الصيني</a>
     <a href="/jyotish.html" class="on">الهندي</a>
     <a href="/synastry.html">التوافق</a>
     <a href="/timelords.html">أرباب الأزمنة</a>
@@ -105,7 +106,8 @@
     </div>
     <div class="row" style="margin-top:14px">
       <button class="btn" id="go">احسب الخريطة الهندية</button>
-      <a class="btn ghost" id="toArab" href="/chart.html">انظرها بالحساب العربي</a>
+      <a class="btn ghost" id="toArab" href="/chart.html">بالحساب العربي</a>
+      <a class="btn ghost" id="toBz" href="/bazi.html">بالحساب الصيني</a>
       <button class="btn ghost" id="_share">انسخ رابط هذه النتيجة</button>
     </div>
     <p class="note" style="margin-top:12px" id="ayanNote"></p>
@@ -167,8 +169,9 @@ async function load() {
     return;
   }
   pushState(f);
-  $('toArab').href = '/chart.html?date=' + f.date + '&time=' + f.time
-                   + '&city=' + encodeURIComponent(f.city);
+  const qs = 'date=' + f.date + '&time=' + f.time + '&city=' + encodeURIComponent(f.city);
+  $('toArab').href = '/chart.html?' + qs;
+  $('toBz').href = '/bazi.html?' + qs;
   const w = waitBox(out, ['أحسب المواقع النجمية…', 'أُحدّد المنازل…',
                           'أحسب فترات العمر…'], 900);
   try { D = await API('jyotish', withLevel(f)); w.finish(); render(D); }

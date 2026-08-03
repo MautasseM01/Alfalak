@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="أعمدتك الأربعة بالحساب الصيني (البازي): الجذوع والفروع، وميزان العناصر الخمسة، ودورات الحظّ — وسنتك تبدأ بقيام الربيع لا برأس السنة القمرية.">
+<title>الأعمدة الأربعة — البازي — الفَلَك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;direction:rtl}
+@media(max-width:620px){.pillars{grid-template-columns:repeat(2,1fr)}}
+.pl{border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  background:rgba(255,255,255,.025);text-align:center}
+.pl.me{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim)}
+.pl .hd{padding:8px;font-size:.8rem;color:var(--muted);
+  background:rgba(255,255,255,.03);border-bottom:1px solid var(--line)}
+.pl.me .hd{background:rgba(217,180,91,.13);color:var(--gold)}
+.pl .cn{font-size:2.2rem;line-height:1.15;color:var(--gold);
+  font-family:"Noto Serif",serif;padding-top:12px}
+.pl .ar{font-size:.9rem;color:var(--text);font-weight:600}
+.pl .el{font-size:.76rem;color:var(--muted);padding-bottom:9px}
+.pl .sep{height:1px;background:var(--line);margin:4px 10px}
+.pl .an{font-size:.8rem;color:var(--gold-dim);padding-bottom:12px}
+.pl .role{font-size:.72rem;color:var(--dim);padding:7px 8px;line-height:1.55;
+  border-top:1px solid var(--line)}
+.elbar{display:grid;gap:9px;margin-top:6px}
+.eb{display:grid;grid-template-columns:60px 1fr auto;gap:11px;align-items:center;font-size:.86rem}
+.eb .nm{color:var(--gold)}
+.eb .track{height:9px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+.eb .track i{display:block;height:100%;border-radius:99px}
+.eb .pc{font-variant-numeric:tabular-nums;color:var(--muted);min-width:44px;text-align:end}
+.eb.zero .nm{color:var(--neg)}
+.warnbox{border-inline-start:3px solid var(--gold);padding:15px 18px;border-radius:10px;
+  background:rgba(217,180,91,.08);line-height:1.95;font-size:.92rem;margin-bottom:18px}
+.warnbox b{color:var(--gold)}
+.god{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.87rem;line-height:1.8}
+.god b{color:var(--gold)}
+.lc{display:grid;grid-template-columns:auto auto 1fr;gap:12px;align-items:center;
+  padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);font-size:.86rem;margin-bottom:7px}
+.lc.on{border-color:var(--gold);background:rgba(217,180,91,.1)}
+.lc .cn2{font-size:1.25rem;color:var(--gold);font-family:"Noto Serif",serif}
+.lc .ages{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/elections.html">الاختيارات</a>
+    <a href="/horary.html">المسائل</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/jyotish.html">الهندي</a>
+    <a href="/bazi.html" class="on">الصيني</a>
+    <a href="/synastry.html">التوافق</a>
+    <a href="/timelords.html">أرباب الأزمنة</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/api.html">الواجهة البرمجية</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<h2 class="page">أعمدتك الأربعة</h2>
+<p class="lede">
+  لا دائرة هنا ولا بروج: أربعة أعمدة للسنة والشهر واليوم والساعة، لكلٍّ حرفان —
+  فثمانية حروف تُقرأ بها حياتك، ومن هنا اسمها «بازي». وحرف يوم مولدك هو
+  <strong>سيّد النفس</strong>: أنت في هذه الخريطة، وإليه يُقاس كل ما سواه.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="name">الاسم (اختياري)</label>
+        <input type="text" id="name" placeholder="لتمييز الخريطة"></div>
+      <div class="field"><label for="date">تاريخ الميلاد</label>
+        <input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة الميلاد</label>
+        <input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">مكان الميلاد</label>
+        <input type="text" id="city" placeholder="حلب، دمشق…" autocomplete="off"></div>
+      <div class="field"><label for="sex">الجنس</label>
+        <select id="sex">
+          <option value="">— لدورات الحظّ —</option>
+          <option value="m">ذكر</option>
+          <option value="f">أنثى</option>
+        </select></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">احسب الأعمدة</button>
+      <a class="btn ghost" id="toArab" href="/chart.html">بالحساب العربي</a>
+      <a class="btn ghost" id="toJy" href="/jyotish.html">بالحساب الهندي</a>
+      <button class="btn ghost" id="_share">انسخ الرابط</button>
+    </div>
+    <p class="note" style="margin-top:12px">
+      اتّجاه دورات الحظّ يختلف بالجنس وجذع السنة — وهذه قاعدة منصوصة في
+      كتبهم، لا تمييز منّا. ولذلك يُسأل عنه هنا ولا يُسأل في الصفحات الأخرى.
+    </p>
+  </div>
+</div>
+
+<div id="out"></div>
+
+<footer>
+  الفصول الشمسية محسوبة من طول الشمس بمكتبة Swiss Ephemeris، لا من جداول مستوردة.<br>
+  المصادر: «滴天髓» نُخبة أسرار السماء، و«三命通會».
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+initLevelSwitch(() => { if (D) load(); });
+const $ = id => document.getElementById(id);
+const out = $('out');
+const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const card = (title, body, chips) =>
+  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
+   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+let D = null;
+
+cityInput($('city'));
+
+const ELCOLOR = { 'خشب': '#5fc7a1', 'نار': '#e08a7d', 'تراب': '#d9b45b',
+                  'معدن': '#c8cede', 'ماء': '#8fa5d8' };
+
+function form() {
+  return { name: $('name').value.trim(), date: $('date').value,
+           time: $('time').value || '12:00', city: $('city').value.trim(),
+           sex: $('sex').value };
+}
+
+async function load() {
+  const f = form();
+  if (!f.date || !f.city) {
+    out.innerHTML = '<div class="card"><div class="msg err">أدخل تاريخ الميلاد ومكانه.</div></div>';
+    return;
+  }
+  pushState(f);
+  const q = 'date=' + f.date + '&time=' + f.time + '&city=' + encodeURIComponent(f.city);
+  $('toArab').href = '/chart.html?' + q;
+  $('toJy').href = '/jyotish.html?' + q;
+  const w = waitBox(out, ['أحسب الفصول الشمسية…', 'أُركّب الأعمدة الأربعة…',
+                          'أزن العناصر الخمسة…'], 900);
+  try { D = await API('bazi', withLevel(f)); w.finish(); render(D); }
+  catch (e) { w.fail(e.message); }
+}
+
+function render(d) {
+  const head = card(`${esc(d.name || 'الأعمدة الأربعة')} — ${esc(d.place)}`,
+    (d.li_chun.before ? `<div class="warnbox"><b>انتبه إلى سنتك:</b>
+       ${esc(d.li_chun.note)}</div>` : '') +
+    `<p class="note">${d.when_local.slice(0,16).replace('T',' — ')} · ${esc(d.tz_describe)}</p>
+     <p style="margin-top:10px">${esc(d.solar_term.note)} ومولدك في فصل
+       <strong>${esc(d.solar_term.name)}</strong> (${esc(d.solar_term.chinese)}).</p>
+     ${d.late_zi ? `<p class="note" style="margin-top:9px">وُلدت بعد الحادية عشرة
+       ليلًا، وهي ساعة «زي» — وتُحسَب عندهم لليوم التالي، فعمود يومك هو عمود الغد.</p>` : ''}`,
+    `<span class="chip gold">${esc(d.animal)}</span>
+     <span class="chip">سنة ${d.bazi_year}</span>`);
+
+  const pillars = card('الأعمدة الأربعة',
+    `<div class="pillars">${d.pillars.map(p => {
+      const me = p.key === 'اليوم';
+      return `<div class="pl ${me ? 'me' : ''}">
+        <div class="hd">${esc(p.key)}${me ? ' — سيّد النفس' : ''}</div>
+        <div class="cn">${esc(p.stem.chinese)}</div>
+        <div class="ar">${esc(p.stem.name)}</div>
+        <div class="el" style="color:${ELCOLOR[p.stem.element]}">${esc(p.stem.element)} · ${esc(p.stem.polarity)}</div>
+        <div class="sep"></div>
+        <div class="cn">${esc(p.branch.chinese)}</div>
+        <div class="ar">${esc(p.branch.name)}</div>
+        <div class="el" style="color:${ELCOLOR[p.branch.element]}">${esc(p.branch.element)} · ${esc(p.branch.polarity)}</div>
+        <div class="an">${esc(p.branch.animal)}</div>
+        <div class="role">${esc(p.role)}</div>
+      </div>`;
+    }).join('')}</div>
+     <p class="note" style="margin-top:14px">${esc(d.day_master.note)}</p>`);
+
+  const maxPct = Math.max(...Object.values(d.elements).map(e => e.pct));
+  const elements = card('ميزان العناصر الخمسة',
+    `<div class="elbar">${Object.entries(d.elements)
+      .sort((a, b) => b[1].pct - a[1].pct)
+      .map(([e, v]) => `<div class="eb ${v.weight === 0 ? 'zero' : ''}">
+        <span class="nm">${esc(e)}</span>
+        <span class="track"><i style="width:${(100 * v.pct / maxPct).toFixed(0)}%;
+          background:${ELCOLOR[e]}"></i></span>
+        <span class="pc">${v.pct}٪</span>
+      </div>`).join('')}</div>
+     <div style="margin-top:16px">${Object.entries(d.elements)
+       .sort((a, b) => b[1].pct - a[1].pct)
+       .map(([e, v]) => `<div class="god"><b>${esc(e)}</b> — ${esc(v.note)}</div>`).join('')}</div>
+     ${d.missing.length ? `<p class="note" style="margin-top:14px">
+       ولا وجود عندك لـ${d.missing.map(esc).join(' و')} — والنقص عندهم
+       يُكمَّل بما تختاره من عمل ومكان ولون، لا يُقرأ عيبًا.</p>` : ''}`,
+    `<span class="chip gold">الأقوى ${esc(d.strongest)}</span>
+     <span class="chip">الأضعف ${esc(d.weakest)}</span>`);
+
+  const gods = card('نسبة كل عمود إليك',
+    `<p class="note" style="margin-bottom:12px">كل جذع في خريطتك يُقاس إلى
+       سيّد نفسك: أيُولّدك، أم تُولّده، أم تقهره، أم يقهرك، أم هو مثلك؟</p>
+     ${d.ten_gods.map(g => `<div class="god">
+       <b>${esc(g.pillar)} (${esc(g.stem)})</b> — ${esc(g.god.name || '')}:
+       ${esc(g.god.note || '')}</div>`).join('')}`);
+
+  let luck = '';
+  if (d.luck) {
+    const nowAge = (new Date().getFullYear()) - new Date(d.when_local).getFullYear();
+    luck = card('دورات الحظّ — عشرًا عشرًا',
+      `<p style="line-height:1.9">${esc(d.luck.direction_note)}</p>
+       <p class="note" style="margin:8px 0 14px">${esc(d.luck.start_note)}</p>
+       ${d.luck.cycles.map(c => {
+         const on = nowAge >= c.from_age && nowAge < c.to_age;
+         return `<div class="lc ${on ? 'on' : ''}">
+           <span class="cn2">${esc(c.stem.chinese)}${esc(c.branch.chinese)}</span>
+           <span class="ages">${c.from_age}–${c.to_age} سنة<br>
+             <small style="color:var(--dim)">${c.from_year}–${c.to_year}</small></span>
+           <span>${esc(c.stem.name)}-${esc(c.branch.name)} (${esc(c.branch.animal)})
+             · ${esc(c.stem.element)}
+             ${c.god && c.god.name ? '<br><small style="color:var(--muted)">'
+               + esc(c.god.name) + '</small>' : ''}
+             ${on ? ' <b style="color:var(--gold)">— أنت هنا</b>' : ''}</span>
+         </div>`;
+       }).join('')}`);
+  } else if (d.luck_note) {
+    luck = card('دورات الحظّ', `<p class="note">${esc(d.luck_note)}</p>`);
+  }
+
+  out.innerHTML = gistHTML(d.gist) + head + pillars + elements + gods + luck;
+  initShare();
+}
+
+$('go').onclick = load;
+
+const s = urlState(['date', 'time', 'city', 'name', 'sex']);
+if (s.date) {
+  $('date').value = s.date; $('time').value = s.time || '12:00';
+  $('city').value = s.city || ''; $('name').value = s.name || '';
+  if (s.sex) $('sex').value = s.sex;
+  setTimeout(load, 300);
+}
+initShare();
+</script>
+</body>
+</html>

@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
 from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
-from falak import jyotish, monthly  # noqa: E402
+from falak import bazi, jyotish, monthly  # noqa: E402
 from falak import mundane, plain, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
@@ -364,6 +364,49 @@ def route_jyotish(q):
                  "المقياسين، بل اختلاف في نقطة البداية: الاعتدال "
                  "الربيعي هناك، والنجوم الثابتة هنا."),
     }
+    return _apply_level(out, q)
+
+
+def route_bazi(q):
+    """
+    البازي: الأركان الأربعة الصينية.
+
+      /api/bazi?date=&time=&city=[&sex=m|f]
+      /api/bazi?list=1   للجذوع والفروع والفصول
+    """
+    if _one(q, "list") == "1":
+        yr = datetime.now(ephem.UTC).year
+        return {
+            "stems": [{"name": a, "chinese": b, "element": c, "polarity": d}
+                      for a, b, c, d in bazi.STEMS],
+            "branches": [{"name": a, "chinese": b, "animal": c,
+                          "element": d, "polarity": e, "hidden": f}
+                         for a, b, c, d, e, f in bazi.BRANCHES],
+            "elements": {e: bazi.ELEMENT_NOTE[e] for e in bazi.ELEMENTS},
+            "generates": bazi.GENERATES, "controls": bazi.CONTROLS,
+            "solar_terms": [{"degree": d, "chinese": cn, "name": ar,
+                             "branch": br} for d, cn, ar, br in bazi.JIEQI],
+            "li_chun": {str(y): bazi.li_chun(y).isoformat()
+                        for y in (yr, yr + 1)},
+            "note": ("سنة البازي تبدأ بقيام الربيع لا برأس السنة "
+                     "القمرية، والشهر يبدأ بالفصل الشمسي لا بالقمر."),
+        }
+
+    lat, lon, tzname, label = resolve_place(q)
+    when, tzinfo = parse_birth(q, tzname, lon)
+    out = bazi.compute(when, tzname)
+    out["place"] = _one(q, "city") or label
+    out["name"] = _one(q, "name", "")
+    out["tz_describe"] = ftz.describe(tzinfo)
+    out["warnings"] = (tzinfo or {}).get("warnings") or []
+
+    sex = (_one(q, "sex", "") or "").lower()
+    if sex in ("m", "f", "ذكر", "أنثى"):
+        out["luck"] = bazi.luck_cycles(out, male=sex in ("m", "ذكر"))
+    else:
+        out["luck_note"] = ("دورات الحظّ تحتاج معرفة الجنس، فاتّجاهها "
+                            "يختلف به — أضِف sex=m أو sex=f. وهذه قاعدة "
+                            "منصوصة عندهم لا تمييز منّا.")
     return _apply_level(out, q)
 
 
@@ -718,6 +761,7 @@ ROUTES = {
     "horary": route_horary,
     "search": route_search,
     "jyotish": route_jyotish,
+    "bazi": route_bazi,
 }
 
 

@@ -388,11 +388,53 @@ def jyotish(data: dict) -> dict:
 
 
 
+# ══════════════════════════════════════════════════════════════
+# ١٠ — البازي
+# ══════════════════════════════════════════════════════════════
+def bazi(data: dict) -> dict:
+    dm = data.get("day_master") or {}
+    pil = data.get("pillars") or []
+    lc = data.get("li_chun") or {}
+    strong = data.get("strongest")
+    weak = data.get("weakest")
+    missing = data.get("missing") or []
+
+    lines = []
+    if pil:
+        yb = pil[0]["branch"]
+        lines.append(
+            f"حيوان سنتك {yb['animal']}، وعنصرها {yb['element']}."
+        )
+    if lc.get("before"):
+        lines.append(
+            "وانتبه: وُلدت قبل «قيام الربيع»، وهو بداية السنة في هذه "
+            "المدرسة — لا رأس السنة القمرية المشهور. فحيوانك هو حيوان "
+            "السنة الماضية، وأكثر المواقع تُخطئ في هذا."
+        )
+    if dm:
+        lines.append(
+            f"وأنت في هذه الخريطة {dm.get('element')} من نوع "
+            f"{dm.get('polarity')} — وهذا محور القراءة كلّها: "
+            "كل ما في خريطتك يُقاس إليه."
+        )
+    if strong and weak:
+        lines.append(
+            f"وأغلب العناصر عندك {strong}، وأقلّها {weak}"
+            + (f". ولا وجود عندك لـ{'، '.join(missing)} — "
+               "وهذا يُقرأ نقصًا يُكمَّل لا عيبًا."
+               if missing else ". والخمسة كلّها حاضرة عندك.")
+        )
+    then = ("وتحت هذا: الأعمدة الأربعة بحرفيها، وميزان العناصر، "
+            "وفترات عمرك عشرًا عشرًا.")
+    return _wrap("خلاصة أعمدتك الأربعة", lines, then)
+
+
+
 ROUTES = {
     "bulletin": bulletin, "chart": chart, "synastry": synastry,
     "search": search, "horary": horary, "hours": hours,
     "timelords": timelords, "monthly": monthly,
-    "jyotish": jyotish,
+    "jyotish": jyotish, "bazi": bazi,
 }
 
 

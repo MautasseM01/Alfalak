@@ -31,6 +31,7 @@
     <a href="/elections.html">الاختيارات</a>
     <a href="/horary.html">المسائل</a>
     <a href="/chart.html" class="on">خريطة الميلاد</a>
+    <a href="/bazi.html">الصيني</a>
     <a href="/jyotish.html">الهندي</a>
     <a href="/synastry.html">التوافق</a>
     <a href="/timelords.html">أرباب الأزمنة</a>
@@ -80,7 +81,8 @@
     <div class="row" style="margin-top:14px">
       <button class="btn" id="go">احسب الخريطة</button>
       <button class="btn ghost" id="save">حفظ</button>
-      <a class="btn ghost" id="toJyotish" href="/jyotish.html">انظرها بالحساب الهندي</a>
+      <a class="btn ghost" id="toJyotish" href="/jyotish.html">بالحساب الهندي</a>
+      <a class="btn ghost" id="toBazi" href="/bazi.html">بالحساب الصيني</a>
       <div class="seg" id="minorSeg">
         <button data-minor="1" aria-pressed="true">مع الزوايا الصغرى</button>
         <button data-minor="0" aria-pressed="false">الرئيسية فقط</button>
@@ -348,12 +350,14 @@ $('save').onclick = () => {
 // جسر إلى الحساب الهندي بالمعطيات نفسها
 function syncJyotish() {
   const f = form();
-  const a = document.getElementById('toJyotish');
-  if (a && f.date && f.city) {
-    a.href = '/jyotish.html?date=' + f.date + '&time=' + (f.time || '12:00')
+  if (!f.date || !f.city) return;
+  const qs = 'date=' + f.date + '&time=' + (f.time || '12:00')
            + '&city=' + encodeURIComponent(f.city)
            + (f.name ? '&name=' + encodeURIComponent(f.name) : '');
-  }
+  const a = document.getElementById('toJyotish');
+  const b = document.getElementById('toBazi');
+  if (a) a.href = '/jyotish.html?' + qs;
+  if (b) b.href = '/bazi.html?' + qs;
 }
 ['date','time','city','name'].forEach(id => {
   const el = document.getElementById(id);
