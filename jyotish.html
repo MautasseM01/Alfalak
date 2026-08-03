@@ -36,6 +36,20 @@
 .vg div{display:flex;justify-content:space-between;padding:3px 0;
   border-bottom:1px solid rgba(255,255,255,.04)}
 .dig-up{color:var(--pos)} .dig-down{color:var(--neg)}
+.yg{padding:14px 16px;border-radius:12px;border:1px solid var(--line);
+  background:rgba(255,255,255,.025);margin-bottom:10px}
+.yg h4{margin:0 0 4px;font-size:1.02rem;color:var(--gold);font-family:Amiri,serif}
+.yg .rare{font-size:.74rem;border-radius:999px;padding:2px 9px;
+  border:1px solid var(--line2);color:var(--muted);margin-inline-start:8px}
+.yg .rare.r{border-color:var(--gold);color:var(--gold)}
+.yg .why{font-size:.83rem;color:var(--muted);margin:6px 0 0;line-height:1.8}
+.yg p{margin:8px 0 0;font-size:.89rem;line-height:1.85}
+.rd{padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.rd h4{margin:0 0 3px;font-size:.94rem;font-weight:600}
+.rd .pos2{color:var(--gold);font-size:.82rem}
+.rd p{margin:6px 0 0;font-size:.88rem;line-height:1.85}
+.rd .nk{margin-top:7px;font-size:.83rem;color:var(--muted);line-height:1.8;
+  padding-inline-start:11px;border-inline-start:2px solid var(--gold-dim)}
 </style>
 </head>
 <body>
@@ -240,7 +254,36 @@ function render(d) {
            `<div><span>${esc(b)}</span><span>${esc(sg)}</span></div>`).join('')}
        </div>`).join('')}</div>`) : '';
 
-  out.innerHTML = gistHTML(d.gist) + head + cmpCard + bodies + dasha + vargas;
+  const reading = card('قراءة المواضع',
+    `<div>${d.bodies.map(b => `<div class="rd">
+       <h4>${esc(b.name)} في البيت ${b.house} — ${esc(b.bhava.sanskrit)}</h4>
+       <div class="pos2">${esc(b.bhava.rules)}</div>
+       ${b.reading ? `<p>${esc(b.reading)}</p>` : ''}
+       ${b.nakshatra.deep && b.nakshatra.deep.gift ? `<div class="nk">
+         <b style="color:var(--gold)">${esc(b.nakshatra.name)}</b>
+         (${esc(b.nakshatra.arabic_mansion)}) — ${esc(b.nakshatra.deep.nature)}.
+         ${esc(b.nakshatra.deep.gift)}
+         <br><span style="color:var(--dim)">وثمنه: ${esc(b.nakshatra.deep.cost)}</span>
+       </div>` : ''}
+     </div>`).join('')}</div>`);
+
+  const yg = d.yogas && d.yogas.length ? card('اليوغات المتحقّقة',
+    `<p class="note" style="margin-bottom:14px">${esc(d.yoga_note)}</p>
+     ${d.yogas.map(y => {
+       const r = y.rarity || {};
+       const rare = (r.pct != null && r.pct < 15);
+       return `<div class="yg">
+         <h4>${esc(y.name)}<span class="rare ${rare ? 'r' : ''}">${
+           r.pct != null ? r.pct + '٪ من الخرائط' : 'نادرة'}</span></h4>
+         <div style="font-size:.8rem;color:var(--dim)">${esc(y.group)} · ${esc(y.strength)}</div>
+         <p>${esc(y.meaning)}</p>
+         <p class="why"><b>لماذا تحقّقت:</b> ${esc(y.why)}</p>
+         ${r.note ? `<p class="why">${esc(r.note)}</p>` : ''}
+       </div>`;
+     }).join('')}`,
+    `<span class="chip gold">${d.yogas.length}</span>`) : '';
+
+  out.innerHTML = gistHTML(d.gist) + head + cmpCard + bodies + reading + yg + dasha + vargas;
   out.querySelectorAll('.dp').forEach(el => {
     el.onclick = () => el.classList.toggle('open');
   });

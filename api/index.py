@@ -329,6 +329,12 @@ def route_jyotish(q):
         raise ApiError("vargas أعداد مفصولة بفواصل، مثل 9,10")
 
     out = jyotish.compute(when, lat, lon, ayan, tzname, vargas=vg)
+    out["yogas"] = jyotish.yogas(out)
+    out["relations"] = jyotish.relations(out["bodies"])
+    out["yoga_note"] = (
+        "مع كل يوغا شرطُ تحقّقها بالأسماء والبيوت، ونسبةُ الخرائط "
+        "التي تحملها. فالكتب تصفها وصف النوادر، والحساب يقول إن "
+        "بعضها في ثلثَي الناس — والأندر أوّلًا في هذه القائمة.")
     out["place"] = _one(q, "city") or label
     out["name"] = _one(q, "name", "")
     out["tz_describe"] = ftz.describe(tzinfo)

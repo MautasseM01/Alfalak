@@ -300,6 +300,14 @@ def compute(when_local: datetime, lat: float, lon: float,
             "navamsa": varga(L, 9),
         })
 
+    # النصوص المكتوبة تُلحَق بكل موضع — انظر falak/jyotish_deep.py
+    from . import jyotish_deep as jd
+    for b in bodies:
+        b["nakshatra"]["deep"] = jd.nak_text(b["nakshatra"]["name"])
+        bh = jd.bhava_text(b["house"])
+        b["bhava"] = {"sanskrit": bh[0], "rules": bh[1], "note": bh[2]}
+        b["reading"] = jd.graha_in_bhava(b["name"], b["house"])
+
     want = vargas or [9, 10]
     varga_tables = {}
     for n in want:
@@ -311,6 +319,8 @@ def compute(when_local: datetime, lat: float, lon: float,
             }
 
     moon = next(b for b in bodies if b["name"] == "القمر")
+    lag_nak = nakshatra_of(lagna)
+    lag_nak["deep"] = jd.nak_text(lag_nak["name"])
     return {
         "when_local": when_local.isoformat(),
         "when_utc": when_utc.isoformat(),
@@ -323,7 +333,7 @@ def compute(when_local: datetime, lat: float, lon: float,
         "lagna": {"lon": round(lagna, 6), "sign": ch.SIGNS[lagna_sign_i],
                   "sign_sanskrit": SIGNS_SA[lagna_sign_i],
                   **ch.dms(lagna),
-                  "nakshatra": nakshatra_of(lagna)},
+                  "nakshatra": lag_nak},
         "bodies": bodies,
         "houses": [{"house": i + 1,
                     "sign": ch.SIGNS[(lagna_sign_i + i) % 12],
@@ -333,6 +343,10 @@ def compute(when_local: datetime, lat: float, lon: float,
                          "وهو الغالب في الجيوتِش وأصله فيه لا في الغرب."),
         "moon_nakshatra": moon["nakshatra"],
         "vargas": varga_tables,
+        "bhavas": [{"house": i + 1, "sanskrit": jd.BHAVA[i + 1][0],
+                    "rules": jd.BHAVA[i + 1][1], "note": jd.BHAVA[i + 1][2],
+                    "sign": ch.SIGNS[(lagna_sign_i + i) % 12]}
+                   for i in range(12)],
     }
 
 
@@ -419,3 +433,292 @@ def current_dasha(dasha: dict, at: datetime) -> dict:
                     break
             return {"major": p, "minor": sub}
     return {"major": None, "minor": None}
+
+
+# ══════════════════════════════════════════════════════════════
+# ٧ — الصداقة الكوكبية والقوّة المركّبة
+#
+# في الجيوتِش منظومة صداقات بين الكواكب: طبيعية ثابتة، ووقتية
+# تتغيّر بحسب مواضعها في الخريطة نفسها، ومركّبة تجمع بينهما.
+# وهذا باب لا نظير له في التراث العربي، فيُعرَض كما هو.
+# ══════════════════════════════════════════════════════════════
+NATURAL_FRIENDS = {
+    "الشمس": (["القمر", "المريخ", "المشتري"], ["زحل", "الزهرة"]),
+    "القمر": (["الشمس", "عطارد"], []),
+    "المريخ": (["الشمس", "القمر", "المشتري"], ["عطارد"]),
+    "عطارد": (["الشمس", "الزهرة"], ["القمر"]),
+    "المشتري": (["الشمس", "القمر", "المريخ"], ["عطارد", "الزهرة"]),
+    "الزهرة": (["عطارد", "زحل"], ["الشمس", "القمر"]),
+    "زحل": (["عطارد", "الزهرة"], ["الشمس", "القمر", "المريخ"]),
+}
+SEVEN = ["الشمس", "القمر", "المريخ", "عطارد", "المشتري", "الزهرة", "زحل"]
+
+
+def natural_relation(a: str, b: str) -> str:
+    """صديق أم عدوّ أم محايد — بالطبع لا بالموضع."""
+    fr, en = NATURAL_FRIENDS.get(a, ([], []))
+    if b in fr:
+        return "صديق"
+    if b in en:
+        return "عدوّ"
+    return "محايد"
+
+
+def temporal_relation(house_a: int, house_b: int) -> str:
+    """
+    الصداقة الوقتية: من كان في البيت ٢ أو ٣ أو ٤ أو ١٠ أو ١١ أو ١٢
+    من كوكب فهو صديقه في هذه الخريطة، وما عداه عدوّ.
+    """
+    d = ((house_b - house_a) % 12) + 1
+    return "صديق" if d in (2, 3, 4, 10, 11, 12) else "عدوّ"
+
+
+COMPOUND = {
+    ("صديق", "صديق"): "صديق حميم", ("صديق", "عدوّ"): "محايد",
+    ("محايد", "صديق"): "صديق", ("محايد", "عدوّ"): "عدوّ",
+    ("عدوّ", "صديق"): "محايد", ("عدوّ", "عدوّ"): "عدوّ لدود",
+}
+
+
+def relations(bodies: list) -> dict:
+    """جدول العلاقات المركّبة بين السبعة في هذه الخريطة."""
+    pos = {b["name"]: b["house"] for b in bodies}
+    out = {}
+    for a in SEVEN:
+        if a not in pos:
+            continue
+        row = {}
+        for b in SEVEN:
+            if b == a or b not in pos:
+                continue
+            nat = natural_relation(a, b)
+            tmp = temporal_relation(pos[a], pos[b])
+            row[b] = {"natural": nat, "temporal": tmp,
+                      "compound": COMPOUND[(nat, tmp)]}
+        out[a] = row
+    return out
+
+
+# ══════════════════════════════════════════════════════════════
+# ٨ — اليوغات
+#
+# «اليوغا» تركيب مخصوص يُنتج أثرًا لا يُنتجه أحد أجزائه وحده.
+# وهي في كتب الهند بالمئات، وأكثرها متداخل أو نادر. فاخترنا
+# المشهورة المنصوصة، وكل واحدة **بشرطها المكتوب في الشيفرة**
+# ليراه القارئ ويحكم بنفسه — لا «وجدنا لك يوغا» بلا بيّنة.
+# ══════════════════════════════════════════════════════════════
+# نسبة الخرائط التي تحمل كل يوغا — مولَّدة بـ tools/calibrate_yogas.py
+# من ٣٠٠٠ خريطة في عشر مدن بين الهند وأوروبا وإفريقيا وأمريكا.
+#
+# **ولماذا نعرضها؟** لأن الكتب تصف اليوغات وصف النوادر: «صاحبها
+# ملك، ومَن وُلد بها ساد قومه». والحساب يقول إن راجا يوغا تقع في
+# ثلثَي الخرائط. فمن رآها في خريطته ينبغي أن يعرف أنها ليست بشارة
+# تخصّه وحده — وأن هَمْسا يوغا (٨٪) أندر منها بثمانية أضعاف.
+#
+# لا نحذف اليوغة فهي منصوصة، ولا نُشدّد شرطها حتى تندر فذلك تحريف.
+# وإنما نقول كم تقع، ونترك التقدير للقارئ.
+YOGA_FREQUENCY = {
+    "راجا يوغا": 66.2,
+    "بودهاديتْيا يوغا": 52.0,
+    "غَجَكيساري يوغا": 32.6,
+    "كيمادرومَا يوغا": 30.6,
+    "دَنا يوغا": 10.0,
+    "مالَڤْيا يوغا": 8.8,
+    "تشَندرا–مَنغَلا يوغا": 8.7,
+    "شَشا يوغا": 8.4,
+    "هَمْسا يوغا": 8.3,
+    "رُتْشَكا يوغا": 7.7,
+    "بهَدرا يوغا": 5.9,
+}
+
+
+def rarity(name: str) -> dict:
+    """كم خريطة تحمل هذه اليوغا، وبأيّ عبارة نصفها."""
+    pct = YOGA_FREQUENCY.get(name)
+    if pct is None:
+        return {"pct": None, "word": "نادرة", "note": "لم تقع في عيّنتنا كلّها."}
+    word = ("شائعة جدًّا" if pct >= 50 else "شائعة" if pct >= 25 else
+            "متوسّطة الندرة" if pct >= 10 else "نادرة")
+    return {"pct": pct, "word": word,
+            "note": (f"تحملها {pct}٪ من الخرائط — {word}. "
+                     + ("فلا تُبالغ في تقديرها: ما يحمله أكثر الناس "
+                        "لا يُميّز أحدًا." if pct >= 50 else
+                        "وهذا يجعلها ممّا يُلتفَت إليه."))}
+
+
+KENDRA = (1, 4, 7, 10)          # الأوتاد
+TRIKONA = (1, 5, 9)             # المثلّثات
+DUSTHANA = (6, 8, 12)           # البيوت الشاقّة
+UPACHAYA = (3, 6, 10, 11)       # البيوت النامية
+
+MAHAPURUSHA = {
+    "المريخ": ("رُتْشَكا", "شجاعة وقيادة وبدن قويّ، وحدّة تحتاج ضبطًا."),
+    "عطارد": ("بهَدرا", "ذكاء وبيان وحسن تصرّف، ونفع من الكلام والتجارة."),
+    "المشتري": ("هَمْسا", "علم وورع وسعة صدر، ويُرجَع إليه في المشورة."),
+    "الزهرة": ("مالَڤْيا", "جمال وذوق وسعة عيش، ونفع من الفنّ والشراكة."),
+    "زحل": ("شَشا", "صبر وسلطان على النفس، ومكانة تُبنى بالمثابرة."),
+}
+
+
+def _lord_of(sign: str) -> str:
+    for p, signs in OWN.items():
+        if sign in signs:
+            return p
+    return ""
+
+
+def yogas(chart_data: dict) -> list[dict]:
+    """
+    اليوغات المتحقّقة في هذه الخريطة، كلٌّ بشرطها ودليلها.
+
+    ولا نُطلق اسمًا بلا بيّنة: مع كل يوغا **سبب تحقّقها** بالأسماء
+    والبيوت، ليتحقّق منه القارئ أو يردّه.
+    """
+    bodies = {b["name"]: b for b in chart_data["bodies"]}
+    lagna_sign = chart_data["lagna"]["sign"]
+    houses = {i + 1: h["sign"] for i, h in enumerate(chart_data["houses"])}
+    found = []
+
+    # ── بَنْج مَهابوروشا: كوكب في وتد وهو في بيته أو ذروته ──
+    for p, (name, meaning) in MAHAPURUSHA.items():
+        b = bodies.get(p)
+        if not b or b["house"] not in KENDRA:
+            continue
+        if b["dignity"]["kind"] in ("الذروة", "بيته", "المثلّث الأصلي"):
+            found.append({
+                "name": f"{name} يوغا",
+                "group": "بَنْج مَهابوروشا — الخمس الكبرى",
+                "why": (f"{p} في البيت {b['house']} وهو من الأوتاد، "
+                        f"و{b['dignity']['kind']} في {b['sign']}."),
+                "meaning": meaning,
+                "strength": "قويّة",
+            })
+
+    # ── غَجَكيساري: المشتري في وتد من القمر ──
+    ju, mo = bodies.get("المشتري"), bodies.get("القمر")
+    if ju and mo:
+        d = ((ju["house"] - mo["house"]) % 12) + 1
+        if d in KENDRA:
+            found.append({
+                "name": "غَجَكيساري يوغا",
+                "group": "يوغات الحظّ",
+                "why": (f"المشتري في البيت {d} من القمر — "
+                        "أي في وتد منه."),
+                "meaning": ("سمعة حسنة وعقل رشيد، ونفع يأتي من الناس "
+                            "لا من الكدّ وحده. من أشهر اليوغات وأكثرها "
+                            "وقوعًا، فلا تُبالغ في تقديرها."),
+                "strength": "متوسّطة",
+            })
+
+    # ── بودهاديتْيا: الشمس وعطارد في بيت واحد ──
+    su, me = bodies.get("الشمس"), bodies.get("عطارد")
+    if su and me and su["house"] == me["house"]:
+        burnt = abs(_delta(su["lon"], me["lon"])) < 3.0
+        found.append({
+            "name": "بودهاديتْيا يوغا",
+            "group": "يوغات العقل",
+            "why": f"الشمس وعطارد معًا في البيت {su['house']}.",
+            "meaning": ("ذكاء وبيان وحضور ذهن." +
+                        (" لكن عطارد قريب جدًّا من الشمس (دون ثلاث درجات)، "
+                         "وهو عندهم «محترق» فيضعف — فاقرأها بتحفّظ."
+                         if burnt else "")),
+            "strength": "ضعيفة" if burnt else "متوسّطة",
+        })
+
+    # ── راجا يوغا: اجتماع ربّ وتد وربّ مثلّث ──
+    #
+    # أوّل صياغة أعطتها لـ٧٩٪ من الخرائط، فبطل معناها: علامةٌ يحملها
+    # أربعة من كل خمسة لا تُميّز أحدًا. والسبب أن البيت الأوّل وتدٌ
+    # ومثلّثٌ معًا، فكان ربّه يُزاوَج بنفسه ويصنع «يوغا» من لا شيء.
+    # فاشترطنا الآن: بيتين مختلفين، وربّين مختلفين، وألّا يكون
+    # أحدهما في هبوطه أو في بيت شاقّ — وهو شرط منصوص في كتبهم
+    # («يوغا بهنغا»: ما يُبطل اليوغا).
+    for hk in KENDRA:
+        for ht in TRIKONA:
+            if hk == ht:
+                continue                      # البيت الأوّل لا يُزاوَج بنفسه
+            a, b = _lord_of(houses.get(hk, "")), _lord_of(houses.get(ht, ""))
+            if not a or not b or a == b:
+                continue
+            if a not in bodies or b not in bodies:
+                continue
+            if bodies[a]["house"] != bodies[b]["house"]:
+                continue
+            broken = [n for n in (a, b)
+                      if bodies[n]["dignity"]["kind"] == "الهبوط"
+                      or bodies[n]["house"] in DUSTHANA]
+            found.append({
+                "name": "راجا يوغا",
+                "group": "يوغات المكانة",
+                "why": (f"{a} ربّ البيت {hk} (وتد)، و{b} ربّ البيت "
+                        f"{ht} (مثلّث)، وقد اجتمعا في البيت "
+                        f"{bodies[a]['house']}."),
+                "meaning": ("مكانة ترتفع، ونفوذ يُنال بالجهد لا بالوراثة."
+                            + (f" لكنّ {'و'.join(broken)} في موضع ضعف، "
+                               "وهذا يُنقص اليوغا عندهم أو يُبطلها."
+                               if broken else
+                               " والكوكبان سالمان، فهي على تمامها.")),
+                "strength": "ضعيفة" if broken else "قويّة",
+            })
+
+    # ── دانا يوغا: ربّ الثاني وربّ الحادي عشر مجتمعان ──
+    l2, l11 = _lord_of(houses.get(2, "")), _lord_of(houses.get(11, ""))
+    if l2 and l11 and l2 != l11 and l2 in bodies and l11 in bodies:
+        if bodies[l2]["house"] == bodies[l11]["house"]:
+            found.append({
+                "name": "دَنا يوغا",
+                "group": "يوغات المال",
+                "why": (f"{l2} ربّ بيت المال، و{l11} ربّ بيت المكسب، "
+                        f"وقد اجتمعا في البيت {bodies[l2]['house']}."),
+                "meaning": "سعة في الرزق، ومال يأتي من أكثر من باب.",
+                "strength": "متوسّطة",
+            })
+
+    # ── كيمادرومَا: القمر وحيد بلا جار — يوغا معسِّرة ──
+    if mo:
+        neigh = {((mo["house"] - 2) % 12) + 1, (mo["house"] % 12) + 1}
+        others = [b for n, b in bodies.items()
+                  if n in SEVEN and n != "القمر"]
+        alone = not any(b["house"] in neigh | {mo["house"]} for b in others)
+        if alone:
+            found.append({
+                "name": "كيمادرومَا يوغا",
+                "group": "اليوغات المعسِّرة",
+                "why": (f"القمر في البيت {mo['house']} ولا كوكب معه ولا "
+                        "في البيتين المجاورين له."),
+                "meaning": ("وحشة وقلّة سند في أوّل العمر، واعتماد على "
+                            "النفس. وأكثر الكتب تُبالغ في تهويلها، "
+                            "وتُنقضها مواضع أخرى كثيرة."),
+                "strength": "تُقرأ بتحفّظ",
+            })
+
+    # ── تشَندرا–مَنغَلا: القمر والمريخ معًا ──
+    ma = bodies.get("المريخ")
+    if mo and ma and mo["house"] == ma["house"]:
+        found.append({
+            "name": "تشَندرا–مَنغَلا يوغا",
+            "group": "يوغات المال",
+            "why": f"القمر والمريخ معًا في البيت {mo['house']}.",
+            "meaning": ("قدرة على كسب المال بالمبادرة والمخاطرة، "
+                        "مع حدّة في الطبع لا تُنكَر."),
+            "strength": "متوسّطة",
+        })
+
+    # نُزيل التكرار مع إبقاء الأوّل، ونُلحق بكل واحدة ندرتها
+    seen, uniq = set(), []
+    for y in found:
+        k = (y["name"], y["why"])
+        if k in seen:
+            continue
+        seen.add(k)
+        y["rarity"] = rarity(y["name"])
+        uniq.append(y)
+    # الأندر أوّلًا: هي التي تستحقّ النظر
+    uniq.sort(key=lambda y: (y["rarity"]["pct"] if y["rarity"]["pct"]
+                             is not None else 0))
+    return uniq
+
+
+def _delta(a: float, b: float) -> float:
+    d = (a - b) % 360.0
+    return d - 360.0 if d > 180 else d

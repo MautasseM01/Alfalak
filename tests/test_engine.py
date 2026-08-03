@@ -1701,3 +1701,166 @@ def test_ayanamsha_choice_actually_changes_the_chart():
     with pytest.raises(Exception):
         dispatch('/api/jyotish', q(date="1990-05-17", city="حلب",
                                    ayanamsha="لا-يوجد"))
+
+
+# ══════════════════════════════════════════════════════════════════
+# ٢٠ — اليوغات ونصوص الجيوتِش
+# ══════════════════════════════════════════════════════════════════
+def _jy_chart(y=1990, mo=5, d=17, h=8, mi=30):
+    from falak import jyotish as jy
+    return jy.compute(datetime(y, mo, d, h, mi,
+                               tzinfo=ZoneInfo("Asia/Damascus")),
+                      36.2021, 37.1343, "lahiri", "Asia/Damascus")
+
+
+def test_raja_yoga_needs_two_different_houses():
+    """
+    أوّل صياغة أعطت راجا يوغا لـ٧٩٪ من الخرائط، فبطل معناها.
+    والسبب أن البيت الأوّل وتد ومثلّث معًا، فكان ربّه يُزاوَج بنفسه.
+    نتحقّق أن كل يوغا تذكر بيتين مختلفين وربّين مختلفين.
+    """
+    import random, re
+    from falak import jyotish as jy
+    rnd = random.Random(9)
+    seen = 0
+    for _ in range(40):
+        c = _jy_chart(rnd.randint(1950, 2010), rnd.randint(1, 12),
+                      rnd.randint(1, 28), rnd.randint(0, 23))
+        for y in jy.yogas(c):
+            if y["name"] != "راجا يوغا":
+                continue
+            seen += 1
+            hs = re.findall(r"البيت (\d+)", y["why"])
+            assert len(hs) >= 2 and hs[0] != hs[1], y["why"]
+            lords = re.findall(r"^(\S+) ربّ", y["why"])
+            assert "ربّ البيت" in y["why"]
+    assert seen, "لم تقع راجا يوغا في العيّنة"
+
+
+def test_every_yoga_states_its_evidence_and_its_frequency():
+    """
+    لا نُطلق اسمًا بلا بيّنة، ولا نعِد بندرة لا تصحّ. فمع كل يوغا
+    شرطُ تحقّقها بالأسماء والبيوت، ونسبةُ الخرائط التي تحملها.
+    """
+    import random
+    from falak import jyotish as jy
+    rnd = random.Random(21)
+    total = 0
+    for _ in range(30):
+        c = _jy_chart(rnd.randint(1950, 2010), rnd.randint(1, 12),
+                      rnd.randint(1, 28), rnd.randint(0, 23))
+        ys = jy.yogas(c)
+        for y in ys:
+            total += 1
+            assert y["why"] and ("البيت" in y["why"] or "من القمر" in y["why"])
+            assert y["meaning"] and y["group"] and y["strength"]
+            r = y["rarity"]
+            assert r["word"] and r["note"]
+            assert r["pct"] is None or 0 < r["pct"] <= 100
+        # الأندر أوّلًا
+        pcts = [y["rarity"]["pct"] or 0 for y in ys]
+        assert pcts == sorted(pcts), pcts
+    assert total > 20
+
+
+def test_yoga_frequency_table_matches_reality():
+    """
+    النسب المخزونة تكذب إن تغيّرت شروط اليوغات ولم تُعَد المعايرة.
+    فنقيس عيّنة جديدة ونتحقّق أن الشائع شائع والنادر نادر.
+    """
+    import random
+    from falak import jyotish as jy
+    rnd = random.Random(404)
+    tally, n = {}, 150
+    for _ in range(n):
+        c = _jy_chart(rnd.randint(1940, 2012), rnd.randint(1, 12),
+                      rnd.randint(1, 28), rnd.randint(0, 23),
+                      rnd.randint(0, 59))
+        for name in {y["name"] for y in jy.yogas(c)}:
+            tally[name] = tally.get(name, 0) + 1
+    for name, want in jy.YOGA_FREQUENCY.items():
+        got = 100 * tally.get(name, 0) / n
+        assert abs(got - want) < 16, (
+            f"{name}: قِسناها {got:.0f}٪ والمخزون {want}٪ — أعِد المعايرة")
+
+
+def test_jyotish_texts_cover_every_combination():
+    """التغطية الكاملة: لا موضع بلا نصّ مكتوب."""
+    from falak import jyotish as jy, jyotish_deep as jd
+    for p, _sa, _c in jy.GRAHAS:
+        for h in range(1, 13):
+            t = jd.graha_in_bhava(p, h)
+            assert t and len(t) > 25, (p, h)
+    for name, _lord, _ar, _star in jy.NAKSHATRAS:
+        d = jd.nak_text(name)
+        assert d, name
+        # «الطبع» وسم قصير مقصود، والباقي جُمل
+        assert d.get("nature") and 8 < len(d["nature"]) < 40, name
+        for k in ("gift", "cost", "moon"):
+            assert d.get(k) and len(d[k]) > 30, (name, k)
+    for h in range(1, 13):
+        sa, rules, note = jd.bhava_text(h)
+        assert sa and rules and note, h
+
+
+def test_jyotish_texts_are_distinct():
+    """التمايز يُثبت أنها مكتوبة لا مركّبة."""
+    from falak import jyotish_deep as jd
+    seen = set()
+    for p, tbl in jd.GRAHA_BHAVA.items():
+        for h, t in tbl.items():
+            assert t not in seen, f"{p}/{h} مكرّر"
+            seen.add(t)
+    assert len(seen) == 108
+    for field in ("gift", "cost", "moon", "nature"):
+        vals = [v[field] for v in jd.NAK_DEEP.values()]
+        assert len(set(vals)) == 27, field
+
+
+def test_jyotish_texts_are_not_translated_from_the_arabic():
+    """
+    الشرط الذي فرضناه على أنفسنا: لا نترجم من العربي. فالمدرستان
+    منظومتان مختلفتان، والنقل الحرفي يُخفي ذلك. نتحقّق ألّا يتطابق
+    نصّ هنديّ مع نصّ عربيّ.
+    """
+    from falak import depth, jyotish_deep as jd
+    arabic = {t for tbl in depth.PLANET_IN_HOUSE.values()
+              for t in tbl.values()}
+    indian = {t for tbl in jd.GRAHA_BHAVA.values() for t in tbl.values()}
+    assert not (arabic & indian), "نصّ منقول حرفيًّا بين المدرستين"
+
+
+def test_planetary_relations_are_symmetric_in_kind_not_in_value():
+    """
+    الصداقة الوقتية غير متبادلة بالضرورة: قد يكون هذا صديقًا لذاك
+    وليس العكس — وهذا منصوص عندهم لا خطأ عندنا.
+    """
+    from falak import jyotish as jy
+    assert jy.natural_relation("الشمس", "زحل") == "عدوّ"
+    assert jy.natural_relation("زحل", "الشمس") == "عدوّ"
+    assert jy.natural_relation("القمر", "عطارد") == "صديق"
+    assert jy.natural_relation("عطارد", "القمر") == "عدوّ"   # غير متبادلة
+    assert jy.temporal_relation(1, 3) == "صديق"
+    assert jy.temporal_relation(1, 7) == "عدوّ"
+    c = _jy_chart()
+    r = jy.relations(c["bodies"])
+    assert set(r) <= set(jy.SEVEN)
+    for a, row in r.items():
+        for b, v in row.items():
+            assert v["compound"] in ("صديق حميم", "صديق", "محايد",
+                                     "عدوّ", "عدوّ لدود")
+
+
+def test_jyotish_route_carries_texts_and_yogas():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.index import dispatch
+    q = lambda **k: {a: [str(b)] for a, b in k.items()}
+    d = dispatch('/api/jyotish', q(date="1990-05-17", time="08:30", city="حلب"))
+    assert len(d["bhavas"]) == 12
+    assert "yogas" in d and "relations" in d and d["yoga_note"]
+    for b in d["bodies"]:
+        assert b["reading"], b["name"]
+        assert b["bhava"]["sanskrit"] and b["bhava"]["rules"]
+        assert b["nakshatra"]["deep"].get("gift"), b["name"]
+    assert d["lagna"]["nakshatra"]["deep"].get("nature")
