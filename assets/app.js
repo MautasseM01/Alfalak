@@ -152,7 +152,10 @@ function initGlossary() {
   const close = () => pop.classList.remove('show');
 
   document.addEventListener('click', async e => {
-    const b = e.target.closest('.q');
+    /* **يجب أن يكون المحدِّد ضيّقًا**: كان `.q` وحده، فالتقط بطاقات
+       بوّابة الصفحة الرئيسة لأنها حملت الصنف نفسه — فأظهر
+       «undefined» ومنع الانتقال، فتعطّلت البطاقات الستّ. */
+    const b = e.target.closest('button.q[data-term]');
     if (!b) { if (!e.target.closest('.gpop')) close(); return; }
     e.preventDefault(); e.stopPropagation();
     const terms = await glossaryReady();
