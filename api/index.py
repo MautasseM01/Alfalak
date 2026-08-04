@@ -213,6 +213,20 @@ def route_chart(q):
     if _one(q, "interpret", "1") == "1":
         out["reading"] = interpret.read_chart(out)
 
+        # ــ نصّ كل زاوية مع الزاوية نفسها ــ
+        # كانت الواجهة تُطابق الزوايا بجداول `/api/depth` الخام، فتُصيب
+        # ٢٧ من ٤٠ وتترك الباقي بلا شرح: أزواج ليليث الحقيقية وخيرون
+        # وأزواج الأجرام الخارجية بعضها ببعض، وطبائع الزوايا الصغرى.
+        # و`pair_text` يعرف هذه كلّها (الأسماء المرادفة، وعلامات الجيل،
+        # وطبائع الصغرى) فيبلغ أربعين من أربعين. فالمطابقة تُصنع هنا
+        # حيث المعرفة، لا في المتصفّح حيث نصفُها.
+        from falak import aspects_deep as _adeep
+        for _a in out.get("aspects", []):
+            _t = _adeep.pair_text(_a["a"], _a["b"], _a["name"])
+            if _t and _t.get("text"):
+                _a["theme"] = _t.get("theme")
+                _a["meaning"] = _t["text"]
+
     # الخريطة نفسها بنظام آخر، لتيسير المقارنة
     if _one(q, "both", "1") == "1":
         other = _one(q, "compare") or ("placidus" if system == "whole" else "whole")

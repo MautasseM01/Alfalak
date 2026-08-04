@@ -242,6 +242,48 @@ svg [data-hint].hint-echo .hint-halo{opacity:1}
 tr.hint-echo,tr[data-body]:hover{background:rgba(217,180,91,.11)}
 tr[data-body]{transition:background .15s}
 
+/* ══════════════════════════════════════════════════════════════
+   الألسنة والجداول التي تُفتَح
+
+   كانت صفحة الخريطة ثلاث عشرة بطاقة في طومار واحد، وموضع الكوكب
+   يُذكر فيها أربع مرّات. فصارت ألسنةً، وصار كل صفٍّ يُفتَح على نصّه
+   بدل أن تُعاد النصوص في بطاقة أخرى.
+   ══════════════════════════════════════════════════════════════ */
+.tabs{
+  display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px;padding:5px;
+  border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02)
+}
+.tab{
+  flex:1 1 auto;min-width:104px;cursor:pointer;
+  padding:10px 14px;border-radius:10px;border:1px solid transparent;background:transparent;
+  color:var(--muted);font-family:inherit;font-size:.88rem;transition:.16s;white-space:nowrap
+}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.tab.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(217,180,91,.11);font-weight:600}
+.tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.pane{display:none}
+.pane.on{display:block;animation:paneIn .18s ease-out}
+@keyframes paneIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:560px){.tab{min-width:0;flex:1 1 40%;font-size:.8rem;padding:9px 8px}}
+
+/* الصفّ الذي يُفتَح */
+table.opentbl tr.opener{transition:background .14s}
+table.opentbl tr.opener:hover{background:rgba(217,180,91,.08)}
+table.opentbl tr.opener:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+table.opentbl tr.opener[aria-expanded="true"]{background:rgba(217,180,91,.12)}
+td.caret{color:var(--gold-dim);width:22px;text-align:center;
+  transition:transform .16s;display:table-cell}
+tr[aria-expanded="true"] td.caret{color:var(--gold);transform:rotate(180deg)}
+
+/* الطباعة: الورقة لا أَلسِنةَ لها — تُفتَح كلّها وتُطبَع */
+@media print{
+  .tabs{display:none!important}
+  .pane{display:block!important}
+  .pane[hidden]{display:block!important}
+  td.caret{display:none}
+  table.opentbl tr[id]{display:table-row!important}
+}
+
 /* سطر التعريف بالميزة — يظهر مرّةً واحدة في العمر ثم لا يعود */
 .hint-tip{
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;

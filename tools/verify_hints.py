@@ -21,8 +21,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 
-from api.index import dispatch  # noqa: E402
-from falak import interpret  # noqa: E402
+try:
+    from api.index import dispatch  # noqa: E402
+    from falak import interpret  # noqa: E402
+except ModuleNotFoundError as exc:      # noqa: PERF203
+    if exc.name in ("swisseph", "pyswisseph"):
+        raise SystemExit(
+            "ينقص pyswisseph — وهو محرّك الحساب الوحيد في المشروع.\n"
+            "  pip install -r requirements-dev.txt\n"
+            "(يُثبّت pyswisseph وpytest معًا.)"
+        ) from None
+    raise
 
 Q = {"date": ["1990-05-17"], "time": ["08:30"], "city": ["حلب"], "system": ["whole"]}
 

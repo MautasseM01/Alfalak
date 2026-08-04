@@ -177,13 +177,10 @@ function wheelSVG(c, opts = {}) {
   bodies.forEach(b => pos[b.name] = b.lon);
   const asps = (c.aspects || []).filter(a => opts.minorLines ? true : a.major);
   let lines = '';
-  const deepAsp = Object.assign({}, deep.aspects || {}, deep.aspects_outer || {});
-  const aspText = a => {
-    const d = deepAsp[`${a.a} — ${a.b}`] || deepAsp[`${a.b} — ${a.a}`];
-    if (!d) return [];
-    const t = d[a.name] || d[a.polarity === 'سلبية' ? 'صعب' : 'سهل'];
-    return [d.theme, t];
-  };
+  /* النصّ يصل مع الزاوية نفسها من الخادم. وكانت الواجهة تُطابق
+     بجداول `/api/depth` الخام فتُصيب ٢٧ من ٤٠ — والمطابقة صارت في
+     الخادم حيث تُعرف الأسماء المرادفة وعلامات الجيل وطبائع الصغرى. */
+  const aspText = a => [a.theme, a.meaning].filter(Boolean);
   asps.forEach(a => {
     if (pos[a.a] == null || pos[a.b] == null) return;
     const [x1,y1] = P(pos[a.a], R.aspect), [x2,y2] = P(pos[a.b], R.aspect);

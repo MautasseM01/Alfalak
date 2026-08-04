@@ -139,16 +139,38 @@ const esc2 = t => String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&l
 let minor = '1', current = null;
 
 cityInput($('city'));
+
+/* **خلل كان قائمًا**: ربطُ صفوف البيوت القابلة للفتح كان **بداخل**
+   مستمع أزرار «الزوايا الصغرى» — فلا يعمل الفتح إلّا بعد أن يضغط
+   المستخدم زرًّا لا علاقة له بالبيوت. أي إن نصف شروح البيوت كانت
+   محجوبة عمّن لم يعبث بذلك الزرّ.
+   والصواب مستمعٌ واحد مفوَّض على `#out` يعمل مهما أُعيد الرسم. */
+function toggleOpen(head) {
+  const t = document.getElementById(head.dataset.open);
+  if (!t) return;
+  const shown = t.style.display !== 'none';
+  t.style.display = shown ? 'none' : '';
+  head.setAttribute('aria-expanded', shown ? 'false' : 'true');
+}
+out.addEventListener('click', e => {
+  const head = e.target.closest('[data-open]');
+  if (!head || !out.contains(head)) return;
+  if (e.target.closest('a,button.q,b.hint-term')) return;   /* لا نخطف الروابط والشروح */
+  toggleOpen(head);
+});
+/* ولوحة المفاتيح كذلك — وإلّا كان نصف المحتوى محجوبًا عمّن لا يستعمل فأرة */
+out.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const head = e.target.closest && e.target.closest('[data-open]');
+  if (!head || !out.contains(head)) return;
+  e.preventDefault();
+  toggleOpen(head);
+});
+
 document.querySelectorAll('#minorSeg button').forEach(b => {
   b.onclick = () => {
     minor = b.dataset.minor;
-    out.querySelectorAll('tr.hprof').forEach(tr => {
-    tr.onclick = () => {
-      const t = document.getElementById('hp' + tr.dataset.h);
-      if (t) t.style.display = t.style.display === 'none' ? '' : 'none';
-    };
-  });
-  document.querySelectorAll('#minorSeg button').forEach(x =>
+    document.querySelectorAll('#minorSeg button').forEach(x =>
       x.setAttribute('aria-pressed', x.dataset.minor === minor ? 'true' : 'false'));
     if (current) load();
   };
@@ -190,6 +212,80 @@ const card = (title, body, chips) =>
   `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
    <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
 
+/* ══════════════════════════════════════════════════════════════
+   إعادة بناء الصفحة — لماذا؟
+
+   كانت ثلاث عشرة بطاقة تنزل في طومار واحد، وفيها **تكرار ثلاثيّ**:
+   موضع الكوكب يُذكر في العجلة، ثم في جدول «الأجرام»، ثم مرّةً ثالثة
+   في «قراءة الخريطة» — ثم رابعةً في جدول المقارنة. والزوايا كذلك:
+   شبكة، فجدول، فـ«أقوى الزوايا». فيقرأ الزائر الشيء أربع مرّات
+   ويخرج بلا صورة واحدة عنه.
+
+   والعلاج قاعدتان:
+   ١. **كل شيء يُذكر مرّةً واحدة، في مكان واحد، مع شرحه.** فالجدول
+      لم يعد جدولًا مجرّدًا: كل صفّ يُفتَح على نصّه المكتوب.
+   ٢. **ألسنة لا طومار.** كما في Astrotheme وAstrodienst: العجلة
+      في لسان، والأجرام في لسان، والبيوت في لسان — فلا يُدفن ما
+      يريده الزائر تحت ألف سطر لا يريده.
+   ══════════════════════════════════════════════════════════════ */
+const PANES = [
+  ['sum',    'الخلاصة'],
+  ['bodies', 'الأجرام'],
+  ['houses', 'البيوت والأوتاد'],
+  ['asp',    'الزوايا'],
+  ['lots',   'السهام والأشكال'],
+];
+
+function tabsHTML(panes) {
+  const want = store.get('chartTab', 'sum');
+  const on = panes.some(p => p[0] === want) ? want : panes[0][0];
+  return `<div class="tabs" role="tablist" aria-label="أقسام الخريطة">${
+    panes.map(([id, label]) =>
+      `<button class="tab${id === on ? ' on' : ''}" role="tab" id="tab-${id}"
+        aria-controls="pane-${id}" aria-selected="${id === on}"
+        tabindex="${id === on ? 0 : -1}" data-pane="${id}">${label}</button>`).join('')}</div>`;
+}
+const pane = (id, body, panes) => {
+  const want = store.get('chartTab', 'sum');
+  const on = panes.some(p => p[0] === want) ? want : panes[0][0];
+  return `<div class="pane${id === on ? ' on' : ''}" id="pane-${id}"
+    role="tabpanel" aria-labelledby="tab-${id}"${id === on ? '' : ' hidden'}>${body}</div>`;
+};
+
+/* الانتقال بين الألسنة: بالفأرة وبالأسهم — والأسهم شرطٌ في معيار
+   ARIA لأن من يتصفّح بلوحة المفاتيح لا يجول على خمسة أزرار بالتبويب. */
+function initTabs() {
+  const bar = out.querySelector('.tabs');
+  if (!bar) return;
+  const tabs = [...bar.querySelectorAll('.tab')];
+  const go = id => {
+    store.set('chartTab', id);
+    tabs.forEach(t => {
+      const me = t.dataset.pane === id;
+      t.classList.toggle('on', me);
+      t.setAttribute('aria-selected', me);
+      t.tabIndex = me ? 0 : -1;
+    });
+    out.querySelectorAll('.pane').forEach(p => {
+      const me = p.id === 'pane-' + id;
+      p.classList.toggle('on', me);
+      p.hidden = !me;
+    });
+  };
+  tabs.forEach(t => t.addEventListener('click', () => go(t.dataset.pane)));
+  bar.addEventListener('keydown', e => {
+    const i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    /* الصفحة عربية: السهم الأيسر يمضي إلى الأمام */
+    const step = e.key === 'ArrowLeft' ? 1 : e.key === 'ArrowRight' ? -1
+               : e.key === 'Home' ? -i : e.key === 'End' ? tabs.length - 1 - i : null;
+    if (step === null) return;
+    e.preventDefault();
+    const n = tabs[(i + step + tabs.length) % tabs.length];
+    n.focus(); go(n.dataset.pane);
+  });
+}
+
 function render(c) {
   const A = c.angles, D = c.dominants, R = c.reading;
   const digClass = d => /وبال|هبوط/.test(d || '') ? 'bad' : '';
@@ -220,20 +316,72 @@ function render(c) {
        هي الزوايا: الخضراء موافقة والحمراء مخالفة، وسُمكها بحسب دقّتها.
        الكواكب الخضراء ذات كرامة والحمراء في وبال أو هبوط.</p>`);
 
-  /* `data-body` يربط صفّ الجدول بالكوكب في العجلة: المرور على أحدهما
-     يُضيء الآخر. وهذا ما ينقص أكثر المواقع — الرسم في وادٍ والجدول
-     في وادٍ، فيقرأ الناظر رقمًا لا يعرف أين موضعه من الدائرة. */
-  const bodyRows = c.bodies.map(b => `
-    <tr data-body="${b.name}"><td class="sym">${b.symbol}</td><td>${b.name}</td>
+  /* ── الأجرام: صفٌّ واحد لكل جِرم، يُفتَح على كل ما يخصّه ──────
+     كان الجِرم يُذكر في جدول مجرّد، ثم يُعاد ذكره في «قراءة الخريطة»
+     بنصّه، ثم تُذكر زواياه في جدول ثالث، ونجومه في جدول رابع.
+     فجُمع الأربعة في موضع واحد: اضغط الصفّ ينفتح على كل شأنه. */
+  const readMap = {};
+  [...(R.core || []), ...(R.others || [])].forEach(x => {
+    const nm = String(x.title || '').split(' في ')[0].trim();
+    if (nm) readMap[nm] = x;
+  });
+  const deepPH = (DEEP && DEEP.planet_in_house) || {};
+  const starsOf = {};
+  (c.stars || []).forEach(s => (starsOf[s.body] = starsOf[s.body] || []).push(s));
+
+  const aspOf = {};
+  (c.aspects || []).forEach(a => {
+    (aspOf[a.a] = aspOf[a.a] || []).push({ ...a, other: a.b });
+    (aspOf[a.b] = aspOf[a.b] || []).push({ ...a, other: a.a });
+  });
+
+  const speedLine = b => b.retro
+    ? 'راجع — يبدو سائرًا إلى الوراء، ودلالته المراجعة والإعادة لا التوقّف.'
+    : (b.speed == null ? '' : `يسير ${Math.abs(b.speed) >= 1
+        ? Math.abs(b.speed).toFixed(2) + '° في اليوم'
+        : (Math.abs(b.speed) * 60).toFixed(0) + '′ في اليوم'} مستقيمًا.`);
+
+  const bodyRows = c.bodies.map((b, i) => {
+    const rd = readMap[b.name] || {};
+    const ph = (deepPH[b.name] || {})[String(b.house)];
+    const mine = (aspOf[b.name] || []).filter(a => a.major)
+      .sort((x, y) => x.orb - y.orb);
+    const st = starsOf[b.name] || [];
+    const detail = `
+      <div class="item" style="margin:2px 0 4px">
+        <h4>${esc2(b.name)} في ${esc2(b.sign)} — البيت ${b.house}</h4>
+        ${rd.text ? `<p>${esc2(rd.text)}</p>` : ''}
+        ${ph ? `<p>${esc2(ph)}</p>` : (rd.extra ? `<p>${esc2(rd.extra)}</p>` : '')}
+        ${ph && rd.extra ? `<p class="sub">${esc2(rd.extra)}</p>` : ''}
+        <p class="sub"><b>الموضع:</b> ${esc2(b.text)} · برجٌ ${esc2(b.element)} ${esc2(b.mode)}،
+           صاحبه ${esc2(b.ruler)}. ${esc2(speedLine(b))}</p>
+        <p class="sub"><b>الكرامة:</b> ${esc2(b.dignity_note || b.dignity || 'لا كرامة له هنا')}
+           ${b.dignity_score != null ? `<span style="color:var(--dim)">(${b.dignity_score > 0 ? '+' : ''}${b.dignity_score})</span>` : ''}</p>
+        ${mine.length ? `<p class="sub"><b>زواياه الكبرى:</b> ${
+          mine.map(a => `${esc2(a.name)} ${esc2(a.other)} <span style="color:var(--dim)">${a.orb}°${a.applying ? ' مُقبِلة' : ''}</span>`).join(' · ')}</p>`
+          : `<p class="sub" style="color:var(--dim)">لا زاوية كبرى له مع سواه — يعمل وحده، وحاله في موضعه هو كلّ خبره.</p>`}
+        ${st.length ? `<p class="sub"><b>نجوم ثابتة عليه:</b> ${
+          st.map(s => `${esc2(s.star)} (${s.orb}°)${s.royal ? ' — ملكي' : ''}: ${esc2(s.meaning)}`).join('؛ ')}</p>` : ''}
+      </div>`;
+    return `
+    <tr class="opener" data-body="${esc2(b.name)}" data-open="pb${i}"
+        aria-expanded="false" tabindex="0" style="cursor:pointer">
+        <td class="sym">${b.symbol}</td><td>${b.name}</td>
         <td class="num">${b.short}</td><td>${b.sign}</td><td class="num">${b.house}</td>
         <td>${b.retro ? '<span class="retro">راجع</span> ' : ''}
             ${b.dignity && b.dignity !== '—' ? `<span class="dig ${digClass(b.dignity)}">${b.dignity}</span>` : ''}</td>
         <td class="num" style="color:var(--muted)">${b.dignity_score != null ? (b.dignity_score > 0 ? '+' : '') + b.dignity_score : ''}</td>
-    </tr>`).join('');
+        <td class="caret" aria-hidden="true">▾</td>
+    </tr>
+    <tr id="pb${i}" style="display:none"><td colspan="8">${detail}</td></tr>`;
+  }).join('');
 
   const planets = card(`الأجرام والكرامات ${q('الكرامات')}`,
-    `<table><thead><tr><th></th><th>الجرم</th><th>الدرجة</th><th>البرج</th><th>البيت</th>
-     <th>الكرامة</th><th>القوّة</th></tr></thead><tbody>${bodyRows}</tbody></table>`);
+    `<p class="note">اضغط أيّ صفّ ينفتح على كل ما يخصّ ذلك الجِرم:
+       موضعه ومعناه وكرامته وزواياه ونجومه — في موضع واحد لا موزّعًا على أربعة جداول.</p>
+     <table class="opentbl"><thead><tr><th></th><th>الجرم</th><th>الدرجة</th><th>البرج</th><th>البيت</th>
+     <th>الكرامة</th><th>القوّة</th><th></th></tr></thead><tbody>${bodyRows}</tbody></table>`,
+    `<span class="chip">${c.bodies.length} جِرمًا</span>`);
 
   const alm = c.almuten;
   const almuten = card(`الأَلْمُطَن ${q('الأَلْمُطَن')}`,
@@ -252,63 +400,109 @@ function render(c) {
   const HP = (R && R.profiles && R.profiles.houses) || {};
   const houseRows = c.houses.cusps.map(h => {
     const pr = HP[String(h.house)];
-    return `<tr class="hprof" data-h="${h.house}" style="cursor:pointer">
+    const tenants = c.bodies.filter(b => b.house === h.house);
+    return `<tr class="${pr ? 'opener' : ''}" ${pr ? `data-open="hp${h.house}" aria-expanded="false" tabindex="0" style="cursor:pointer"` : ''}>
       <td class="num">${h.house}</td><td class="num">${h.short}</td><td>${h.sign}</td>
       <td style="color:var(--muted);font-size:.8rem">${h.name.split(':')[1]}</td>
-      <td style="color:var(--muted)">حاكمه ${h.ruler}</td></tr>` +
-      (pr ? `<tr id="hp${h.house}" style="display:none"><td colspan="5">
+      <td style="color:var(--muted)">حاكمه ${h.ruler}</td>
+      <td class="sym" style="font-size:.95rem">${tenants.map(b => b.symbol).join(' ') || '<span style="color:var(--dim);font-size:.7rem">خالٍ</span>'}</td>
+      <td class="caret" aria-hidden="true">${pr ? '▾' : ''}</td></tr>` +
+      (pr ? `<tr id="hp${h.house}" style="display:none"><td colspan="7">
         <div class="item" style="margin:4px 0">
           <h4>${esc2(pr.name)} — ${esc2(pr.question)}</h4>
           <p><b>يحكم:</b> ${esc2(pr.rules)}</p>
           <p class="sub"><b>إذا قوي:</b> ${esc2(pr.strong)}</p>
           <p class="sub"><b>إذا ضعف:</b> ${esc2(pr.weak)}</p>
           <p class="sub" style="color:var(--dim)"><b>ظلّه:</b> ${esc2(pr.shadow)}</p>
+          <p class="sub">${tenants.length
+            ? `<b>فيه من خريطتك:</b> ${tenants.map(b => `${b.name} (${b.short} ${b.sign})`).join('، ')}.`
+            : '<b>خالٍ من الأجرام</b> — وهذا لا يعني فراغه في حياتك. البيوت الاثنا عشر كلّها عاملة، وأمر الخالي يُقرأ من صاحبه ' + esc2(h.ruler) + ' وحاله في موضعه، لا من ساكن ليس فيه.'}</p>
         </div></td></tr>` : '');
   }).join('');
 
+  const angleStars = (c.stars || []).filter(s => !c.bodies.some(b => b.name === s.body));
   const houses = card(`الأوتاد والبيوت — ${c.houses.system_name}`,
-    `<table><tbody>${angleRows}</tbody></table>
-     <table style="margin-top:18px"><thead><tr><th>البيت</th><th>الدرجة</th><th>البرج</th>
-      <th>معناه</th><th></th></tr></thead><tbody>${houseRows}</tbody></table>
+    `<p class="note">الأوتاد الأربعة ليست أجرامًا بل مواضع تحدّدها لحظة الميلاد ومكانه،
+       وهي أحسّ ما في الخريطة للوقت: أربع دقائق تُزحزح الطالع درجة كاملة.</p>
+     <table><tbody>${angleRows}</tbody></table>
+     ${angleStars.length ? `<p class="note" style="margin-top:12px"><b>نجوم ثابتة على الأوتاد:</b> ${
+       angleStars.map(s => `${esc2(s.star)} على ${esc2(s.body)} (${s.orb}°) — ${esc2(s.meaning)}`).join('؛ ')}</p>` : ''}
+     <p class="note" style="margin-top:18px">اضغط أيّ بيت ينفتح على معناه، وما يقوى به وما يضعف،
+       ومن سكنه من أجرام خريطتك.</p>
+     <table class="opentbl"><thead><tr><th>البيت</th><th>الدرجة</th><th>البرج</th>
+      <th>معناه</th><th>صاحبه</th><th>سكّانه</th><th></th></tr></thead><tbody>${houseRows}</tbody></table>
      <p class="note" style="margin-top:14px">${c.houses.system_note}</p>`);
 
-  const aspRows = c.aspects.map(a =>
-    `<tr><td>${a.a}</td><td class="sym" title="${a.name}">${a.symbol}</td><td>${a.b}</td>
+  /* ── الزوايا: الشبكة والجدول والنصّ في موضع واحد ─────────────
+     كان لها ثلاثة مواضع: شبكة مثلّثة، وجدول بأربعين صفًّا، ثم
+     «أقوى الزوايا» بنصوصها. فصار كل صفٍّ يُفتَح على نصّه — ولم
+     تعد النصوص وقفًا على الثماني الأقوى، بل لكل زاوية نصّها. */
+  /* النصّ يأتي الآن مع الزاوية من الخادم (`meaning` و`theme`) — لا
+     نُطابق في المتصفّح بجداول ناقصة. و«الجودة» وحدها تبقى من القراءة. */
+  const readAsp = {};
+  (R.aspects || []).forEach(x => { readAsp[String(x.title).split(' —')[0].trim()] = x; });
+  const aspTexts = a => {
+    const rr = readAsp[`${a.a} ${a.symbol} ${a.b}`] || readAsp[`${a.b} ${a.symbol} ${a.a}`] || {};
+    return { theme: a.theme || rr.theme, text: a.meaning || rr.text, quality: rr.quality };
+  };
+  const aspRows = c.aspects.map((a, i) => {
+    const T = aspTexts(a);
+    const has = T.theme || T.text;
+    return `<tr class="${has ? 'opener' : ''}" ${has ? `data-open="pa${i}" aria-expanded="false" tabindex="0" style="cursor:pointer"` : ''}>
+     <td>${a.a}</td><td class="sym" title="${a.name}">${a.symbol}</td><td>${a.b}</td>
      <td><span class="chip ${a.polarity==='إيجابية'?'pos':a.polarity==='سلبية'?'neg':''}">${a.name}</span></td>
      <td class="num">${a.orb}°</td>
      <td class="num" style="color:var(--muted)">${a.orb_max}°</td>
-     <td style="color:var(--muted);font-size:.79rem">${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</td></tr>`).join('');
+     <td style="color:var(--muted);font-size:.79rem">${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</td>
+     <td class="caret" aria-hidden="true">${has ? '▾' : ''}</td></tr>` +
+     (has ? `<tr id="pa${i}" style="display:none"><td colspan="8">
+       <div class="item" style="margin:2px 0 4px">
+         ${T.theme ? `<p class="sub" style="color:var(--gold);opacity:.9">${esc2(T.theme)}</p>` : ''}
+         ${T.text ? `<p>${esc2(T.text)}</p>` : ''}
+         <p class="sub">${T.quality ? esc2(T.quality) + ' · ' : ''}الفرق ${a.orb}° عن ${a.angle}° تامّة
+           (الحدّ ${a.orb_max}°) · ${a.applying ? 'مُقبِلة، أثرها في ما هو آتٍ' : 'مُدبِرة، أثرها ماضٍ ينقضي'}</p>
+       </div></td></tr>` : '');
+  }).join('');
 
+  const written = c.aspects.filter(a => { const T = aspTexts(a); return T.theme || T.text; }).length;
   const aspects = card(`الزوايا ${q('الزاوية')}`,
-    `${aspectGrid(c)}
-     <table style="margin-top:20px"><thead><tr><th></th><th></th><th></th><th>النوع</th>
-      <th>الوجاج ${q('الوجاج')}</th><th>الحدّ</th><th>${q('مُقبِلة ومُدبِرة')}</th></tr></thead>
+    `<p class="note">الشبكة تُريك الزوايا كلّها دفعةً واحدة، والجدول تحتها يُفصّلها.
+       واضغط أيّ صفّ فيه علامة ▾ يُظهر لك ما تعنيه تلك الزاوية.</p>
+     ${aspectGrid(c)}
+     <table class="opentbl" style="margin-top:20px"><thead><tr><th></th><th></th><th></th><th>النوع</th>
+      <th>الوجاج ${q('الوجاج')}</th><th>الحدّ</th><th>${q('مُقبِلة ومُدبِرة')}</th><th></th></tr></thead>
       <tbody>${aspRows}</tbody></table>`,
-    `<span class="chip">${c.aspects.length} زاوية</span>`);
+    `<span class="chip">${c.aspects.length} زاوية</span>
+     <span class="chip gold">${written} مشروحة</span>`);
 
-  const lotRows = c.lots.map(L =>
-    `<tr><td>${L.name}</td><td class="num">${L.short}</td><td>${L.sign}</td>
+  /* السهام: كانت الأسماء في جدول والنصوص في قائمة أسفله، فيقرأ
+     الزائر ثمانية عشر اسمًا ثم سبعة نصوص لا يدري لأيّها. */
+  const lotRead = {};
+  (R.lots || []).forEach(x => { lotRead[String(x.title).split('—')[0].trim()] = x; });
+  const lotRows = c.lots.map((L, i) => {
+    const rd = lotRead[L.name] || lotRead[String(L.name).replace('سهم ', '').trim()];
+    return `<tr class="${rd ? 'opener' : ''}" ${rd ? `data-open="pl${i}" aria-expanded="false" tabindex="0" style="cursor:pointer"` : ''}>
+     <td>${L.name}</td><td class="num">${L.short}</td><td>${L.sign}</td>
      <td class="num">${L.house}</td>
-     <td style="color:var(--muted);font-size:.79rem">${L.formula}</td></tr>`).join('');
+     <td style="color:var(--muted);font-size:.79rem">${L.formula}</td>
+     <td class="caret" aria-hidden="true">${rd ? '▾' : ''}</td></tr>` +
+     (rd ? `<tr id="pl${i}" style="display:none"><td colspan="6">
+       <div class="item" style="margin:2px 0 4px"><p>${esc2(rd.text)}</p></div></td></tr>` : '');
+  }).join('');
   const lots = card(`السهام ${q('السهم')}`,
-    `<table><thead><tr><th>السهم</th><th>الدرجة</th><th>البرج</th><th>البيت</th><th>صيغته</th></tr></thead>
-     <tbody>${lotRows}</tbody></table>
-     <div class="read" style="margin-top:18px">${R.lots.map(x =>
-       `<div class="item"><h4>${x.title}</h4><p>${x.text}</p></div>`).join('')}</div>`);
+    `<p class="note">السهم نقطة محسوبة لا جِرم لها: يُجمع موضعان ويُطرح ثالث.
+       وقد عدّ البيروني نحو سبعة وتسعين سهمًا، ونعرض هنا ثمانية عشر من «التفهيم».</p>
+     <table class="opentbl"><thead><tr><th>السهم</th><th>الدرجة</th><th>البرج</th><th>البيت</th><th>صيغته</th><th></th></tr></thead>
+     <tbody>${lotRows}</tbody></table>`);
 
   const patterns = c.patterns.length ? card('الأشكال الزاوية',
     `<div class="read">${R.patterns.map(p =>
       `<div class="item"><h4>${p.title} ${q(p.title.split(' —')[0])}</h4>
        <p class="sub">${p.members.join(' · ')}</p><p>${p.text}</p></div>`).join('')}</div>`) : '';
 
-  const starsCard = c.stars.length ? card(`النجوم الثابتة ${q('النجوم الثابتة')}`,
-    `<table><thead><tr><th>الجرم</th><th>النجم</th><th></th><th>الوجاج</th><th>دلالته</th></tr></thead>
-     <tbody>${c.stars.map(s =>
-      `<tr><td>${s.body}</td><td>${s.star}${s.royal?' <span class="chip gold" style="font-size:.62rem">ملكي</span>':''}</td>
-       <td style="color:var(--dim);font-size:.76rem">${s.star_la}</td>
-       <td class="num">${s.orb}°</td>
-       <td style="color:var(--muted);font-size:.8rem">${s.meaning}</td></tr>`).join('')}</tbody></table>
-     <p class="note" style="margin-top:14px">لا يعمل النجم إلا بمقارنة دقيقة، فالوجاج هنا درجة واحدة لا أكثر.</p>`) : '';
+  /* جدول النجوم الثابتة المستقلّ حُذف: كان يُعيد أسماء الأجرام مرّةً
+     خامسة. وصار كل نجم مذكورًا عند جِرمه، وما وقع على وتد فعند
+     الأوتاد — فالنجم لا يُقرأ وحده أصلًا، بل يُقرأ بما نزل عليه. */
 
   const bars = o => `<div class="bars">` + Object.entries(o).map(([k,v]) =>
     `<div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v}%"></div></div>
@@ -320,21 +514,19 @@ function render(c) {
      <div class="sec"><h3>الكواكب</h3>${bars(Object.fromEntries(Object.entries(D.planets).slice(0,6)))}</div>
      <p class="note">${R.balance}</p>`);
 
-  const item = x => `<div class="item"><h4>${x.title}</h4><p>${x.text}</p>
-    ${x.extra ? `<p class="sub">${x.extra}</p>` : ''}
-    ${x.dignity && x.dignity !== '—' ? `<p class="sub">الكرامة: ${x.dignity}</p>` : ''}</div>`;
+  /* «قراءة الخريطة» حُذفت بطاقةً مستقلّة **لأنها كانت تكرارًا**:
+     نصّ كل جِرم صار في صفّه، ونصّ كل زاوية في صفّها. وما بقي هنا
+     الثلاثةُ الكبار وحدها — الشمس والقمر والطالع — لأنها أوّل ما
+     يُقرأ، ومن لم يقرأ سواها فقد قرأ أكثر الخريطة. */
+  const item = x => `<div class="item"><h4>${x.title}</h4><p>${esc2(x.text)}</p>
+    ${x.extra ? `<p class="sub">${esc2(x.extra)}</p>` : ''}</div>`;
 
-  const reading = card('قراءة الخريطة',
-    `<div class="read">${R.core.map(item).join('')}</div>
-     <h3 style="font-family:Amiri,serif;color:var(--gold);margin:24px 0 12px">سائر الأجرام</h3>
-     <div class="read">${R.others.map(item).join('')}</div>
-     <h3 style="font-family:Amiri,serif;color:var(--gold);margin:24px 0 12px">أقوى الزوايا</h3>
-     <div class="read">${R.aspects.map(a =>
-       `<div class="item"><h4>${a.title}</h4>
-        ${a.theme ? `<p class="sub" style="color:var(--gold);opacity:.85">${esc2(a.theme)}</p>` : ''}
-        <p>${esc2(a.text)}</p>
-        <p class="sub">${a.quality ? esc2(a.quality) + ' · ' : ''}وجاج ${a.orb}° ·
-          ${a.applying ? 'مُقبِلة' : 'مُدبِرة'}</p></div>`).join('')}</div>`);
+  const coreRead = card('الثلاثة الكبار',
+    `<p class="note">من لم يقرأ من خريطته إلّا هذه الثلاثة فقد قرأ أكثرها:
+       الشمس ما تقصده، والقمر ما يُريحك، والطالع كيف تدخل على الناس.
+       وتفصيل سائر الأجرام في لسان «الأجرام».</p>
+     <div class="read">${(R.core || []).map(item).join('')}</div>
+     <p style="margin:16px 0 0">خريطة ${c.sect} ${q('الطائفة')} — ${c.sect_note}</p>`);
 
   const moon = card('منزلة القمر',
     `<p><strong>${c.moon.mansion.name}</strong> — المنزلة ${c.moon.mansion.index} من ثمانٍ وعشرين
@@ -355,8 +547,17 @@ function render(c) {
      <p class="note" style="margin-top:14px">${c.alt.system_note}<br>
        الصفوف الذهبية هي التي يختلف فيها البيت بين النظامين.</p>`) : '';
 
-  out.innerHTML = gistHTML(c.gist) + head + wheel + reading + planets + almuten + houses
-                + aspects + lots + patterns + starsCard + dominants + moon + compare;
+  const panes = PANES.filter(([id]) => id !== 'lots' || c.lots.length || c.patterns.length);
+
+  out.innerHTML =
+    gistHTML(c.gist) + head + tabsHTML(panes) +
+    pane('sum',    wheel + coreRead + dominants + moon + almuten, panes) +
+    pane('bodies', planets, panes) +
+    pane('houses', houses + compare, panes) +
+    pane('asp',    aspects, panes) +
+    pane('lots',   lots + patterns, panes);
+
+  initTabs();
 }
 
 /* ── الخرائط المحفوظة ── */

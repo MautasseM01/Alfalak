@@ -2501,6 +2501,49 @@ def test_hover_explanations_are_wired_everywhere():
     assert "hint-" in css
 
 
+def test_every_aspect_carries_its_own_text():
+    """
+    كانت الواجهة تُطابق الزوايا بجداول `/api/depth` الخام، فتُصيب
+    سبعًا وعشرين من أربعين وتترك الباقي بلا شرح: أزواج «ليليث
+    الحقيقية» (وهي اسم مرادف)، وخيرون، والأجرام الخارجية بعضها
+    ببعض، وطبائع الزوايا الصغرى. و`pair_text` يعرف هذه كلّها.
+
+    فالمطابقة نُقلت إلى الخادم، حيث المعرفة — لا إلى المتصفّح، حيث
+    نصفها. وهذا الاختبار يمنع رجوعها.
+    """
+    from api.index import dispatch
+    c = dispatch("/api/chart", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["حلب"], "system": ["whole"]})
+    asps = c["aspects"]
+    assert asps, "لا زوايا في الخريطة"
+    bare = [f"{a['a']} {a['name']} {a['b']}" for a in asps if not a.get("meaning")]
+    assert not bare, f"زوايا بلا نصّ: {bare[:6]}"
+    for a in asps:
+        assert len(a["meaning"]) >= 30, f"نصّ مقتضب: {a['a']}–{a['b']}"
+
+
+def test_chart_page_does_not_say_the_same_thing_four_times():
+    """
+    قال صاحب المشروع: «فقيرة نوعًا ما وهناك تكرار كثير».
+    وكان قابلًا للقياس: موضع الجِرم يُذكر في العجلة، ثم في جدول
+    الأجرام، ثم في «قراءة الخريطة»، ثم في جدول المقارنة.
+
+    فحُذفت البطاقات المكرّرة وصار كل صفٍّ يُفتَح على نصّه. ونحرس
+    هنا ألّا تعود العناوين المحذوفة، وأن تبقى الألسنة.
+    """
+    html = _pages()["chart.html"]
+    for gone in ("سائر الأجرام", "أقوى الزوايا"):
+        assert f">{gone}<" not in html, f"عاد العنوان المكرّر «{gone}»"
+    assert "starsCard" not in html, "عاد جدول النجوم المستقلّ"
+    for need in ("function tabsHTML", "function initTabs", "role=\"tablist\"",
+                 "class=\"opentbl\"", "data-open="):
+        assert need in html, f"ينقص من صفحة الخريطة: {need}"
+    # صفوف البيوت تُربَط بمستمع مفوَّض، لا داخل مستمع زرٍّ آخر
+    assert "out.addEventListener('click'" in html
+    assert "out.addEventListener('keydown'" in html, \
+        "الفتح بلوحة المفاتيح شرط — وإلّا حُجب نصف المحتوى"
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

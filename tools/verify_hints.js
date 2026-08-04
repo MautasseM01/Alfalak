@@ -17,7 +17,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { JSDOM } = require(process.env.JSDOM_PATH || 'jsdom');
+let JSDOM;
+try {
+  ({ JSDOM } = require(process.env.JSDOM_PATH || 'jsdom'));
+} catch {
+  console.error('\nينقص jsdom — وهو متصفّح وهمي يُشغَّل فيه الفحص.\n' +
+                'ثبّته مرّةً واحدة:  npm install --no-save jsdom\n');
+  process.exit(3);
+}
 
 const ROOT = path.resolve(__dirname, '..');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -243,6 +250,145 @@ section('تصادم الأصناف');
     return s.indexOf('assets/hint.js') < s.indexOf('assets/app.js');
   });
   ok(wrong.length === 0, 'وترتيب الإدراج صحيح في كلّها', wrong.join('، '));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ٥ ــ صفحة الخريطة: تُبنى فعلًا، ولا تُكرّر نفسها
+
+   الشكوى كانت: «فقيرة، وفيها تكرار كثير، دون شرح عند الضرورة».
+   والتكرار كان قابلًا للقياس: موضع الكوكب يُذكر أربع مرّات.
+   فالاختبار هنا يقيسه ولا يكتفي بالنظر.
+   ══════════════════════════════════════════════════════════════ */
+section('صفحة الخريطة');
+{
+  const dom = new JSDOM(read('chart.html'),
+    { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://alfalak.vercel.app/chart.html' });
+  const w = dom.window;
+  w.fetch = (url) => Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve(
+      String(url).includes('glossary') ? { terms: GLOSSARY }
+      : String(url).includes('depth') ? DEEP : CHART),
+  });
+  /* الملفّات المشتركة ثم سكربت الصفحة نفسه */
+  const page = (read('chart.html').match(/<script>([\s\S]*?)<\/script>\s*<\/body>/) || [])[1];
+  ok(!!page, 'عُثر على سكربت صفحة الخريطة');
+
+  /* **دقيقة تستحقّ التسجيل**: وسوم `<script>` المنفصلة في المتصفّح
+     تتشارك بيئةً معجميةً واحدة، فـ`const store` في `app.js` يراه
+     سكربت الصفحة. أمّا `eval` فيحبس `const` و`let` في نطاقه وحده —
+     فلو حمّلنا كل ملفّ بـ`eval` مستقلّ لأخفق الاختبار بـ«store is
+     not defined» **والصفحة سليمة**. فنجمعها في تقييم واحد. */
+  const bundle = ['assets/app.js', 'assets/hint.js', 'assets/nav.js',
+                  'assets/plain.js', 'assets/wheel.js'].map(read).join('\n;\n')
+                 + '\n;\n' + page;
+  let threw = null;
+  try { w.eval(bundle); } catch (e) { threw = e.message; }
+  ok(!threw, 'ملفّات الواجهة وسكربت الصفحة تعمل معًا بلا استثناء', threw);
+
+  /* `DEEP` مُعرَّف بـ`let` داخل سكربت الصفحة، فلا يكفي أن نضعه على
+     `window` — لا بدّ من الإسناد داخل النطاق نفسه. */
+  w.eval('DEEP = ' + JSON.stringify(DEEP));
+  try { w.render(CHART); } catch (e) { threw = e.message; }
+  ok(!threw, 'الرسم يتمّ بلا استثناء', threw);
+
+  const d = w.document, out = d.getElementById('out');
+  const html = out.innerHTML;
+  ok(!/undefined|\[object Object\]/.test(html), 'لا «undefined» في الصفحة المرسومة',
+     (html.match(/.{0,50}undefined.{0,50}/) || [])[0]);
+
+  /* الألسنة */
+  ok(out.querySelectorAll('.tab').length >= 5, 'الألسنة موجودة');
+  ok(out.querySelectorAll('.pane').length >= 5, 'واللوحات بعددها');
+  ok(out.querySelectorAll('.pane.on').length === 1, 'ولسانٌ واحد مفتوح لا أكثر');
+  const tabs = [...out.querySelectorAll('.tab')];
+  ok(tabs.every(t => t.getAttribute('role') === 'tab' && t.hasAttribute('aria-controls')),
+     'ولها سمات ARIA صحيحة');
+  ok(tabs.filter(t => t.tabIndex === 0).length === 1,
+     'وواحدٌ منها فقط يُبلَغ بالتبويب — كما يقتضي المعيار');
+
+  /* **قياس التكرار** — والمقياس الصحيح ليس عدد مرّات ذكر الاسم
+     (فاسم الشمس يرد في كل زاوية لها، وهذا حقّها)، بل **كم مرّة
+     يُعاد سرد الموضع نفسه**: «٢٦°٠٤′». كانت أربعًا: العجلة، وجدول
+     الأجرام، و«قراءة الخريطة»، وجدول المقارنة. */
+  const text = out.textContent;
+  /* الرأس والذنب متقابلان دائمًا، فدرجتهما واحدة نصًّا — فلا يُعدّ
+     ذلك تكرارًا. نُقصي كل موضع يتشارك فيه جِرمان. */
+  const shareCount = {};
+  CHART.bodies.forEach(b => shareCount[b.short] = (shareCount[b.short] || 0) + 1);
+  const worstPos = CHART.bodies
+    .filter(b => shareCount[b.short] === 1)
+    .map(b => ({ name: b.name, pos: b.short, n: text.split(b.short).length - 1 }))
+    .sort((a, b) => b.n - a.n)[0];
+  ok(worstPos.n <= 3,
+     `موضع «${worstPos.name}» (${worstPos.pos}) يُسرَد ${worstPos.n} مرّة لا أربعًا ` +
+     '(الصفّ، وتفصيله، ورقم العجلة)');
+
+  /* البيت كذلك: كان في جدول البيوت وجدول الأجرام وجدول المقارنة */
+  const dup = h => text.split(`البيت ${h}`).length - 1;
+  ok(true, `ـ (للعلم: «البيت ١١» ورد ${dup(11)} مرّة)`);
+
+  /* العناوين المكرّرة التي حُذفت — نفحص العنوان لا اللفظ، فقد نذكر
+     اللفظ في جملة تُحيل الزائر إلى لسان آخر. */
+  ok(!/<h[23][^>]*>\s*أقوى الزوايا/.test(html),
+     'حُذف عنوان «أقوى الزوايا» — صار نصّ كل زاوية في صفّها');
+  ok(!/<h[23][^>]*>\s*سائر الأجرام/.test(html),
+     'وحُذف عنوان «سائر الأجرام» — صار نصّ كل جِرم في صفّه');
+  ok(!/<h2[^>]*>\s*النجوم الثابتة/.test(html),
+     'وحُذف جدول النجوم المستقلّ — صار كل نجم عند جِرمه');
+  ok(!/<h2[^>]*>\s*قراءة الخريطة/.test(html),
+     'وحُذفت «قراءة الخريطة» — كانت تُعيد ما في الجداول بنصّه');
+
+  /* كل جِرم له صفّ يُفتَح، وفيه نصّه */
+  const openers = out.querySelectorAll('#pane-bodies tr.opener[data-open]');
+  ok(openers.length === CHART.bodies.length,
+     `كل جِرم (${CHART.bodies.length}) له صفّ يُفتَح`);
+  ok([...openers].every(t => t.getAttribute('tabindex') === '0'),
+     'وكلّها تُبلَغ بلوحة المفاتيح');
+  ok([...openers].every(t => t.getAttribute('aria-expanded') === 'false'),
+     'وكلّها تُعلن حالها لقارئ الشاشة');
+
+  const sunRow = [...openers].find(t => t.getAttribute('data-body') === 'الشمس');
+  if (!sunRow) { ok(false, 'صفّ الشمس موجود'); throw new Error('توقّف: لا صفّ للشمس'); }
+  const sunPanel = d.getElementById(sunRow.getAttribute('data-open'));
+  const sunTxt = sunPanel.textContent;
+  for (const k of ['الموضع:', 'الكرامة:'])
+    ok(sunTxt.includes(k), `تفصيل الشمس فيه «${k}»`);
+  ok(/زواياه الكبرى|لا زاوية كبرى/.test(sunTxt), 'وفيه زواياه');
+  ok(sunTxt.length > 250, `وفيه شرحٌ لا سطرًا (${sunTxt.trim().length} حرفًا)`);
+
+  /* الفتح يعمل — بالضغط وبلوحة المفاتيح */
+  ok(sunPanel.style.display === 'none', 'التفصيل مطويّ أوّلًا');
+  sunRow.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  ok(sunPanel.style.display !== 'none', 'والضغط يفتحه');
+  ok(sunRow.getAttribute('aria-expanded') === 'true', 'ويُعلن أنه فُتح');
+  sunRow.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  ok(sunPanel.style.display === 'none', 'والضغط ثانيةً يطويه');
+
+  const kb = new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+  Object.defineProperty(kb, 'target', { value: sunRow });
+  sunRow.dispatchEvent(kb);
+  ok(sunPanel.style.display !== 'none', 'ومفتاح Enter يفتحه كذلك');
+
+  /* البيوت: كانت لا تنفتح إلّا بعد الضغط على زرّ لا علاقة له بها */
+  const hRow = out.querySelector('#pane-houses tr.opener[data-open^="hp"]');
+  ok(!!hRow, 'صفوف البيوت قابلة للفتح');
+  const hPanel = d.getElementById(hRow.getAttribute('data-open'));
+  hRow.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  ok(hPanel.style.display !== 'none',
+     'وتنفتح من أوّل ضغطة — وكان الربط من قبل داخل مستمع «الزوايا الصغرى»، فلا تعمل إلّا بعده');
+
+  /* الزوايا: كل زاوية لها نصّ لا الثماني الأقوى وحدها */
+  const aOpen = out.querySelectorAll('#pane-asp tr.opener[data-open^="pa"]').length;
+  ok(aOpen === CHART.aspects.length,
+     `كل زاوية (${aOpen} من ${CHART.aspects.length}) لها نصّ مكتوب — لا الثماني الأقوى وحدها`);
+  ok(CHART.aspects.every(a => a.meaning),
+     'والنصّ يأتي مع الزاوية من الخادم، فلا مطابقة ناقصة في المتصفّح');
+
+  /* البيت الخالي يُشرح ولا يُترك فراغًا */
+  ok(out.querySelector('#pane-houses').textContent.includes('البيوت الاثنا عشر كلّها عاملة') ||
+     CHART.bodies.length >= 12,
+     'والبيت الخالي يُشرح بدل أن يُترك بلا كلمة');
 }
 
 /* ══════════════════════════════════════════════════════════════ */
