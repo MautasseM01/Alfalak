@@ -384,21 +384,40 @@ function markTerms(root) {
 /* ــ تعريف الزائر بالميزة مرّةً واحدة ــ
    ميزةٌ لا يعرف بها أحد كأنها غير موجودة. فنُظهر سطرًا واحدًا أوّل
    مرّة يُوسَم فيها مصطلح، ثم لا يعود أبدًا. */
+/* **خطأ كلّفني ثقة القارئ**: كانت هذه الدالّة تُستدعى من المُراقب بعد
+   كل تغيير في الشجرة، **بلا حارس** — فتُدرج نسخةً جديدة في كل مرّة.
+   فامتلأت الصفحة بالسطر نفسه مكرَّرًا كأنه في حلقة، **وكل إدراج
+   يُزحزح ما تحته فتَرتجّ الشاشة**.
+
+   وفيه خطآن لا واحد:
+   ١. لا حارس يمنع التكرار — وهذا سببه المباشر.
+   ٢. إدراجه **داخل تدفّق الصفحة** يُزحزح المحتوى. والصواب أن يطفو
+      فوقها فلا يُزحزح شيئًا مهما ظهر أو اختفى. */
+let HINT_TIP_DONE = false;
+
 function hintFirstTip() {
-  try { if (localStorage.getItem('falak.hintTip')) return; } catch { return; }
-  const first = document.querySelector('b.hint-term');
-  if (!first) return;
+  if (HINT_TIP_DONE) return;
+  if (document.querySelector('.hint-tip')) { HINT_TIP_DONE = true; return; }
+  try { if (localStorage.getItem('falak.hintTip')) { HINT_TIP_DONE = true; return; } }
+  catch { HINT_TIP_DONE = true; return; }
+  if (!document.querySelector('b.hint-term')) return;
+  HINT_TIP_DONE = true;
+
   const bar = document.createElement('div');
   bar.className = 'hint-tip';
-  bar.innerHTML = 'الكلمات ذات الخطّ المنقّط مشروحة — <b>مرّر المؤشّر عليها</b> ' +
-                  '(أو اضغطها على الجوّال). وكذلك كلّ عنصر في العجلة.' +
+  bar.setAttribute('role', 'status');
+  bar.innerHTML = '<span>الكلمات ذات الخطّ المنقّط مشروحة — <b>مرّر المؤشّر عليها</b>، ' +
+                  'وكذلك كل عنصر في العجلة.</span>' +
                   '<button class="hint-tip-x" aria-label="فهمت، أخفِ هذا">فهمت</button>';
-  bar.querySelector('.hint-tip-x').addEventListener('click', () => {
+  const done = () => {
     try { localStorage.setItem('falak.hintTip', '1'); } catch { }
-    bar.remove();
-  });
-  const main = document.querySelector('main') || document.body;
-  main.insertBefore(bar, main.firstChild);
+    bar.classList.remove('in');
+    setTimeout(() => bar.remove(), 220);
+  };
+  bar.querySelector('.hint-tip-x').addEventListener('click', done);
+  document.body.appendChild(bar);            /* يطفو، فلا يُزحزح سطرًا */
+  requestAnimationFrame(() => bar.classList.add('in'));
+  setTimeout(done, 14000);                   /* ولا يبقى معلّقًا أبدًا */
 }
 
 /* يُشغَّل بعد كل عرض جديد. والمراقب مؤجَّل حتى تهدأ الصفحة، فوسمُ

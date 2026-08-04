@@ -49,6 +49,35 @@ function wheelSVG(c, opts = {}) {
     houseOut: S * .372, houseIn: S * .290,
     planet: S * .335, aspect: S * .285,
   };
+  /* ── أنصاف الأقطار على النسبة الذهبية ──────────────────────────
+     الأنصاف القديمة كانت أرقامًا مُختارة بالعين، وفيها **خلل مرئي**:
+     وسم «الطالع» يُرسَم على نصف قطر ٣٠٦٫٤ من مركزٍ عند ٣١٠، وهو
+     نصّ مُتوسَّط العرض — فينقطع نصفه خارج اللوحة، فيُقرأ «SC» بدل
+     «ASC» و«DS» بدل «DSC». (وقد رأيتُه في الصورة المصدَّرة.)
+
+     فأُعيد بناؤها على φ = ١٫٦١٨:
+       · القرص الداخلي = القطر الخارجي ÷ φ
+       · وما بقي يُقسَم على الأحزمة الثلاثة بالنسب φ² : φ : ١
+         (البيوت أعرضها، ثم البروج، ثم المنازل)
+       · ودائرة الزوايا = القرص الداخلي ÷ φ
+     فصار كل حدٍّ في الرسم نسبةً من الذي قبله لا رقمًا مُصادفًا. */
+  const PHI = 1.6180339887;
+  const OUT = S * 0.440;                 /* هامشٌ للأوسمة خارجه */
+  const INNER = OUT / PHI;               /* القرص الداخلي */
+  const band = OUT - INNER;
+  const wHouse = band * (PHI * PHI) / (PHI * PHI + PHI + 1);
+  const wZod   = band * PHI             / (PHI * PHI + PHI + 1);
+  const wMans  = band                   / (PHI * PHI + PHI + 1);
+  R.zodiacOut = OUT;
+  R.zodiacIn  = OUT - wZod;
+  R.mansionOut = R.zodiacIn;
+  R.mansionIn  = R.zodiacIn - wMans;
+  R.houseOut = R.mansionIn;
+  R.houseIn  = INNER;
+  R.planet = INNER - (INNER - INNER / PHI) * 0.34;   /* الأجرام داخل القرص */
+  R.degLbl = R.planet - (INNER - INNER / PHI) * 0.42;
+  R.aspect = INNER / PHI;                /* دائرة خطوط الزوايا */
+  R.axisLbl = OUT + wZod * 0.62;         /* ووسم الوتد داخل اللوحة قطعًا */
   const asc = c.angles['الطالع'].lon;
   const showMansions = opts.mansions !== false;
 
@@ -82,8 +111,11 @@ function wheelSVG(c, opts = {}) {
         inSign.length ? `في هذا البرج من خريطتك: ${inSign.join('، ')}.`
                       : 'لا جِرم لك في هذا البرج.',
       ], ` data-term="البرج"`)}>`;
+    /* الشفافية كانت ١٣٪ — فبدت الأقواس بقعًا داكنة متقاربة لا
+       حزامًا يُقرأ. ورفعناها ووحّدنا حدّة الألوان فصار العنصر
+       يُعرَف بلونه من نظرة. */
     g += `<path d="${arcPath(start, start + 30, (R.zodiacOut + R.zodiacIn) / 2)}" fill="none"
-           stroke="${ELEM_COLOR[i % 4]}" stroke-width="${R.zodiacOut - R.zodiacIn}" opacity=".13"/>`;
+           stroke="${ELEM_COLOR[i % 4]}" stroke-width="${R.zodiacOut - R.zodiacIn}" opacity=".21"/>`;
     const [tx, ty] = P(start + 15, (R.zodiacOut + R.zodiacIn) / 2);
     g += `<text x="${tx.toFixed(1)}" y="${(ty + 7).toFixed(1)}" text-anchor="middle"
            font-size="21" fill="${ELEM_COLOR[i % 4]}">${SIGN_SYMBOLS[i]}</text>`;
@@ -140,7 +172,7 @@ function wheelSVG(c, opts = {}) {
     const A = c.angles[k];
     const L = A.lon;
     g += line(L, R.houseIn, R.zodiacOut + 4, 'stroke="var(--gold)" stroke-width="1.2" opacity=".85"');
-    const [ax, ay] = P(L, R.zodiacOut + 15);
+    const [ax, ay] = P(L, R.axisLbl);
     g += `<g class="ax"${hint(`${k} (${tag})`, [
         `${A.text} — أي ${A.deg}° و${A.min}′ من برج ${A.sign}.`,
         'الأوتاد الأربعة ليست أجرامًا، بل مواضع تحدّدها لحظةُ الميلاد ومكانُه.',
@@ -156,7 +188,13 @@ function wheelSVG(c, opts = {}) {
   const bodies = c.bodies.filter(b => b.name !== 'الذنب' || opts.tail !== false);
   const items = bodies.map(b => ({ ...b, rel: ((b.lon - asc) % 360 + 360) % 360 }))
                       .sort((a, b) => a.rel - b.rel);
-  const MIN = 8;
+  /* **التزاحم**: كان الفاصل الأدنى ثماني درجات ثابتة — وهو رقمٌ لا
+     يعرف شيئًا عن نصف القطر. فعند ١٤٦ بكسل تساوي الثماني درجات
+     ٢٠٫٥ بكسل، وقطر دائرة الجِرم ٢٥ — **فتتراكب الدوائر حتمًا**،
+     وهو ما ظهر في زحل ونبتون وأورانوس في الصورة المصدَّرة.
+     فصار الفاصل يُحسَب من نصف القطر نفسه: قوسٌ يسع الدائرة وفضلة. */
+  const GLYPH = 25.4;                                   /* قطر دائرة الجِرم */
+  const MIN = Math.min(16, (GLYPH + 2.6) * 180 / (Math.PI * R.planet));
   for (let pass = 0; pass < 60; pass++) {
     let moved = false;
     for (let i = 0; i < items.length; i++) {
@@ -235,10 +273,57 @@ function wheelSVG(c, opts = {}) {
       <text x="${px.toFixed(1)}" y="${(py + 6).toFixed(1)}" text-anchor="middle" font-size="16" fill="${col}">${it.symbol}</text>
       <title>${wEsc(it.name)} — ${wEsc(it.text)}${it.retro ? ' (راجع)' : ''}${it.dignity ? ' · ' + wEsc(it.dignity) : ''}</title>
     </g>`;
-    const [dx, dy] = P(drawLon, R.planet - 25);
+    const [dx, dy] = P(drawLon, R.degLbl);
     g += `<text x="${dx.toFixed(1)}" y="${(dy + 3).toFixed(1)}" text-anchor="middle"
            font-size="8.5" fill="var(--muted)">${it.deg}°${it.retro ? '℞' : ''}</text>`;
   });
+
+  /* ══════════════════════════════════════════════════════════════
+     لُبّ العجلة
+
+     كان المركز فراغًا كبيرًا — نحو ثلث اللوحة بلا شيء. وأصل الرسم
+     في الكتب القديمة أن يُكتب في وسطه اسمُ صاحبه ووقتُه.
+     فنضع فيه ما لو لم يقرأ الزائر سواه لعرف خريطته:
+     الطالع، والشمس، والقمر، وسيّد الخريطة.
+     ══════════════════════════════════════════════════════════════ */
+  if (opts.core !== false) {
+    const find = n => (c.bodies || []).find(b => b.name === n);
+    const sun = find('الشمس'), moon = find('القمر');
+    const rows = [
+      ['الطالع', c.angles['الطالع'].short + ' ' + c.angles['الطالع'].sign],
+      ['الشمس', sun ? sun.short + ' ' + sun.sign : ''],
+      ['القمر', moon ? moon.short + ' ' + moon.sign : ''],
+      c.almuten && c.almuten.winner ? ['سيّدها', c.almuten.winner] : null,
+    ].filter(r => r && r[1]);
+
+    /* سطرٌ واحد لكل مدخل، وارتفاع السطر من سُلَّم φ نفسه (١٦٫١٨).
+       وكانت أوّل محاولة سطرين لكل مدخل بارتفاع ١٥٫٤ — فتراكب
+       العنوانُ والقيمةُ مع سطر ما بعدهما. رأيتُه في الصورة. */
+    const lineH = 16.18;
+    const title = (c.name || '').trim();
+    const head = title ? 20 : 0;
+    const total = rows.length * lineH + head;
+    const top = cy - total / 2 + 11;
+
+    g += `<g class="core" pointer-events="none" text-anchor="middle">`;
+    g += `<circle cx="${cx}" cy="${cy}" r="${(R.aspect * 0.82).toFixed(1)}"
+            fill="rgba(10,15,29,.80)" stroke="var(--line)" stroke-width=".7"/>`;
+    if (title)
+      g += `<text x="${cx}" y="${top.toFixed(1)}" font-size="12.4"
+             font-family="Amiri, serif" fill="var(--gold)">${wEsc(title)}</text>`;
+    rows.forEach((r, i) => {
+      const y = top + head + i * lineH;
+      /* **عقدة نصّية**: أوّل صياغة وضعت العنوان والقيمة في
+         `tspan`ين داخل نصٍّ واحد. والمتصفّح يُجيد تدفّقهما، لكنّ
+         الخريطة **تُصدَّر ملفَّ SVG يفتحه صاحبها ببرامج أخرى** —
+         وكثير منها لا يُحسن تدفّق الـ`tspan` ولا الاتجاه العربي،
+         فيرسمهما فوق بعضهما. رأيتُ ذلك بعيني في التصدير.
+         فصار كل سطر نصًّا واحدًا لا يحتمل تأويلًا. */
+      g += `<text x="${cx}" y="${y.toFixed(1)}" font-size="10"
+             fill="var(--muted)">${wEsc(r[0])} · ${wEsc(r[1])}</text>`;
+    });
+    g += `</g>`;
+  }
 
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" xmlns="http://www.w3.org/2000/svg"
             font-family="Noto Kufi Arabic, system-ui, sans-serif" role="img"
