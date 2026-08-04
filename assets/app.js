@@ -141,39 +141,15 @@ const glossaryReady = () =>
 /* علامة استفهام تفتح شرحًا موجزًا */
 const q = term => `<button class="q" data-term="${term}" aria-label="ما معنى ${term}؟">؟</button>`;
 
+/* ــ انتقل الشرح كلّه إلى `hint.js` ــ
+   كان هنا مستمع ضغطٍ خاصّ بالمعجم، فصار في `hint.js` محرّكٌ واحد
+   يفتح بالتحويم وبالتركيز وباللمس، ويخدم المعجمَ وعناصرَ العجلة
+   معًا. وأُبقيت هذه الدالّة باسمها لأن أربع عشرة صفحة تناديها،
+   فلا تُغيَّر كلّها لأجل اسم. وهي تُنبّه إن نُسي إدراج `hint.js`. */
 function initGlossary() {
   glossaryReady();
-  let pop = document.querySelector('.gpop');
-  if (!pop) {
-    pop = document.createElement('div');
-    pop.className = 'gpop';
-    document.body.appendChild(pop);
-  }
-  const close = () => pop.classList.remove('show');
-
-  document.addEventListener('click', async e => {
-    /* **يجب أن يكون المحدِّد ضيّقًا**: كان `.q` وحده، فالتقط بطاقات
-       بوّابة الصفحة الرئيسة لأنها حملت الصنف نفسه — فأظهر
-       «undefined» ومنع الانتقال، فتعطّلت البطاقات الستّ. */
-    const b = e.target.closest('button.q[data-term]');
-    if (!b) { if (!e.target.closest('.gpop')) close(); return; }
-    e.preventDefault(); e.stopPropagation();
-    const terms = await glossaryReady();
-    const t = b.dataset.term;
-    const text = terms[t] || 'لا شرح متاحًا لهذا المصطلح بعد.';
-    pop.innerHTML = `<strong>${t}</strong><p>${text}</p>
-      <a href="/learn.html#${encodeURIComponent(t)}">المزيد في صفحة التعلّم ›</a>`;
-    pop.classList.add('show');
-    const r = b.getBoundingClientRect();
-    const w = Math.min(330, innerWidth - 24);
-    pop.style.width = w + 'px';
-    let left = r.left + scrollX + r.width / 2 - w / 2;
-    left = Math.max(12, Math.min(left, innerWidth - w - 12));
-    pop.style.left = left + 'px';
-    pop.style.top = (r.bottom + scrollY + 8) + 'px';
-  });
-  addEventListener('keydown', e => e.key === 'Escape' && close());
-  addEventListener('scroll', close, { passive: true });
+  if (typeof initHints === 'function') return;
+  console.warn('الفَلَك: لم يُدرَج assets/hint.js في هذه الصفحة، فلن يعمل الشرح.');
 }
 
 /* ── تخزين محلي ── */

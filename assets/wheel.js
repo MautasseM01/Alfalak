@@ -6,6 +6,40 @@ const SIGN_NAMES = ['الحمل','الثور','الجوزاء','السرطان',
 const ELEM_COLOR = { 0:'#e08a7d', 1:'#c9a227', 2:'#8fa5d8', 3:'#5fc7a1' };
 const ASPECT_COLOR = { 'إيجابية':'#5fc7a1', 'سلبية':'#e08a7d', 'محايدة':'#d9b45b' };
 
+/* ══════════════════════════════════════════════════════════════
+   الشرح عند التحويم على عناصر العجلة
+
+   كانت العجلة تحمل `<title>` وحدها، وهو ضعيف: يتأخّر نحو ثانية،
+   ولا يقبل تنسيقًا، ولا يظهر بالتركيز بلوحة المفاتيح، ولا يُقرأ
+   على الجوّال البتّة. فصرنا نضع `data-hint` ويتولّاه `hint.js`.
+
+   وأبقينا `<title>` معه — فهو ما تقرأه قارئات الشاشة، وما يبقى
+   إن تعطّل السكربت.
+   ══════════════════════════════════════════════════════════════ */
+const wEsc = t => String(t == null ? '' : t)
+  .replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+/* الأسطر تُفصَل بـ«|»، فنُسقط ما فيه منها كي لا يُكسَر التقسيم */
+function hint(title, lines, extra) {
+  const body = (lines || []).filter(Boolean)
+    .map(s => String(s).replace(/\|/g, '·')).join('|');
+  let a = ` data-hint="${wEsc(body)}" data-hint-title="${wEsc(title)}"`;
+  if (extra) a += extra;
+  return a;
+}
+
+const HOUSE_ORD = ['الأوّل','الثاني','الثالث','الرابع','الخامس','السادس',
+                   'السابع','الثامن','التاسع','العاشر','الحادي عشر','الثاني عشر'];
+
+/* «يسير درجةً في اليوم» أوضح لغير المختصّ من رقم عشري مجرّد */
+function speedWord(b) {
+  if (b.retro) return 'راجع — يبدو سائرًا إلى الوراء، ودلالته المراجعة لا التوقّف.';
+  if (b.speed == null) return '';
+  const v = Math.abs(b.speed);
+  const rate = v >= 1 ? `${v.toFixed(2)}° في اليوم` : `${(v * 60).toFixed(0)}′ في اليوم`;
+  return `يسير ${rate} مستقيمًا.`;
+}
+
 function wheelSVG(c, opts = {}) {
   const S = opts.size || 620;
   const cx = S / 2, cy = S / 2;
@@ -36,14 +70,25 @@ function wheelSVG(c, opts = {}) {
   /* ── حلقة البروج ── */
   g += `<circle cx="${cx}" cy="${cy}" r="${R.zodiacOut}" fill="none" stroke="var(--line2)" stroke-width="1"/>`;
   g += `<circle cx="${cx}" cy="${cy}" r="${R.zodiacIn}" fill="none" stroke="var(--line2)" stroke-width="1"/>`;
+  const deep = opts.deep || {};
   for (let i = 0; i < 12; i++) {
     const start = i * 30;
+    const nm = SIGN_NAMES[i];
+    const sd = (deep.signs || {})[nm] || {};
+    const inSign = c.bodies.filter(b => b.sign === nm).map(b => b.name);
+    g += `<g class="sgn"${hint(`${nm} ${SIGN_SYMBOLS[i]}`, [
+        sd.element || sd.mode ? `${sd.element || ''} · ${sd.mode || ''} · صاحبه ${sd.ruler || ''}` : '',
+        sd.core,
+        inSign.length ? `في هذا البرج من خريطتك: ${inSign.join('، ')}.`
+                      : 'لا جِرم لك في هذا البرج.',
+      ], ` data-term="البرج"`)}>`;
     g += `<path d="${arcPath(start, start + 30, (R.zodiacOut + R.zodiacIn) / 2)}" fill="none"
            stroke="${ELEM_COLOR[i % 4]}" stroke-width="${R.zodiacOut - R.zodiacIn}" opacity=".13"/>`;
-    g += line(start, R.zodiacIn, R.zodiacOut, 'stroke="var(--line2)" stroke-width="1"');
     const [tx, ty] = P(start + 15, (R.zodiacOut + R.zodiacIn) / 2);
     g += `<text x="${tx.toFixed(1)}" y="${(ty + 7).toFixed(1)}" text-anchor="middle"
            font-size="21" fill="${ELEM_COLOR[i % 4]}">${SIGN_SYMBOLS[i]}</text>`;
+    g += `<title>${wEsc(nm)}</title></g>`;
+    g += line(start, R.zodiacIn, R.zodiacOut, 'stroke="var(--line2)" stroke-width="1"');
     /* علامات الدرجات كل خمس */
     for (let d = 5; d < 30; d += 5) {
       const len = d % 10 === 0 ? 6 : 3;
@@ -73,18 +118,38 @@ function wheelSVG(c, opts = {}) {
     const next = cusps[(i + 1) % 12];
     const mid = cu + (((next - cu) % 360 + 360) % 360) / 2;
     const [hx, hy] = P(mid, (R.houseIn + R.houseOut) / 2);
-    g += `<text x="${hx.toFixed(1)}" y="${(hy + 4).toFixed(1)}" text-anchor="middle"
-           font-size="11" fill="var(--muted)">${i + 1}</text>`;
+    const cusp = c.houses.cusps[i];
+    const hd = (deep.houses || {})[String(i + 1)] || {};
+    const tenants = c.bodies.filter(b => b.house === i + 1).map(b => b.name);
+    g += `<g class="hs"${hint(`البيت ${HOUSE_ORD[i]}${hd.name ? ' — ' + hd.name : ''}`, [
+        `يبدأ من ${cusp.text}، وصاحبه ${cusp.ruler}.`,
+        hd.rules || (cusp.name || '').split(':').slice(1).join(':').trim(),
+        hd.question ? `السؤال الذي يطرحه: ${hd.question}` : '',
+        tenants.length ? `فيه من خريطتك: ${tenants.join('، ')}.`
+                       : 'لا جِرم لك في هذا البيت — وهذا لا يعني فراغه في حياتك، بل أن أمره يُقرأ من صاحبه لا من ساكنه.',
+      ], ` data-term="البيوت"`)}>
+      <circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="11" fill="transparent"/>
+      <text x="${hx.toFixed(1)}" y="${(hy + 4).toFixed(1)}" text-anchor="middle"
+           font-size="11" fill="var(--muted)">${i + 1}</text>
+      <title>البيت ${HOUSE_ORD[i]}</title></g>`;
   });
 
   /* ── الأوتاد ── */
   const axes = [['الطالع','ASC'], ['وسط السماء','MC'], ['الغارب','DSC'], ['وتد الأرض','IC']];
   axes.forEach(([k, tag]) => {
-    const L = c.angles[k].lon;
+    const A = c.angles[k];
+    const L = A.lon;
     g += line(L, R.houseIn, R.zodiacOut + 4, 'stroke="var(--gold)" stroke-width="1.2" opacity=".85"');
     const [ax, ay] = P(L, R.zodiacOut + 15);
-    g += `<text x="${ax.toFixed(1)}" y="${(ay + 4).toFixed(1)}" text-anchor="middle"
-           font-size="10.5" font-weight="600" fill="var(--gold)">${tag}</text>`;
+    g += `<g class="ax"${hint(`${k} (${tag})`, [
+        `${A.text} — أي ${A.deg}° و${A.min}′ من برج ${A.sign}.`,
+        'الأوتاد الأربعة ليست أجرامًا، بل مواضع تحدّدها لحظةُ الميلاد ومكانُه.',
+        'وهي أدقّ ما في الخريطة حسّاسيةً للوقت: أربع دقائق تُزحزح الطالع درجة.',
+      ], ` data-term="${wEsc(k)}"`)}>
+      <circle cx="${ax.toFixed(1)}" cy="${ay.toFixed(1)}" r="13" fill="transparent"/>
+      <text x="${ax.toFixed(1)}" y="${(ay + 4).toFixed(1)}" text-anchor="middle"
+           font-size="10.5" font-weight="600" fill="var(--gold)">${tag}</text>
+      <title>${wEsc(k)} — ${wEsc(A.text)}</title></g>`;
   });
 
   /* ── تفريق الكواكب المتزاحمة ── */
@@ -112,15 +177,36 @@ function wheelSVG(c, opts = {}) {
   bodies.forEach(b => pos[b.name] = b.lon);
   const asps = (c.aspects || []).filter(a => opts.minorLines ? true : a.major);
   let lines = '';
+  const deepAsp = Object.assign({}, deep.aspects || {}, deep.aspects_outer || {});
+  const aspText = a => {
+    const d = deepAsp[`${a.a} — ${a.b}`] || deepAsp[`${a.b} — ${a.a}`];
+    if (!d) return [];
+    const t = d[a.name] || d[a.polarity === 'سلبية' ? 'صعب' : 'سهل'];
+    return [d.theme, t];
+  };
   asps.forEach(a => {
     if (pos[a.a] == null || pos[a.b] == null) return;
     const [x1,y1] = P(pos[a.a], R.aspect), [x2,y2] = P(pos[a.b], R.aspect);
     const col = ASPECT_COLOR[a.polarity] || 'var(--muted)';
     const w = (0.5 + a.strength * 1.6).toFixed(2);
     const op = (0.20 + a.strength * 0.55).toFixed(2);
-    lines += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+    const pct = Math.round(a.strength * 100);
+    const h = hint(`${a.a} ${a.symbol} ${a.b} — ${a.name}`, [
+        `الفرق بينهما ${a.orb.toFixed(2)}° عن ${a.angle}° تامّة (الحدّ المسموح ${a.orb_max.toFixed(2)}°).`,
+        a.exact ? 'زاوية تامّة تقريبًا — وهذا أشدّ ما تكون.' : `قوّتها ${pct}٪ بحسب قربها من التمام.`,
+        a.applying ? 'مُقبِلة: تشتدّ ولمّا تتمّ بعد، فأثرها في ما هو آتٍ.'
+                   : 'مُدبِرة: تمّت وانفكّت، فأثرها ماضٍ ينقضي.',
+        ...aspText(a),
+      ], ` data-term="${wEsc(a.name)}"`);
+    /* الخطّ رفيع لا يُصاد بالمؤشّر، فنضع فوقه خطًّا شفّافًا عريضًا
+       يلتقط التحويم. وهذه حيلة قديمة في SVG لا غنى عنها. */
+    lines += `<g class="asp"${h}>
+      <line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
               stroke="${col}" stroke-width="${w}" opacity="${op}"
-              ${a.angle === 0 ? 'stroke-dasharray="3 3"' : ''}/>`;
+              ${a.angle === 0 ? 'stroke-dasharray="3 3"' : ''}/>
+      <line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+              stroke="transparent" stroke-width="9" pointer-events="stroke"/>
+      <title>${wEsc(a.a)} ${wEsc(a.name)} ${wEsc(a.b)}</title></g>`;
   });
   g += `<g>${lines}</g>`;
 
@@ -133,10 +219,24 @@ function wheelSVG(c, opts = {}) {
     const dignity = it.dignity && !/غريب/.test(it.dignity);
     const bad = it.dignity && /وبال|هبوط/.test(it.dignity);
     const col = bad ? 'var(--neg)' : dignity ? 'var(--pos)' : 'var(--text)';
-    g += `<g class="pl" data-name="${it.name}">
+    const ph = (deep.planet_in_house || {})[it.name] || {};
+    const withMe = (c.aspects || [])
+      .filter(a => a.major && (a.a === it.name || a.b === it.name))
+      .map(a => `${a.name} ${a.a === it.name ? a.b : a.a}`);
+    g += `<g class="pl" data-name="${it.name}" data-body="${wEsc(it.name)}"${hint(
+      `${it.name} ${it.symbol}`, [
+        `${it.text} — في البيت ${HOUSE_ORD[it.house - 1] || it.house}.`,
+        `برجٌ ${it.element} ${it.mode}، وصاحبه ${it.ruler}.`,
+        it.dignity_note ? `الكرامة: ${it.dignity_note}.` : (it.dignity || ''),
+        speedWord(it),
+        ph[String(it.house)],
+        withMe.length ? `زواياه الكبرى: ${withMe.join('، ')}.` : 'لا زاوية كبرى له مع سواه.',
+      ], ` data-term="${wEsc(it.name)}"`)}>
+      <circle class="hint-halo" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="16.5"
+              fill="none" stroke="var(--gold)" stroke-width="1.4"/>
       <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="12.5" fill="rgba(10,15,29,.82)" stroke="var(--line2)" stroke-width=".7"/>
       <text x="${px.toFixed(1)}" y="${(py + 6).toFixed(1)}" text-anchor="middle" font-size="16" fill="${col}">${it.symbol}</text>
-      <title>${it.name} — ${it.text}${it.retro ? ' (راجع)' : ''}${it.dignity ? ' · ' + it.dignity : ''}</title>
+      <title>${wEsc(it.name)} — ${wEsc(it.text)}${it.retro ? ' (راجع)' : ''}${it.dignity ? ' · ' + wEsc(it.dignity) : ''}</title>
     </g>`;
     const [dx, dy] = P(drawLon, R.planet - 25);
     g += `<text x="${dx.toFixed(1)}" y="${(dy + 3).toFixed(1)}" text-anchor="middle"

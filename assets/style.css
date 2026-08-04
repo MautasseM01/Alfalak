@@ -148,7 +148,8 @@ button.q{
   border:1px solid var(--gold-dim);background:transparent;color:var(--gold-dim);
   border-radius:50%;font-size:10px;line-height:1;cursor:pointer;transition:.15s;flex:none
 }
-button.q:hover{background:var(--gold);color:#15100a;border-color:var(--gold)}
+button.q:hover,button.q.hint-on{background:var(--gold);color:#15100a;border-color:var(--gold)}
+button.q:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .gpop{
   position:absolute;z-index:200;display:none;padding:14px 16px;border-radius:13px;
   background:var(--panel2);border:1px solid var(--gold-dim);
@@ -159,6 +160,115 @@ button.q:hover{background:var(--gold);color:#15100a;border-color:var(--gold)}
 .gpop p{margin:0 0 8px;color:var(--text)}
 .gpop a{color:var(--muted);text-decoration:none;font-size:.78rem}
 .gpop a:hover{color:var(--gold)}
+
+/* ══════════════════════════════════════════════════════════════
+   الشرح عند التحويم — hint.js
+
+   **كل صنف هنا يبدأ بـ `hint-`**، عمدًا لا مصادفةً: سبق أن تصادم
+   صنفٌ عامّ (`.q`) بين مكوّنين فعطّل بطاقات الصفحة الرئيسة الستّ.
+   والبادئة تجعل التصادم مستحيلًا لا مستبعدًا.
+   ══════════════════════════════════════════════════════════════ */
+
+/* المصطلح الموسوم في النصّ: خطّ منقّط تحته، لا لون صارخ —
+   فالنصّ يُقرأ أوّلًا، والشرح لمن وقف. */
+.hint-term{
+  font-weight:inherit;color:inherit;cursor:help;
+  border-bottom:1px dotted var(--gold-dim);
+  padding-bottom:1px;transition:background .16s,border-color .16s
+}
+.hint-term:hover,.hint-term.hint-on,.hint-term:focus-visible{
+  background:rgba(217,180,91,.14);border-bottom-color:var(--gold);
+  border-radius:3px;outline:none
+}
+.hint-term:focus-visible{box-shadow:0 0 0 2px var(--gold)}
+
+/* اللوحة */
+.hint-pop{
+  position:absolute;z-index:400;display:none;padding:14px 16px 13px;border-radius:13px;
+  background:var(--panel2,#111a2e);border:1px solid var(--gold-dim);
+  box-shadow:0 20px 50px rgba(0,0,0,.66);
+  font-size:.845rem;line-height:1.9;color:var(--text);
+  max-height:min(60vh,420px);overflow-y:auto;overscroll-behavior:contain
+}
+.hint-pop.show{display:block;animation:hintIn .14s ease-out}
+@keyframes hintIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.hint-pop strong{
+  color:var(--gold);display:block;margin-bottom:6px;font-size:.93rem;
+  font-family:Amiri,serif;letter-spacing:.2px
+}
+.hint-pop p{margin:0 0 7px}
+.hint-pop p:last-of-type{margin-bottom:0}
+.hint-pop b{color:var(--gold)}
+.hint-pop .hint-glo{
+  margin-top:9px;padding-top:9px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:.8rem
+}
+.hint-pop a{color:var(--muted);text-decoration:none;font-size:.78rem;display:inline-block;margin-top:6px}
+.hint-pop a:hover{color:var(--gold)}
+
+/* سهم يشير إلى العنصر المشروح */
+.hint-arrow{
+  position:absolute;top:-6px;width:11px;height:11px;transform:rotate(45deg);
+  background:var(--panel2,#111a2e);
+  border-inline-start:1px solid var(--gold-dim);border-top:1px solid var(--gold-dim);
+  margin-inline-start:-5.5px
+}
+.hint-pop.above .hint-arrow{
+  top:auto;bottom:-6px;
+  border:none;border-inline-end:1px solid var(--gold-dim);border-bottom:1px solid var(--gold-dim)
+}
+
+/* زرّ الإغلاق: لا يظهر إلا إذا ثُبّتت اللوحة بالضغط —
+   فمن حوّم لا يحتاج إغلاقًا، ومن ضغط يحتاجه (وخاصّةً على اللمس). */
+.hint-x{
+  all:unset;position:absolute;inset-block-start:7px;inset-inline-end:10px;
+  display:none;cursor:pointer;color:var(--muted);font-size:1.05rem;line-height:1;
+  padding:3px 6px;border-radius:7px
+}
+.hint-pop.pinned .hint-x{display:block}
+.hint-x:hover{color:var(--gold);background:rgba(255,255,255,.05)}
+.hint-pop.pinned{padding-inline-end:30px;border-color:var(--gold)}
+
+/* عناصر العجلة والجداول: مؤشّر يدلّ على أن فيها شرحًا */
+[data-hint]{cursor:help}
+svg [data-hint]{transition:opacity .15s}
+svg [data-hint]:hover,svg [data-hint].hint-on{opacity:1}
+svg .hint-halo{opacity:0;transition:opacity .15s}
+svg [data-hint]:hover .hint-halo,
+svg [data-hint].hint-on .hint-halo,
+svg [data-hint].hint-echo .hint-halo{opacity:1}
+
+/* التمييز المتبادل: الكوكب في العجلة وصفّه في الجدول يُضيئان معًا */
+tr.hint-echo,tr[data-body]:hover{background:rgba(217,180,91,.11)}
+tr[data-body]{transition:background .15s}
+
+/* سطر التعريف بالميزة — يظهر مرّةً واحدة في العمر ثم لا يعود */
+.hint-tip{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:0 0 16px;padding:11px 15px;border-radius:11px;
+  border:1px solid var(--gold-dim);background:rgba(217,180,91,.07);
+  color:var(--muted);font-size:.83rem;line-height:1.8
+}
+.hint-tip b{color:var(--gold)}
+.hint-tip-x{
+  margin-inline-start:auto;cursor:pointer;flex:none;
+  padding:5px 13px;border-radius:8px;font-size:.78rem;
+  border:1px solid var(--line2);background:transparent;color:var(--text)
+}
+.hint-tip-x:hover{border-color:var(--gold);color:var(--gold)}
+@media print{.hint-tip{display:none}}
+
+/* من فضّل تقليل الحركة، لا تُعرَض عليه */
+@media(prefers-reduced-motion:reduce){
+  .hint-pop.show{animation:none}
+  .hint-term,svg [data-hint],tr[data-body]{transition:none}
+}
+/* الطباعة: لا لوحات ولا خطوط تحت المصطلحات */
+@media print{
+  .hint-pop{display:none!important}
+  .hint-term{border-bottom:none}
+  button.q{display:none}
+}
 
 /* ── العجلة وشبكة الزوايا ── */
 .wheel{padding:8px 4px}

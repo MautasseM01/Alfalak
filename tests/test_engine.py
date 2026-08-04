@@ -2441,6 +2441,96 @@ def test_toolbar_is_wired_once_not_fourteen_times():
         assert "toolbarHTML(" not in html, f"{name}: الشريط مكرّر في الصفحة"
 
 
+def test_no_decorative_element_wears_a_listener_class():
+    """
+    **الاختبار الذي وُلد من خطأ.**
+
+    سمّيتُ بطاقات البوّابة الستّ `.q`، وهو صنف علامة المعجم نفسه.
+    فالتقطها مستمع المعجم، فأظهر «undefined» — والأدهى أنه يستدعي
+    `preventDefault()`، فمنع الانتقال. أي إنّ المدخل الرئيس للموقع
+    كان معطّلًا، ولم يكشفه أيٌّ من مئة وتسعين اختبارًا، لأنها جميعًا
+    تفحص المنطق ولا تفحص تصادم الأسماء.
+
+    القاعدة التي نحرسها هنا: **كل صنف يلتقطه مستمعٌ عامّ يجب أن يقترن
+    بسمة صريحة**، فلا يكفي الصنف وحده للالتقاط.
+    """
+    import re
+    for name, html in _pages().items():
+        for m in re.finditer(r'class="([^"]*)"', html):
+            classes = m.group(1).split()
+            if "q" not in classes:
+                continue
+            tag_start = html.rfind("<", 0, m.start())
+            tag = html[tag_start:m.end() + 200]
+            assert tag.lstrip("<").startswith("button"), (
+                f"{name}: عنصر غير زرّ يحمل الصنف `q` — "
+                f"هذا عين ما عطّل بطاقات البوّابة: {tag[:80]}")
+            assert "data-term=" in tag, (
+                f"{name}: زرّ يحمل `q` بلا `data-term` فسيطبع «undefined»: {tag[:80]}")
+
+    # ولا يلتقط مستمع المعجم صنفًا مجرّدًا بعد اليوم
+    js = open(_root() + "/assets/hint.js", encoding="utf-8").read()
+    assert "'[data-term],[data-hint]'" in js, \
+        "الالتقاط يجب أن يكون بسمة صريحة لا بصنف"
+
+
+def test_hover_explanations_are_wired_everywhere():
+    """
+    الشرح لا ينفع إن لم يُدرَج في الصفحة. وقد كان `initGlossary()`
+    يُنادى في أربع عشرة صفحة، فأبقيناه باسمه وجعلناه يُنبّه إن نُسي
+    الملفّ — والاختبار يمنع النسيان أصلًا.
+    """
+    pages = _pages()
+    for name, html in pages.items():
+        assert "assets/hint.js" in html, f"{name}: لم يُدرَج hint.js"
+        assert html.index("assets/hint.js") > html.index("assets/app.js"), \
+            f"{name}: hint.js قبل app.js"
+
+    js = open(_root() + "/assets/hint.js", encoding="utf-8").read()
+    for fn in ("function initHints", "function markTerms", "function hintTermPattern",
+               "function hintShow", "function hintPlace", "function hintLink"):
+        assert fn in js, f"ينقص {fn} من hint.js"
+    # التحويم والتركيز واللمس: ثلاثتها لا واحد منها
+    for ev in ("pointerover", "pointerout", "focusin", "click", "keydown"):
+        assert f"'{ev}'" in js, f"لا مستمع لـ{ev} — فالتجربة ناقصة على أحد الأجهزة"
+
+    css = open(_root() + "/assets/style.css", encoding="utf-8").read()
+    for cls in (".hint-pop", ".hint-term", ".hint-arrow", ".hint-echo"):
+        assert cls in css, f"ينقص التنسيق {cls}"
+    # كل صنف يخصّ النظام يبدأ بالبادئة — وهذا ما يمنع التصادم
+    assert "hint-" in css
+
+
+def test_glossary_is_deep_enough_for_a_beginner():
+    """
+    قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف
+    شيئًا عن هذه المواضيع. فلا يكفي أن نشرح «الألمطن» ونترك «البرج»
+    و«الدرجة» و«الشمس» بلا شرح، فمن جهل هذه لم ينفعه ذاك.
+    """
+    from falak import interpret
+    g = interpret.GLOSSARY
+    assert len(g) >= 110, f"المعجم {len(g)} مصطلحًا فقط — لا يكفي مبتدئًا"
+
+    # الأوّليّات التي لا يُفترض علمها
+    for t in ("البرج", "الدرجة", "دائرة البروج", "الأفق",
+              "الشمس", "القمر", "المريخ", "زحل",
+              "الاقتران", "التسديس", "التربيع", "التثليث", "التقابل",
+              "النار", "التراب", "الهواء", "الماء"):
+        assert t in g, f"«{t}» ليس في المعجم — وهو ممّا يجهله المبتدئ"
+
+    # مصطلحات المدارس الثلاث كلّها مشروحة
+    for t in ("الجيوتيش", "النكشترا", "الدشا", "البازي", "سيّد النفس",
+              "العناصر الخمسة", "قيام الربيع"):
+        assert t in g, f"«{t}» من المدارس الجديدة وليس في المعجم"
+
+    # لا شرح مقتضب ولا شرح يُحيل على نفسه
+    for term, text in g.items():
+        assert len(text) >= 40, f"شرح «{term}» أقصر من أن يُفيد"
+        head = text.split("،")[0].split(".")[0]
+        assert not head.strip().startswith(term), \
+            f"شرح «{term}» يبدأ بتعريف نفسه بنفسه"
+
+
 def test_every_page_script_parses():
     """
     حارس صريح: كل كتلة جافاسكربت في كل صفحة تُحلَّل بلا خطأ.

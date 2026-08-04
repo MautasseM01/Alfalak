@@ -4,3 +4,5 @@ __pycache__/
 preview/
 .venv/
 falak-web-project.zip
+
+tools/.hint_fixture.json
