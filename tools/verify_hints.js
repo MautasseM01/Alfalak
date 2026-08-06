@@ -505,45 +505,37 @@ section('الاتّجاه والرموز');
      في RTL: `start` = يمين النصّ، و`end` = يساره. فالنصّ الملتصق
      بالحافّة اليمنى (x قريب من S) يجب أن يكون `start` ليمتدّ
      يسارًا؛ والملتصق باليسرى (x صغير) يجب أن يكون `end`. */
-  const dom = new JSDOM(`<!doctype html><html dir="rtl"><body>${svg}</body></html>`);
-  const d = dom.window.document;
-  const S = 620;
-  let wrong = [];
-  d.querySelectorAll('.corners text').forEach(t => {
-    const x = parseFloat(t.getAttribute('x'));
-    const a = t.getAttribute('text-anchor');
-    if (x > S * 0.7 && a !== 'start') wrong.push(`يمين x=${x} anchor=${a}`);
-    if (x < S * 0.3 && a !== 'end') wrong.push(`يسار x=${x} anchor=${a}`);
-  });
-  ok(wrong.length === 0,
-     '**نصوص الأركان لا تنقطع في RTL** — الملتصق باليمين `start` والملتصق باليسار `end`',
-     wrong.slice(0, 4).join(' · '));
-  ok(/direction="rtl"/.test(svg),
-     'والاتّجاه مُصرَّح به على المجموعة، فلا يعتمد على ما تَرِثه من الصفحة');
-  ok(d.querySelectorAll('.corners text').length >= 12,
-     `والأركان مملوءة (${d.querySelectorAll('.corners text').length} سطرًا)`);
+  /* ــ لا نصَّ بيانٍ داخل الـSVG بعد اليوم ــ
+     جرّبتُ عكس `text-anchor`، ونُشِر، **وبقي الانقطاع حرفًا بحرف**.
+     فضبطُ الاتّجاه في SVG لا يُعوَّل عليه، ونصُّه لا يلتفّ. */
+  ok(!/class="corners"/.test(svg),
+     '**بيان الخريطة خرج من الـSVG** — فلا انقطاع ولا تخمين في الاتّجاه');
+  const info = w.wheelInfo(CHART);
+  const dInfo = new JSDOM(`<!doctype html><html dir="rtl"><body>${info}</body></html>`).window.document;
+  ok(dInfo.querySelectorAll('.winf-c').length === 4, 'وصار أربع بطاقات في HTML');
+  ok(dInfo.querySelectorAll('.winf-c > div').length >= 14,
+     `فيها ${dInfo.querySelectorAll('.winf-c > div').length} سطرًا`);
+  ok(/الطالع/.test(info) && /الشمس/.test(info) && /القمر/.test(info),
+     'وفيها الطالع والنيّران');
+  ok(/winf-key/.test(info), 'ومفتاحٌ للألوان');
+  ok(!/undefined|NaN/.test(info), 'ولا «undefined» فيها');
+  ok(read('chart.html').includes('wheelInfo(c)'), 'والصفحة تعرضها تحت العجلة');
 
-  /* ــ الرموز ــ
-     حروف البروج ♈–♓ صورتُها الافتراضية في يونيكود صورةُ إيموجي،
-     فتُرسَم مربّعاتٍ ملوّنة ما لم يُلحَق بها U+FE0E. */
-  const VS = '︎';
+  /* ــ الرموز: لا نعتمد على خطٍّ أصلًا ــ
+     أُلحِق U+FE0E وأُضيف خطُّ رموز، **ونُشِر فبقيت المربّعات
+     البنفسجية** — لأن ترتيب الخطوط الاحتياطية بيد نظام الزائر.
+     فالموقع عربيّ، فليُكتب اسم البرج بالعربية. */
   const SIGNS = [...'♈♉♊♋♌♍♎♏♐♑♒♓'];
-  const bare = SIGNS.filter(s => {
-    const i = svg.indexOf(`>${s}`);
-    return i >= 0 && svg[i + 2] !== VS;
-  });
-  ok(bare.length === 0,
-     '**كل رمز برج مُلحَق به U+FE0E** — وإلّا رسمه المتصفّح إيموجي بنفسجيًّا',
-     bare.join(' '));
-  ok(SIGNS.every(s => svg.includes(s + VS)),
-     'وكلّ البروج الاثني عشر مشمولة');
-  const glyphs = (svg.match(/>[☀-➿]︎</g) || []).length;
-  ok(glyphs >= 12, `ورموز الأجرام كذلك (${glyphs} رمزًا محميًّا)`);
-  ok(/Segoe UI Symbol|Noto Sans Symbols/.test(svg),
-     'وخطّ اللوحة يشمل خطًّا يعرف هذه الرموز');
-
-  ok(/const VS15/.test(src) && /function wSym|const wSym/.test(src),
-     'والحماية في دالّة واحدة، فلا تُنسى في موضع');
+  const drawn = SIGNS.filter(s => new RegExp(`>[^<]*${s}[^<]*</text>`).test(svg));
+  ok(drawn.length === 0,
+     '**لا حرف برج يُرسَم في اللوحة** — فلا سبيل لخطّ الإيموجي إليها',
+     drawn.join(' '));
+  const names = ['الحمل', 'الثور', 'الجوزاء', 'السرطان', 'الأسد', 'العذراء',
+                 'الميزان', 'العقرب', 'القوس', 'الجدي', 'الدلو', 'الحوت'];
+  const missing = names.filter(n => !new RegExp(`>${n}</text>`).test(svg));
+  ok(missing.length === 0, 'وأسماء البروج الاثني عشر مكتوبة بالعربية', missing.join(' '));
+  ok(SIGNS.every(s => svg.includes(s)),
+     'والرمز باقٍ في الشرح عند التحويم لمن يريده');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -615,10 +607,14 @@ section('طيّ البطاقات');
   ok(cards.length >= 5, `كل بطاقة قابلة للطيّ (${cards.length})`);
   const c1 = cards[1], body1 = c1.querySelector('.card-body');
   ok(!c1.classList.contains('shut'), 'وهي مفتوحة أوّلًا');
-  ok(/اطوِ|افتح/.test(c1.querySelector('.fold-btn').textContent),
-     '**وللزرّ كلمة تُقرأ** لا علامةٌ تُخمَّن — وهذا أصل الشكوى');
+  /* الكلمة أُزيلت بطلب صاحب المشروع: السهم يفي بالغرض. ويبقى
+     الوصفُ لقارئ الشاشة، فالسهم وحده لا يُقرأ. */
   ok(!!c1.querySelector('.fold-btn svg'),
-     'والسهم من SVG لا من حدود CSS، فلا يُرسَم شَرْطةً');
+     'السهم من SVG لا من حدود CSS، فلا يُرسَم شَرْطةً');
+  ok(!/اطوِ|افتح/.test(c1.querySelector('.fold-btn').textContent),
+     'ولا كلمة معه — السهم يفي');
+  ok((c1.querySelector('.fold-btn').getAttribute('aria-label') || '').includes('طيّ'),
+     'ووصفُه باقٍ لقارئ الشاشة، فالسهم وحده لا يُنطَق');
 
   /* الضغط على العنوان نفسه — وهو ما تمتدّ إليه اليد */
   const ttl = c1.querySelector('.card-title');

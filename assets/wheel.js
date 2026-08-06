@@ -135,9 +135,21 @@ function wheelSVG(c, opts = {}) {
        يُعرَف بلونه من نظرة. */
     g += `<path d="${arcPath(start, start + 30, (R.zodiacOut + R.zodiacIn) / 2)}" fill="none"
            stroke="${ELEM_COLOR[i % 4]}" stroke-width="${R.zodiacOut - R.zodiacIn}" opacity=".21"/>`;
+    /* ── **اسم البرج بالعربية بدل رمزه** ─────────────────────────
+       حروف البروج ♈–♓ صورتها الافتراضية في يونيكود صورةُ إيموجي.
+       جرّبتُ العلاج المعياريّ — إلحاق U+FE0E وخطًّا يعرف الرموز —
+       **ونُشِر، وبقيت المربّعات البنفسجية**. لأن سلسلة الخطوط
+       الاحتياطية في نظام الزائر تُقدّم خطّ الإيموجي، ولا حيلة
+       للصفحة في ترتيبها.
+
+       فالحلّ ألّا نعتمد على خطٍّ أصلًا: **الموقع عربيّ، فليُكتب
+       اسم البرج بالعربية**. وهو أوضح لقارئه من رمزٍ لا يعرفه —
+       والرمز يبقى في الشرح عند التحويم لمن يريده. */
     const [tx, ty] = P(start + 15, (R.zodiacOut + R.zodiacIn) / 2);
-    g += `<text x="${tx.toFixed(1)}" y="${(ty + 7).toFixed(1)}" text-anchor="middle"
-           font-size="21" fill="${ELEM_COLOR[i % 4]}">${wSym(SIGN_SYMBOLS[i])}</text>`;
+    const long = nm.length > 6;
+    g += `<text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle"
+           font-size="${long ? 9.4 : 11}" font-weight="600"
+           fill="${ELEM_COLOR[i % 4]}">${wEsc(nm)}</text>`;
     g += `<title>${wEsc(nm)}</title></g>`;
     g += line(start, R.zodiacIn, R.zodiacOut, 'stroke="var(--line2)" stroke-width="1"');
     /* علامات الدرجات كل خمس */
@@ -305,88 +317,59 @@ function wheelSVG(c, opts = {}) {
      فنضع فيه ما لو لم يقرأ الزائر سواه لعرف خريطته:
      الطالع، والشمس، والقمر، وسيّد الخريطة.
      ══════════════════════════════════════════════════════════════ */
-  if (opts.core !== false) {
-    /* ── لماذا خرج البيان من الوسط إلى الأركان ─────────────────
-       وضعتُ في الوسط قرصًا نصف قطره ٨٥٫٤، ودائرةُ الزوايا نصف
-       قطرها ١٠٤٫٢ — فغطّى **٦٧٪ من مساحة** الشكل الذي تُولّده
-       الخطوط. أي إنّي مَلأتُ الفراغ بما يحجب ما فيه، وهو عكس
-       المقصود: المثلّثات والتربيعات هي **صورة الخريطة**.
+  /* ══════════════════════════════════════════════════════════════
+     بيان الخريطة — **خارج الـSVG**
 
-       واللوحة مربّعة والعجلة دائرة، **فأركانها الأربعة فراغ
-       مهدور**. وقد قِسْتُ: صندوق ٩٥×٩٥ في الركن يبقى خارج الدائرة
-       (بُعد ركنه الداخلي ٣٠٤ ونصف قطر الدائرة بأوسمتها ٢٩٣)،
-       والصندوق ١١٠ يتداخل. فالبيان في الأركان، والوسط شفّاف.
+     وضعتُه أوّلًا في وسط العجلة فحجب شكل الزوايا. ثم نقلتُه إلى
+     أركان اللوحة، فانقطعت أنصاف كلماته: «الط» و«سيّد» و«Asi».
+     فشخّصتُ الأمر بأن `text-anchor` منطقيّ في RTL، وعكستُ القيم،
+     **ونُشِر الإصلاح فبقي الانقطاع كما هو حرفًا بحرف**.
 
-       وهذا ما تفعله الخرائط المطبوعة المحترفة. */
-    const find = n => (c.bodies || []).find(b => b.name === n);
-    const sun = find('الشمس'), moon = find('القمر');
-    const at = k => c.angles[k] ? `${c.angles[k].short} ${c.angles[k].sign}` : '';
-    const posOf = b => b ? `${b.short} ${b.sign}` : '';
+     فتشخيصي كان خطأً، لا التنفيذ. ونصُّ SVG لا يلتفّ ولا يعرف
+     حدود صندوقه، وضبطُ اتّجاهه يختلف بين محرّك وآخر — فالإصرار
+     عليه إصرارٌ على تخمين.
 
-    /* ── **خللٌ قاطع رأيتُه في الموقع الحيّ ولم تُظهره أداتي** ──
-       الصفحة `dir="rtl"`، و`text-anchor` في SVG قيمتاه `start`
-       و`end` **منطقيّتان لا حسّيّتان**: تتبعان اتّجاه النصّ لا
-       يمينَ اللوحة ويسارها.
-
-       ففي RTL يكون `start` = **يمين** النصّ، فالنصّ يمتدّ يسارًا؛
-       و`end` = **يسار** النصّ، فيمتدّ يمينًا. وقد استعملتُهما كما
-       يُستعملان في LTR — فوضعتُ في الركن الأيمن `end` عند x=٦٠٥،
-       فامتدّ النصّ **يمينًا خارج اللوحة فانقطع**؛ ووضعتُ في الأيسر
-       `start` عند x=١٥ فامتدّ **يسارًا خارجها فانقطع**.
-
-       فقُرئ «الط» و«سيّد» و«حلب» و«Asi» — أنصافُ كلمات. وأداة
-       التحويل عندي لا تُطبّق الاتّجاه فرسمتها سليمة، **فما رأيتُ
-       الخلل إلّا في الصورة التي أرسلها صاحب المشروع**.
-
-       والدرس: ما يُرسَم في سياق RTL يُتحقَّق منه في RTL. */
-    const when = (c.when_local || '').slice(0, 16).replace('T', ' — ');
-    const RIGHT = 'start';   /* في RTL: يبدأ يمينًا ويمتدّ يسارًا ✓ */
-    const LEFT = 'end';      /* في RTL: ينتهي يسارًا ويمتدّ يمينًا ✓ */
-    const corners = [
-      { x: S - 15, y: 24, anchor: RIGHT, lines: [
-          (c.name || '').trim() || 'خريطة ميلاد',
-          when, c.place || '', c.tz || '',
-        ] },
-      { x: 15, y: 24, anchor: LEFT, lines: [
-          `الطالع ${at('الطالع')}`,
-          `وسط السماء ${at('وسط السماء')}`,
-          c.almuten && c.almuten.winner ? `سيّدها ${c.almuten.winner}` : '',
-          c.houses && c.houses.system_name ? c.houses.system_name : '',
-        ] },
-      { x: S - 15, y: S - 62, anchor: RIGHT, lines: [
-          `الشمس ${posOf(sun)}`,
-          `القمر ${posOf(moon)}`,
-          c.sect ? `خريطة ${c.sect}` : '',
-          c.moon && c.moon.mansion ? `منزلة ${c.moon.mansion.name}` : '',
-        ] },
-      { x: 15, y: S - 62, anchor: LEFT, lines: [
-          'أخضرُ الجِرم: له كرامة',
-          'أحمرُه: في وبال أو هبوط',
-          'خطٌّ أخضر: زاوية موافقة',
-          'خطٌّ أحمر: زاوية مخالفة',
-        ] },
-    ];
-
-    const lineH = 16.18;                      /* من سُلَّم φ نفسه */
-    g += `<g class="corners" pointer-events="none" direction="rtl">`;
-    corners.forEach(k => {
-      k.lines.filter(Boolean).forEach((t, i) => {
-        const first = i === 0 && k.anchor === RIGHT && k.y < 100;
-        /* كل سطر نصٌّ واحد لا `tspan`ات — فالخريطة تُصدَّر ملفَّ
-           SVG يفتحه صاحبها ببرامج لا تُحسن تدفّق الـ`tspan` ولا
-           الاتجاه العربي، فترسمها فوق بعضها. رأيتُه في التصدير. */
-        g += `<text x="${k.x}" y="${(k.y + i * lineH).toFixed(1)}"
-               text-anchor="${k.anchor}" font-size="${first ? 12.4 : 9.6}"
-               ${first ? 'font-family="Amiri, serif"' : ''}
-               fill="${first ? 'var(--gold)' : 'var(--dim)'}">${wEsc(t)}</text>`;
-      });
-    });
-    g += `</g>`;
-  }
-
+     **والـHTML يعرف العربية ويعرف الالتفاف يقينًا.** فالبيان صار
+     شبكةً حول العجلة، تلتفّ على الجوّال، ولا تنقطع أبدًا.
+     ══════════════════════════════════════════════════════════════ */
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" xmlns="http://www.w3.org/2000/svg"
             font-family='${WHEEL_FONT}' role="img"
             aria-label="الخريطة الفلكية الدائرية">${g}</svg>`;
+}
+
+/* بيان الخريطة: يُوضَع حول العجلة في HTML لا داخل الرسم */
+function wheelInfo(c) {
+  const find = n => (c.bodies || []).find(b => b.name === n);
+  const at = k => c.angles[k] ? `${c.angles[k].short} ${c.angles[k].sign}` : '';
+  const pos = b => b ? `${b.short} ${b.sign}` : '';
+  const sun = find('الشمس'), moon = find('القمر');
+  const when = (c.when_local || '').slice(0, 16).replace('T', ' — ');
+
+  const cell = (rows) => `<div class="winf-c">${rows.filter(Boolean).map(
+    ([k, v]) => `<div><span>${wEsc(k)}</span><b>${wEsc(v)}</b></div>`).join('')}</div>`;
+
+  return `<div class="winf">
+    ${cell([
+      [(c.name || '').trim() ? 'الاسم' : 'الخريطة', (c.name || '').trim() || 'خريطة ميلاد'],
+      ['الوقت', when], ['المكان', c.place || ''], ['المنطقة', c.tz || ''],
+    ])}
+    ${cell([
+      ['الطالع', at('الطالع')], ['وسط السماء', at('وسط السماء')],
+      c.almuten && c.almuten.winner ? ['سيّد الخريطة', c.almuten.winner] : null,
+      c.houses ? ['نظام البيوت', c.houses.system_name] : null,
+    ])}
+    ${cell([
+      ['الشمس', pos(sun)], ['القمر', pos(moon)],
+      c.sect ? ['الطائفة', c.sect] : null,
+      c.moon && c.moon.mansion ? ['منزلة القمر', c.moon.mansion.name] : null,
+    ])}
+    <div class="winf-c winf-key">
+      <div><i class="k-pos"></i>جِرم له كرامة</div>
+      <div><i class="k-neg"></i>جِرم في وبال أو هبوط</div>
+      <div><i class="k-line k-pos"></i>زاوية موافقة</div>
+      <div><i class="k-line k-neg"></i>زاوية مخالفة</div>
+    </div>
+  </div>`;
 }
 
 /* شبكة الزوايا: مثلّث سفلي يعرض الزاوية بين كل جرمين */

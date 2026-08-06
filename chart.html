@@ -230,7 +230,6 @@ const card = (title, body, chips, key) => {
       <div class="chips">${chips || ''}</div>
       <button class="fold-btn" type="button" aria-expanded="${!shut}"
               aria-controls="${id}" aria-label="طيّ القسم أو فتحه">
-        <span class="fold-word">${shut ? 'افتح' : 'اطوِ'}</span>
         <svg class="fold-caret" width="11" height="7" viewBox="0 0 12 8" aria-hidden="true">
           <path d="M1 1.5 L6 6.5 L11 1.5" fill="none" stroke="currentColor"
                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -255,8 +254,6 @@ out.addEventListener('click', e => {
   const fb = top.querySelector('.fold-btn');
   if (fb) {
     fb.setAttribute('aria-expanded', String(!shut));
-    const wd = fb.querySelector('.fold-word');
-    if (wd) wd.textContent = shut ? 'افتح' : 'اطوِ';
   }
   FOLD[cardEl.dataset.fold] = shut;
   store.set('chartFold', FOLD);
@@ -355,11 +352,12 @@ function render(c) {
 
   const wheel = card('العجلة',
     `<div class="wheel">${wheelSVG(c, { deep: DEEP })}</div>
+     ${wheelInfo(c)}
      <p class="note" style="margin-top:14px">
        <b>مرّر المؤشّر على أيّ عنصر في العجلة</b> — كوكبٍ أو بيتٍ أو برجٍ أو
        خطٍّ بين كوكبين — يظهر لك موضعه ومعناه. وعلى الجوّال: اضغط عليه.
-       ومن استعمل لوحة المفاتيح فالمفتاح <kbd>Tab</kbd> يمرّ على العناصر،
-       و<kbd>Esc</kbd> يُغلق.</p>
+       ومن استعمل لوحة المفاتيح فالمفتاح <kbd>Tab</kbd>‏ يمرّ على العناصر،
+       و <kbd>Esc</kbd> يُغلق.</p>
      <p class="note">
        الطالع إلى اليسار، والبروج تدور عكس عقارب الساعة. الحلقة الخارجية البروج،
        وتليها المنازل القمرية الثماني والعشرون مرقّمة، ثم البيوت. الخطوط في الوسط
