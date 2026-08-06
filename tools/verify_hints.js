@@ -582,12 +582,53 @@ section('طيّ البطاقات');
   ok(nested.length === 0, '**ولا زرَّ داخل زرّ في الصفحة المرسومة**',
      nested.slice(0, 2).map(b => b.className).join(' · '));
 
+  /* **الحارس الذي وُلد من خلل مشحون**: الماسح غزا خيارات قائمة
+     الاختيار فوسم «البيوت الكاملة» داخل `role="option"`، وحال
+     `stopPropagation` دون وصول الاختيار إلى القائمة. */
+  const invaded = [
+    ['خيارات القائمة', '.sel-opt .hint-term, [role="option"] .hint-term'],
+    ['زرّ القائمة', '.sel-btn .hint-term'],
+    ['الألسنة', '.tabs .hint-term, [role="tab"] .hint-term'],
+    ['عناوين البطاقات', '.card-title .hint-term, .card-top .hint-term'],
+    ['الرقائق', '.chips .hint-term'],
+    ['داخل الأزرار', 'button .hint-term'],
+  ];
+  const dom3 = new JSDOM(read('chart.html'),
+    { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://alfalak.vercel.app/chart.html' });
+  const w3 = dom3.window;
+  w3.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ terms: GLOSSARY }) });
+  w3.eval(read('assets/app.js') + '\n;\n' + read('assets/hint.js') + '\n;\n' + read('assets/select.js'));
+  w3.initSelects();
+  w3.hintBuildRegex(GLOSSARY);
+  w3.markTerms(w3.document.body);
+  for (const [what, sel] of invaded) {
+    const hits = w3.document.querySelectorAll(sel);
+    ok(hits.length === 0, `الماسح لا يدخل ${what}`,
+       [...hits].slice(0, 2).map(x => x.textContent).join(' · '));
+  }
+  ok(w3.document.querySelectorAll('.sel-opt').length >= 8,
+     'وخيارات القائمة موجودة فعلًا (فالفحص ليس فارغًا)');
+  ok(w3.document.querySelectorAll('b.hint-term').length > 0,
+     'والماسح يعمل في النصّ العاديّ');
+
   const cards = [...o2.querySelectorAll('.card[data-fold]')];
   ok(cards.length >= 5, `كل بطاقة قابلة للطيّ (${cards.length})`);
   const c1 = cards[1], body1 = c1.querySelector('.card-body');
   ok(!c1.classList.contains('shut'), 'وهي مفتوحة أوّلًا');
+  ok(/اطوِ|افتح/.test(c1.querySelector('.fold-btn').textContent),
+     '**وللزرّ كلمة تُقرأ** لا علامةٌ تُخمَّن — وهذا أصل الشكوى');
+  ok(!!c1.querySelector('.fold-btn svg'),
+     'والسهم من SVG لا من حدود CSS، فلا يُرسَم شَرْطةً');
+
+  /* الضغط على العنوان نفسه — وهو ما تمتدّ إليه اليد */
+  const ttl = c1.querySelector('.card-title');
+  ttl.dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));
+  ok(c1.classList.contains('shut'),
+     '**والضغط على العنوان نفسه يطوي** — وكان مُستثنًى فلا يفعل شيئًا');
+  ttl.dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));
+
   c1.querySelector('.fold-btn').dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));
-  ok(c1.classList.contains('shut'), 'والضغط يطويها');
+  ok(c1.classList.contains('shut'), 'والضغط على الزرّ يطويها');
   ok(c1.querySelector('.fold-btn').getAttribute('aria-expanded') === 'false',
      'وتُعلن أنها طُويت');
   c1.querySelector('.fold-btn').dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));

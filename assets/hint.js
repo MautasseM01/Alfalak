@@ -318,9 +318,34 @@ function hintBuildRegex(terms) {
   }
 }
 
-const HINT_SKIP = 'script,style,textarea,input,select,option,code,pre,' +
-                  'button,a,label,.hint-pop,.no-hint,[data-term],[data-hint],' +
-                  '.topbar,nav,.doors,.printhead';
+/* ══════════════════════════════════════════════════════════════
+   أين لا يدخل الماسح — والثمن الذي دُفع
+
+   **خللٌ شحنتُه**: بنيتُ قائمة اختيار من عندنا، فدخل الماسحُ
+   خياراتِها ووسم «البيوت الكاملة» و«القبّاني» و«بلاسيدوس»
+   داخل `role="option"`. فوقع أمران:
+     ١. صار في الخيار عنصرٌ `role="button"` — فاختلّت دلالة
+        القائمة عند قارئ الشاشة.
+     ٢. و`hint.js` يستدعي `stopPropagation()` عند الضغط، **فلا
+        يصل اختيار النظام إلى القائمة أصلًا**. أي إنّي كسرتُ
+        بيدي المكوّنَ الذي بنيتُه في الجولة السابقة.
+
+   والقاعدة المستخلصة: **الماسح لا يدخل عنصرًا تفاعليًّا ولا ما
+   يحمل دورًا في ARIA**. وكل مكوّن جديد يُضاف إلى هذه القائمة يوم
+   يُبنى، لا يوم يُكتشف الخلل.
+   ══════════════════════════════════════════════════════════════ */
+const HINT_SKIP = [
+  'script', 'style', 'textarea', 'input', 'select', 'option', 'code', 'pre',
+  'button', 'a', 'label', 'kbd',
+  '.hint-pop', '.no-hint', '[data-term]', '[data-hint]',
+  '.topbar', 'nav', '.doors', '.printhead',
+  /* المكوّنات التفاعلية */
+  '.sel', '.sel-list', '.sel-btn', '.ac', '.tabs', '.chips', '.seg',
+  '[role="option"]', '[role="listbox"]', '[role="combobox"]',
+  '[role="tab"]', '[role="tablist"]', '[role="menu"]',
+  /* عناوين البطاقات: تُضغَط لتُطوى، فلا يُزاحمها الشرح */
+  '.card-title', '.card-top',
+].join(',');
 
 let HINT_MARKING = false;
 

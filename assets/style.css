@@ -90,19 +90,20 @@ p.lede{color:var(--muted);margin:0 0 26px;font-size:.92rem}
    بلوحة المفاتيح من غير حيلة. */
 .card-top:has(.fold-btn){cursor:pointer}
 .card-top:has(.fold-btn):hover{background:rgba(217,180,91,.08)}
+/* الزرّ كان علامةً صغيرة بلا كلمة، وسهمًا مرسومًا بحدود CSS —
+   فبدا شَرْطةً لا يُدرى ما هي. فصار له **كلمة تُقرأ**، وسهمًا
+   من SVG لا يحتمل تأويل المتصفّح. */
 .fold-btn{
   all:unset;flex:none;margin-inline-start:auto;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  width:30px;height:30px;border-radius:var(--r-sm)
+  display:inline-flex;align-items:center;gap:var(--s2);
+  padding:5px 11px;border-radius:var(--r-sm);
+  color:var(--muted);font-size:.78rem;font-family:inherit;
+  border:1px solid var(--line2);transition:.15s
 }
-.fold-btn:hover{background:rgba(255,255,255,.06)}
+.fold-btn:hover{color:var(--gold);border-color:var(--gold-dim);background:rgba(217,180,91,.09)}
 .fold-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.fold-caret{
-  display:block;width:9px;height:9px;
-  border-inline-end:1.7px solid var(--gold-dim);border-bottom:1.7px solid var(--gold-dim);
-  transform:rotate(45deg) translate(-2px,-2px);transition:transform .2s
-}
-.card.shut .fold-caret{transform:rotate(-135deg) translate(-1px,-1px)}
+.fold-caret{display:block;flex:none;transition:transform .2s}
+.card.shut .fold-caret{transform:rotate(180deg)}
 .card.shut .card-body{display:none}
 .card.shut .card-top{border-bottom-color:transparent}
 @media(prefers-reduced-motion:reduce){.fold-caret{transition:none}}

@@ -230,20 +230,34 @@ const card = (title, body, chips, key) => {
       <div class="chips">${chips || ''}</div>
       <button class="fold-btn" type="button" aria-expanded="${!shut}"
               aria-controls="${id}" aria-label="طيّ القسم أو فتحه">
-        <i class="fold-caret" aria-hidden="true"></i></button>
+        <span class="fold-word">${shut ? 'افتح' : 'اطوِ'}</span>
+        <svg class="fold-caret" width="11" height="7" viewBox="0 0 12 8" aria-hidden="true">
+          <path d="M1 1.5 L6 6.5 L11 1.5" fill="none" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg></button>
     </div>
     <div class="card-body" id="${id}">${body}</div></div>`;
 };
 
+/* **الطيّ لم يكن يعمل عمليًّا، والسبب تصميميّ لا برمجيّ**: كان
+   الزرّ علامةً صغيرة بلا كلمة في أقصى الرأس، **والعنوانُ — وهو ما
+   تمتدّ إليه اليد — مُستثنًى** لأن وسم المصطلحات كان يجعله
+   `b.hint-term` فيُقصيه حارسي. فمن ضغط العنوان لم يحدث شيء.
+
+   فمُنع الماسح من عناوين البطاقات (انظر `hint.js`)، وصار الرأس
+   كلّه يطوي، وللزرّ كلمةٌ تُقرأ لا علامةٌ تُخمَّن. */
 out.addEventListener('click', e => {
   const top = e.target.closest('.card-top');
   if (!top || !out.contains(top)) return;
-  /* لا نخطف علامة المعجم ولا المصطلحات الموسومة ولا الروابط */
-  if (e.target.closest('button.q,b.hint-term,a,.sel')) return;
+  if (e.target.closest('button.q,a,.sel')) return;   /* المعجم والروابط لها شأنها */
   const cardEl = top.closest('.card');
   const shut = cardEl.classList.toggle('shut');
   const fb = top.querySelector('.fold-btn');
-  if (fb) fb.setAttribute('aria-expanded', String(!shut));
+  if (fb) {
+    fb.setAttribute('aria-expanded', String(!shut));
+    const wd = fb.querySelector('.fold-word');
+    if (wd) wd.textContent = shut ? 'افتح' : 'اطوِ';
+  }
   FOLD[cardEl.dataset.fold] = shut;
   store.set('chartFold', FOLD);
 });
