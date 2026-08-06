@@ -125,6 +125,61 @@ input::placeholder{color:var(--dim)}
 .seg button:hover{color:var(--text)}
 .seg button[aria-pressed="true"]{background:var(--gold);color:#15100a;font-weight:600}
 
+/* ══════════════════════════════════════════════════════════════
+   قائمة الاختيار — انظر assets/select.js
+
+   قائمة النظام المنسدلة يرسمها النظام لا الصفحة، فزواياها حادّة
+   ولا تقبل تنسيقًا. فبُنيت من عندنا، وحوافّها من سُلَّم φ نفسه.
+   ══════════════════════════════════════════════════════════════ */
+.sel{position:relative;width:100%}
+.sel-native{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;opacity:0;pointer-events:none
+}
+.sel-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+  width:100%;cursor:pointer;text-align:start;
+  background:var(--panel);border:1px solid var(--line);color:var(--text);
+  padding:10px 13px;border-radius:var(--r-md);transition:.15s
+}
+.sel-btn:hover{border-color:var(--gold-dim)}
+.sel-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.sel.open .sel-btn{border-color:var(--gold-dim);background:var(--panel2)}
+.sel-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-caret{
+  flex:none;width:8px;height:8px;border-inline-end:1.6px solid var(--muted);
+  border-bottom:1.6px solid var(--muted);transform:rotate(45deg) translateY(-2px);
+  transition:transform .18s
+}
+.sel.open .sel-caret{transform:rotate(225deg) translateY(-2px);border-color:var(--gold)}
+
+.sel-list{
+  position:absolute;z-index:60;inset-inline:0;top:calc(100% + var(--s2));
+  max-height:280px;overflow-y:auto;overscroll-behavior:contain;
+  padding:var(--s2);border-radius:var(--r-lg);          /* ← الحوافّ المستديرة */
+  background:var(--panel2);border:1px solid var(--line2);
+  box-shadow:0 20px 46px rgba(0,0,0,.62);
+  animation:selIn .14s ease-out
+}
+.sel.up .sel-list{top:auto;bottom:calc(100% + var(--s2))}
+@keyframes selIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.sel-opt{
+  padding:9px 12px;border-radius:var(--r-md);   /* أصغر بدرجة من الغلاف */
+  cursor:pointer;font-size:.88rem;line-height:1.7;color:var(--text)
+}
+.sel-opt.on{background:rgba(217,180,91,.12)}
+.sel-opt[aria-selected="true"]{color:var(--gold);font-weight:600}
+.sel-opt[aria-selected="true"]::after{content:"✓";float:left;opacity:.85}
+.sel-opt[aria-disabled="true"]{opacity:.45;cursor:default}
+.sel-grp{
+  padding:9px 12px 5px;font-size:.74rem;color:var(--dim);
+  border-bottom:1px solid var(--line);margin-bottom:var(--s1)
+}
+@media(prefers-reduced-motion:reduce){
+  .sel-list{animation:none}.sel-caret{transition:none}
+}
+@media print{.sel-list{display:none}.sel-btn{border-color:#bbb}}
+
 /* ── الإكمال التلقائي ── */
 .ac{
   position:absolute;top:100%;inset-inline:0;z-index:30;margin-top:5px;

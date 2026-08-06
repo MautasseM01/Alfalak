@@ -287,40 +287,62 @@ function wheelSVG(c, opts = {}) {
      الطالع، والشمس، والقمر، وسيّد الخريطة.
      ══════════════════════════════════════════════════════════════ */
   if (opts.core !== false) {
+    /* ── لماذا خرج البيان من الوسط إلى الأركان ─────────────────
+       وضعتُ في الوسط قرصًا نصف قطره ٨٥٫٤، ودائرةُ الزوايا نصف
+       قطرها ١٠٤٫٢ — فغطّى **٦٧٪ من مساحة** الشكل الذي تُولّده
+       الخطوط. أي إنّي مَلأتُ الفراغ بما يحجب ما فيه، وهو عكس
+       المقصود: المثلّثات والتربيعات هي **صورة الخريطة**.
+
+       واللوحة مربّعة والعجلة دائرة، **فأركانها الأربعة فراغ
+       مهدور**. وقد قِسْتُ: صندوق ٩٥×٩٥ في الركن يبقى خارج الدائرة
+       (بُعد ركنه الداخلي ٣٠٤ ونصف قطر الدائرة بأوسمتها ٢٩٣)،
+       والصندوق ١١٠ يتداخل. فالبيان في الأركان، والوسط شفّاف.
+
+       وهذا ما تفعله الخرائط المطبوعة المحترفة. */
     const find = n => (c.bodies || []).find(b => b.name === n);
     const sun = find('الشمس'), moon = find('القمر');
-    const rows = [
-      ['الطالع', c.angles['الطالع'].short + ' ' + c.angles['الطالع'].sign],
-      ['الشمس', sun ? sun.short + ' ' + sun.sign : ''],
-      ['القمر', moon ? moon.short + ' ' + moon.sign : ''],
-      c.almuten && c.almuten.winner ? ['سيّدها', c.almuten.winner] : null,
-    ].filter(r => r && r[1]);
+    const at = k => c.angles[k] ? `${c.angles[k].short} ${c.angles[k].sign}` : '';
+    const posOf = b => b ? `${b.short} ${b.sign}` : '';
 
-    /* سطرٌ واحد لكل مدخل، وارتفاع السطر من سُلَّم φ نفسه (١٦٫١٨).
-       وكانت أوّل محاولة سطرين لكل مدخل بارتفاع ١٥٫٤ — فتراكب
-       العنوانُ والقيمةُ مع سطر ما بعدهما. رأيتُه في الصورة. */
-    const lineH = 16.18;
-    const title = (c.name || '').trim();
-    const head = title ? 20 : 0;
-    const total = rows.length * lineH + head;
-    const top = cy - total / 2 + 11;
+    const when = (c.when_local || '').slice(0, 16).replace('T', ' — ');
+    const corners = [
+      { x: S - 15, y: 24, anchor: 'end', lines: [
+          (c.name || '').trim() || 'خريطة ميلاد',
+          when, c.place || '', c.tz || '',
+        ] },
+      { x: 15, y: 24, anchor: 'start', lines: [
+          `الطالع ${at('الطالع')}`,
+          `وسط السماء ${at('وسط السماء')}`,
+          c.almuten && c.almuten.winner ? `سيّدها ${c.almuten.winner}` : '',
+          c.houses && c.houses.system_name ? c.houses.system_name : '',
+        ] },
+      { x: S - 15, y: S - 62, anchor: 'end', lines: [
+          `الشمس ${posOf(sun)}`,
+          `القمر ${posOf(moon)}`,
+          c.sect ? `خريطة ${c.sect}` : '',
+          c.moon && c.moon.mansion ? `منزلة ${c.moon.mansion.name}` : '',
+        ] },
+      { x: 15, y: S - 62, anchor: 'start', lines: [
+          'أخضرُ الجِرم: له كرامة',
+          'أحمرُه: في وبال أو هبوط',
+          'خطٌّ أخضر: زاوية موافقة',
+          'خطٌّ أحمر: زاوية مخالفة',
+        ] },
+    ];
 
-    g += `<g class="core" pointer-events="none" text-anchor="middle">`;
-    g += `<circle cx="${cx}" cy="${cy}" r="${(R.aspect * 0.82).toFixed(1)}"
-            fill="rgba(10,15,29,.80)" stroke="var(--line)" stroke-width=".7"/>`;
-    if (title)
-      g += `<text x="${cx}" y="${top.toFixed(1)}" font-size="12.4"
-             font-family="Amiri, serif" fill="var(--gold)">${wEsc(title)}</text>`;
-    rows.forEach((r, i) => {
-      const y = top + head + i * lineH;
-      /* **عقدة نصّية**: أوّل صياغة وضعت العنوان والقيمة في
-         `tspan`ين داخل نصٍّ واحد. والمتصفّح يُجيد تدفّقهما، لكنّ
-         الخريطة **تُصدَّر ملفَّ SVG يفتحه صاحبها ببرامج أخرى** —
-         وكثير منها لا يُحسن تدفّق الـ`tspan` ولا الاتجاه العربي،
-         فيرسمهما فوق بعضهما. رأيتُ ذلك بعيني في التصدير.
-         فصار كل سطر نصًّا واحدًا لا يحتمل تأويلًا. */
-      g += `<text x="${cx}" y="${y.toFixed(1)}" font-size="10"
-             fill="var(--muted)">${wEsc(r[0])} · ${wEsc(r[1])}</text>`;
+    const lineH = 16.18;                      /* من سُلَّم φ نفسه */
+    g += `<g class="corners" pointer-events="none">`;
+    corners.forEach(k => {
+      k.lines.filter(Boolean).forEach((t, i) => {
+        const first = i === 0 && k.anchor === 'end' && k.y < 100;
+        /* كل سطر نصٌّ واحد لا `tspan`ات — فالخريطة تُصدَّر ملفَّ
+           SVG يفتحه صاحبها ببرامج لا تُحسن تدفّق الـ`tspan` ولا
+           الاتجاه العربي، فترسمها فوق بعضها. رأيتُه في التصدير. */
+        g += `<text x="${k.x}" y="${(k.y + i * lineH).toFixed(1)}"
+               text-anchor="${k.anchor}" font-size="${first ? 12.4 : 9.6}"
+               ${first ? 'font-family="Amiri, serif"' : ''}
+               fill="${first ? 'var(--gold)' : 'var(--dim)'}">${wEsc(t)}</text>`;
+      });
     });
     g += `</g>`;
   }

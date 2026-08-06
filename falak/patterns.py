@@ -60,47 +60,122 @@ def detect(bodies: list, aspects: list, cusps: list | None = None) -> list:
     #  الذي يقوم بين كوكب شخصي وأورانوس وبلوتو.)
     names = [b["name"] for b in bodies]
 
-    # ── الكومة: ثلاثة فأكثر في برج واحد ──
+    # ── الكومة: ثلاثة فأكثر في برج واحد أو بيت واحد ──
+    #
+    # **خلل كان قائمًا**: نبحث بالبرج ثم بالبيت ونُضيف ما نجد. وفي
+    # نظام البيوت الكاملة **يوافق البيتُ البرجَ دائمًا** — فالكومة
+    # الواحدة تُبلَّغ مرّتين بالأعضاء أنفسهم، مرّةً «برج الجدي»
+    # ومرّةً «بيت ٧». وحارس التفرّد أسفلَ الدالّة يُميّز بـ`where`
+    # فيراهما اثنتين. وقد ظهر ذلك للزائر نصًّا مكرَّرًا حرفًا بحرف.
+    #
+    # والعلاج أن تُجمَع الكومة بأعضائها لا بموضعها، ثم يُذكر لها
+    # الموضعان معًا إن توافقا — فهي كومة واحدة في الحقيقة.
+    stelliums: dict[tuple, dict] = {}
     for key, label in (("sign", "برج"), ("house", "بيت")):
-        groups = {}
+        groups: dict = {}
         for b in bodies:
             if b.get(key) is None:
                 continue
             groups.setdefault(b[key], []).append(b["name"])
         for where, members in groups.items():
-            if len(members) >= 3:
-                found.append({
-                    "name": "الكومة", "members": members,
-                    "where": f"{label} {where}",
-                    "note": PATTERN_NOTES["الكومة"],
-                    "strength": min(1.0, len(members) / 5),
-                })
+            if len(members) < 3:
+                continue
+            k = tuple(sorted(members))
+            rec = stelliums.setdefault(k, {"members": members, "places": []})
+            rec["places"].append(f"{label} {where}")
+
+    for rec in stelliums.values():
+        found.append({
+            "name": "الكومة", "members": rec["members"],
+            # «الجدي (وهو البيت السابع)» أوضح من سطرين متطابقين
+            "where": (rec["places"][0] if len(rec["places"]) == 1
+                      else f"{rec['places'][0]} (وهو {rec['places'][1]})"),
+            "places": rec["places"],
+            "note": PATTERN_NOTES["الكومة"],
+            "strength": min(1.0, len(rec["members"]) / 5),
+        })
 
     trip = list(combinations(names, 3))
 
     # ── المثلّث الكبير ──
+    #
+    # والعلّة نفسها: مثلّثٌ أحدُ أركانه كوكبان مقترنان يخرج **مرّتين**،
+    # مرّةً بهذا ومرّةً بذاك، فيقرأ الزائر نصّين متطابقين بنسبة ٩٣٪.
+    # فالقاعدة الجامعة في هذا الملفّ كلّه: **المقترنان ركنٌ واحد**.
     grand_trines = []
+    _gt_raw: dict = {}
     for a, b, c in trip:
         if _has(aspects, a, b, 120) and _has(aspects, b, c, 120) and _has(aspects, a, c, 120):
-            el = by_name[a].get("element")
             grand_trines.append((a, b, c))
-            found.append({"name": "المثلّث الكبير", "members": [a, b, c],
-                          "where": f"عنصر {el}" if el else "",
-                          "note": PATTERN_NOTES["المثلّث الكبير"], "strength": .9})
+            _gt_raw.setdefault(by_name[a].get("element") or "", set()).update((a, b, c))
+
+    for el, bodies_in in _gt_raw.items():
+        parent = {x: x for x in bodies_in}
+
+        def find(x, _p=parent):
+            while _p[x] != x:
+                _p[x] = _p[_p[x]]
+                x = _p[x]
+            return x
+
+        for x, y in combinations(sorted(bodies_in), 2):
+            if _has(aspects, x, y, 0):
+                parent[find(y)] = find(x)
+        corners: dict = {}
+        for b in sorted(bodies_in):
+            corners.setdefault(find(b), []).append(b)
+        found.append({"name": "المثلّث الكبير",
+                      "members": [b for k in corners.values() for b in k],
+                      "corners": list(corners.values()),
+                      "where": f"عنصر {el}" if el else "",
+                      "note": PATTERN_NOTES["المثلّث الكبير"], "strength": .9})
 
     # ── التربيع المزدوج ──
-    t_squares = []
+    #
+    # **وهنا العلّة نفسها في ثوب آخر.** كنّا نُبلّغ كل ثلاثيّ على
+    # حدة، فإذا كان في الخريطة كوكبان مقترنان — كأورانوس ونبتون في
+    # الجدي — خرج التربيعُ الواحد **مرّتين**، مرّةً بأورانوس ومرّةً
+    # بنبتون، والباقي واحد. فيقرأ الزائر نصّين متطابقين بنسبة ٩٣٪
+    # ويظنّهما شكلين، وهما شكل واحد أحد أضلاعه اقتران.
+    #
+    # والصواب أن يُجمَع المقترنان في ضلع واحد — فهما في الحقيقة
+    # يعملان معًا، وهذا معنى الاقتران.
+    t_squares = {}
     for a, b, c in trip:
-        for opp, apex in ((( a, b), c), ((a, c), b), ((b, c), a)):
+        for opp, apex in (((a, b), c), ((a, c), b), ((b, c), a)):
             if _has(aspects, opp[0], opp[1], 180) \
                and _has(aspects, opp[0], apex, 90) and _has(aspects, opp[1], apex, 90):
-                key = tuple(sorted([opp[0], opp[1], apex]))
-                if key in t_squares:
-                    continue
-                t_squares.append(key)
-                found.append({"name": "التربيع المزدوج", "members": [opp[0], opp[1], apex],
-                              "where": f"رأسه {apex} في {by_name[apex]['sign']}",
-                              "note": PATTERN_NOTES["التربيع المزدوج"], "strength": .85})
+                t_squares[tuple(sorted([opp[0], opp[1], apex]))] = (opp, apex)
+
+    # الأضلاع تُستخرج بتجميع المقترنين لا بموازنة الثلاثيّات واحدًا
+    # واحدًا — فالموازنة أوّل مرّة أخرجت نبتون مرّتين في قائمة واحدة.
+    # والقاعدة صريحة: **لكل رأسٍ ضلعان، وكلّ مقترنَين ضلعٌ واحد.**
+    by_apex: dict[str, set] = {}
+    for (opp, apex) in t_squares.values():
+        by_apex.setdefault(apex, set()).update(opp)
+
+    for apex, side_bodies in by_apex.items():
+        parent = {b: b for b in side_bodies}
+
+        def find(x, _p=parent):
+            while _p[x] != x:
+                _p[x] = _p[_p[x]]
+                x = _p[x]
+            return x
+
+        for x, y in combinations(sorted(side_bodies), 2):
+            if _has(aspects, x, y, 0):
+                parent[find(y)] = find(x)
+
+        legs: dict = {}
+        for b in sorted(side_bodies):
+            legs.setdefault(find(b), []).append(b)
+        members = [b for leg in legs.values() for b in leg]
+        found.append({"name": "التربيع المزدوج",
+                      "members": members + [apex],
+                      "legs": list(legs.values()),
+                      "where": f"رأسه {apex} في {by_name[apex]['sign']}",
+                      "note": PATTERN_NOTES["التربيع المزدوج"], "strength": .85})
 
     # ── الصليب المتقابل ──
     for quad in combinations(names, 4):

@@ -7,6 +7,8 @@
 """
 from __future__ import annotations
 
+from . import patterns_deep as pdeep
+
 # ── وظيفة كل جِرم ────────────────────────────────────────────────
 FUNCTION = {
     "الشمس": "جوهر الذات والإرادة والحيويّة ومصدر الاعتزاز",
@@ -350,8 +352,14 @@ def read_chart(c: dict) -> dict:
         "balance": balance,
         "almuten": almuten_text,
         "lots": lots_text,
+        # نصّ الشكل يُقرأ بأعضائه وموضعه، لا من جدولٍ مفتاحه اسمه.
+        # و`p["note"]` يبقى **تعريفًا** يُعرَض عند الحاجة — والفرق
+        # بينهما هو أصل الشكوى: التعريف يقول ما هو الشكل، والقراءة
+        # تقول ما يصنعه شكلُك أنت.
         "patterns": [{"title": p["name"] + (f" — {p['where']}" if p["where"] else ""),
-                      "text": p["note"], "members": p["members"]}
+                      "text": (pdeep.read(p, c["bodies"]) or p["note"]),
+                      "note": p["note"],
+                      "members": p["members"]}
                      for p in c["patterns"]],
         "stars": [{"title": f"{s['body']} مع {s['star']} ({s['star_la']})",
                    "text": s["meaning"], "orb": s["orb"], "royal": s["royal"]}

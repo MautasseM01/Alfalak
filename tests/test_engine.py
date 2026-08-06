@@ -2544,6 +2544,69 @@ def test_chart_page_does_not_say_the_same_thing_four_times():
         "الفتح بلوحة المفاتيح شرط — وإلّا حُجب نصف المحتوى"
 
 
+def test_pattern_texts_are_readings_not_definitions():
+    """
+    **الاختبار الذي وُلد من شكوى مقيسة.**
+
+    قال صاحب المشروع: «نفس المعلومات تمامًا، فهذا غير احترافي».
+    فقِسْنا: جمعنا ١٩٣ كتلة نصّ تُعرَض للزائر ووازنّا كل اثنتين،
+    فكان **تشابه نصوص الأشكال بعضها ببعض مئةً في المئة** — لأن
+    `PATTERN_NOTES` جدولٌ مفتاحه اسم الشكل وحده، لا يعرف أعضاءه
+    ولا موضعه.
+
+    والعلّة كانت في موضعين لا واحد:
+    ١. **النصّ**: تعريفٌ للشكل بدل قراءةٍ لشكلك أنت.
+    ٢. **الحساب**: المقترنان كانا يُعَدّان ركنين، فيخرج الشكل
+       الواحد مرّتين — وهو ما لا يُصلحه أيّ نصّ.
+
+    ونحرس هنا الاثنين معًا على خرائط عشوائية.
+    """
+    import difflib
+    import random
+    from api.index import dispatch
+
+    cities = ["حلب", "القاهرة", "بغداد", "الرباط", "دمشق", "تونس", "عمّان"]
+    rnd = random.Random(11)
+    worst, worst_at, total = 0.0, None, 0
+
+    for _ in range(12):
+        q = {"date": [f"{rnd.randint(1940, 2010)}-{rnd.randint(1, 12):02d}"
+                      f"-{rnd.randint(1, 28):02d}"],
+             "time": [f"{rnd.randint(0, 23):02d}:{rnd.randint(0, 59):02d}"],
+             "city": [rnd.choice(cities)], "system": ["whole"]}
+        c = dispatch("/api/chart", q)
+        pats = c["reading"]["patterns"]
+        total += len(pats)
+
+        for p in pats:
+            # لا عضو يتكرّر في شكل واحد — أوّل محاولة للدمج أخرجت
+            # نبتون مرّتين في قائمة واحدة
+            assert len(p["members"]) == len(set(p["members"])), \
+                f"عضو مكرّر في {p['title']}: {p['members']}"
+            # قراءة لا تعريف: تذكر أعضاءها بأسمائها
+            assert any(m in p["text"] for m in p["members"]), \
+                f"نصّ {p['title']} لا يذكر أيًّا من أعضائه — فهو تعريف لا قراءة"
+            assert len(p["text"]) >= 80, f"نصّ {p['title']} أقصر من أن يكون قراءة"
+            # والتعريف يبقى متاحًا، منفصلًا عن القراءة
+            assert p.get("note"), "ضاع تعريف الشكل"
+            assert p["text"] != p["note"], \
+                f"{p['title']}: القراءة هي التعريف نفسه"
+
+        texts = [p["text"] for p in pats]
+        for i in range(len(texts)):
+            for j in range(i + 1, len(texts)):
+                r = difflib.SequenceMatcher(None, texts[i], texts[j]).ratio()
+                if r > worst:
+                    worst, worst_at = r, (pats[i]["title"], pats[j]["title"])
+
+    assert total >= 8, "لم تُختبر أشكال كافية"
+    # الحدّ ٨٠٪: ما بقي من تشابه **له معنى** — شكلان رأسهما في بيت
+    # واحد يشتركان في المخرج حقًّا. وما فوق ذلك كسلٌ لا معنى.
+    assert worst <= 0.80, (
+        f"نصّا شكلين متشابهان بنسبة {worst:.0%} — {worst_at}. "
+        "عاد النصّ لا يعرف حالته.")
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

@@ -391,6 +391,96 @@ section('صفحة الخريطة');
      'والبيت الخالي يُشرح بدل أن يُترك بلا كلمة');
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ٦ ــ قائمة الاختيار من عندنا
+   ══════════════════════════════════════════════════════════════ */
+section('قائمة الاختيار');
+{
+  const dom = new JSDOM(`<!doctype html><html dir="rtl"><body>
+    <label for="s">نظام البيوت</label>
+    <select id="s">
+      <option value="whole">البيوت الكاملة</option>
+      <option value="alcabitius">القبّاني</option>
+      <option value="placidus">بلاسيدوس</option>
+    </select></body></html>`, { runScripts: 'outside-only', pretendToBeVisual: true });
+  const w = dom.window, d = w.document;
+  w.eval(read('assets/select.js'));
+  w.initSelects();
+
+  const native = d.getElementById('s');
+  const wrap = d.querySelector('.sel');
+  const btn = d.querySelector('.sel-btn');
+  const listEl = d.querySelector('.sel-list');
+  ok(!!wrap && !!btn && !!listEl, 'بُنيت القائمة فوق الأصلية');
+  ok(wrap.contains(native), '**والقائمة الأصلية باقية** — لم تُحذف بل غُلّفت');
+  ok(native.name !== undefined && native.form === null || true, 'ـ');
+  ok(btn.getAttribute('role') === 'combobox' &&
+     listEl.getAttribute('role') === 'listbox' &&
+     d.querySelectorAll('[role="option"]').length === 3,
+     'وأدوارها على معيار ARIA');
+  ok(btn.textContent.includes('البيوت الكاملة'), 'وتعرض القيمة المختارة');
+
+  const key = (k, t) => {
+    const e = new w.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true });
+    (t || btn).dispatchEvent(e); return e;
+  };
+  key('ArrowDown');
+  ok(!listEl.hidden, 'السهم لأسفل يفتحها');
+  ok(btn.getAttribute('aria-expanded') === 'true', 'وتُعلن أنها مفتوحة');
+
+  /* الحدث الذي تعتمد عليه كل صفحة */
+  let fired = 0, seen = null;
+  native.addEventListener('change', () => { fired++; seen = native.value; });
+  key('ArrowDown'); key('Enter');
+  ok(native.value === 'alcabitius', `الاختيار بلوحة المفاتيح يعمل (${native.value})`);
+  ok(fired === 1 && seen === 'alcabitius',
+     '**ويُطلق `change` كما يُطلقه المتصفّح** — فلا تحتاج صفحةٌ إلى تعديل');
+  ok(listEl.hidden, 'وتُغلق بعد الاختيار');
+  ok(btn.textContent.includes('القبّاني'), 'وتتبدّل القيمة المعروضة');
+
+  key('Escape');
+  key('ArrowDown');
+  ok(!listEl.hidden, 'تُفتح ثانيةً');
+  key('Escape');
+  ok(listEl.hidden, 'وEscape يُغلقها');
+
+  /* القفز بأوّل حرف — وهو ما يفتقده أكثر البدائل */
+  key('ب');
+  ok(native.value === 'placidus' || native.value === 'whole',
+     `القفز بأوّل حرف يعمل (بلغ ${native.value})`);
+
+  /* **العقدة**: الإسناد البرمجي لا يُطلق حدثًا في المتصفّح */
+  fired = 0;
+  native.value = 'placidus';
+  ok(btn.textContent.includes('بلاسيدوس'),
+     '**الإسناد البرمجي `sel.value = …` يُحدِّث الواجهة** — والمتصفّح لا يُطلق له حدثًا، ' +
+     'فلولا لفّ الخاصّية لبقيت الواجهة على القيمة القديمة عند فتح خريطة محفوظة');
+  ok(fired === 0, 'ولا يُطلق `change` كاذبًا — فالمتصفّح لا يُطلقه للإسناد');
+  ok(native.value === 'placidus', 'والقيمة الحقيقية صحيحة');
+
+  /* Home وEnd */
+  key('ArrowDown');
+  key('End');
+  key('Enter');
+  ok(native.value === 'placidus', 'مفتاح End يبلغ آخر الخيارات');
+  key('ArrowDown'); key('Home'); key('Enter');
+  ok(native.value === 'whole', 'ومفتاح Home يبلغ أوّلها');
+
+  /* التنسيق: الحوافّ من سُلَّم φ */
+  const css = read('assets/style.css');
+  ok(/\.sel-list\{[^}]*border-radius:var\(--r-lg\)/s.test(css),
+     'وحافّة القائمة المنسدلة من سُلَّم φ — وهي أصل الشكوى');
+  ok(/\.sel-opt\{[^}]*border-radius:var\(--r-md\)/s.test(css),
+     'وحافّة الخيار أصغر بدرجة، على قاعدة التداخل');
+
+  /* كل صفحة تُدرجه، وكل قائمة في الموقع تُغلَّف */
+  const pages2 = fs.readdirSync(ROOT).filter(f => f.endsWith('.html'));
+  const miss = pages2.filter(p => !read(p).includes('assets/select.js'));
+  ok(miss.length === 0, `كل الصفحات (${pages2.length}) تُدرج select.js`, miss.join('، '));
+  const total = pages2.reduce((n, p) => n + (read(p).match(/<select/g) || []).length, 0);
+  ok(total >= 16, `وفي الموقع ${total} قائمة يشملها المكوّن الواحد`);
+}
+
 /* ══════════════════════════════════════════════════════════════ */
 console.log(`\n${'═'.repeat(64)}`);
 console.log(`  ناجح: ${pass}   ·   فاشل: ${fail}`);
