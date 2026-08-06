@@ -2455,7 +2455,11 @@ def test_no_decorative_element_wears_a_listener_class():
     بسمة صريحة**، فلا يكفي الصنف وحده للالتقاط.
     """
     import re
-    for name, html in _pages().items():
+    for name, page in _pages().items():
+        # يُفحَص **الترميز وحده**: أوّل صياغة فحصت الملفّ كلّه، فأسقطها
+        # تعليقٌ عربيّ في السكربت يقتبس `<button class="q">` ليشرح
+        # خطأً تجنّبناه. فالحارس يجب أن يعرف حدوده.
+        html = re.sub(r'<script[\s\S]*?</script>', '', page)
         for m in re.finditer(r'class="([^"]*)"', html):
             classes = m.group(1).split()
             if "q" not in classes:

@@ -19,6 +19,25 @@ const ASPECT_COLOR = { 'إيجابية':'#5fc7a1', 'سلبية':'#e08a7d', 'مح
 const wEsc = t => String(t == null ? '' : t)
   .replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
+/* ══════════════════════════════════════════════════════════════
+   رموز البروج تُرسَم صُوَرًا ملوّنة — ولماذا
+
+   حروف البروج ♈ إلى ♓ (U+2648–U+2653) مُعرَّفة في معيار يونيكود
+   بأن **صورتها الافتراضية صورةُ إيموجي**. فالمتصفّح يُسلّمها إلى
+   خطّ الإيموجي فيرسمها مربّعاتٍ بنفسجية مستديرة — وهو ما ظهر في
+   الموقع الحيّ، ولم أرَه في أداة التحويل عندي لأنها لا تملك خطّ
+   إيموجي أصلًا فرسمتها حروفًا.
+
+   والعلاج معياريّ: يُلحَق بالحرف **U+FE0E** (مُحدِّد الصورة
+   النصّية)، فيُلزَم المتصفّح بصورة الحرف لا صورة الإيموجي.
+   ونُضيف معه خطوطًا تعرف هذه الحروف، فبعض الأنظمة تفتقدها.
+   ══════════════════════════════════════════════════════════════ */
+const VS15 = '︎';
+const wSym = s => String(s == null ? '' : s).replace(/[☀-➿]/gu, m => m + VS15);
+
+const WHEEL_FONT = '"Noto Kufi Arabic", "Segoe UI Symbol", ' +
+                   '"Noto Sans Symbols 2", "Noto Sans Symbols", system-ui, sans-serif';
+
 /* الأسطر تُفصَل بـ«|»، فنُسقط ما فيه منها كي لا يُكسَر التقسيم */
 function hint(title, lines, extra) {
   const body = (lines || []).filter(Boolean)
@@ -118,7 +137,7 @@ function wheelSVG(c, opts = {}) {
            stroke="${ELEM_COLOR[i % 4]}" stroke-width="${R.zodiacOut - R.zodiacIn}" opacity=".21"/>`;
     const [tx, ty] = P(start + 15, (R.zodiacOut + R.zodiacIn) / 2);
     g += `<text x="${tx.toFixed(1)}" y="${(ty + 7).toFixed(1)}" text-anchor="middle"
-           font-size="21" fill="${ELEM_COLOR[i % 4]}">${SIGN_SYMBOLS[i]}</text>`;
+           font-size="21" fill="${ELEM_COLOR[i % 4]}">${wSym(SIGN_SYMBOLS[i])}</text>`;
     g += `<title>${wEsc(nm)}</title></g>`;
     g += line(start, R.zodiacIn, R.zodiacOut, 'stroke="var(--line2)" stroke-width="1"');
     /* علامات الدرجات كل خمس */
@@ -270,7 +289,7 @@ function wheelSVG(c, opts = {}) {
       <circle class="hint-halo" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="16.5"
               fill="none" stroke="var(--gold)" stroke-width="1.4"/>
       <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="12.5" fill="rgba(10,15,29,.82)" stroke="var(--line2)" stroke-width=".7"/>
-      <text x="${px.toFixed(1)}" y="${(py + 6).toFixed(1)}" text-anchor="middle" font-size="16" fill="${col}">${it.symbol}</text>
+      <text x="${px.toFixed(1)}" y="${(py + 6).toFixed(1)}" text-anchor="middle" font-size="16" fill="${col}">${wSym(it.symbol)}</text>
       <title>${wEsc(it.name)} — ${wEsc(it.text)}${it.retro ? ' (راجع)' : ''}${it.dignity ? ' · ' + wEsc(it.dignity) : ''}</title>
     </g>`;
     const [dx, dy] = P(drawLon, R.degLbl);
@@ -304,25 +323,43 @@ function wheelSVG(c, opts = {}) {
     const at = k => c.angles[k] ? `${c.angles[k].short} ${c.angles[k].sign}` : '';
     const posOf = b => b ? `${b.short} ${b.sign}` : '';
 
+    /* ── **خللٌ قاطع رأيتُه في الموقع الحيّ ولم تُظهره أداتي** ──
+       الصفحة `dir="rtl"`، و`text-anchor` في SVG قيمتاه `start`
+       و`end` **منطقيّتان لا حسّيّتان**: تتبعان اتّجاه النصّ لا
+       يمينَ اللوحة ويسارها.
+
+       ففي RTL يكون `start` = **يمين** النصّ، فالنصّ يمتدّ يسارًا؛
+       و`end` = **يسار** النصّ، فيمتدّ يمينًا. وقد استعملتُهما كما
+       يُستعملان في LTR — فوضعتُ في الركن الأيمن `end` عند x=٦٠٥،
+       فامتدّ النصّ **يمينًا خارج اللوحة فانقطع**؛ ووضعتُ في الأيسر
+       `start` عند x=١٥ فامتدّ **يسارًا خارجها فانقطع**.
+
+       فقُرئ «الط» و«سيّد» و«حلب» و«Asi» — أنصافُ كلمات. وأداة
+       التحويل عندي لا تُطبّق الاتّجاه فرسمتها سليمة، **فما رأيتُ
+       الخلل إلّا في الصورة التي أرسلها صاحب المشروع**.
+
+       والدرس: ما يُرسَم في سياق RTL يُتحقَّق منه في RTL. */
     const when = (c.when_local || '').slice(0, 16).replace('T', ' — ');
+    const RIGHT = 'start';   /* في RTL: يبدأ يمينًا ويمتدّ يسارًا ✓ */
+    const LEFT = 'end';      /* في RTL: ينتهي يسارًا ويمتدّ يمينًا ✓ */
     const corners = [
-      { x: S - 15, y: 24, anchor: 'end', lines: [
+      { x: S - 15, y: 24, anchor: RIGHT, lines: [
           (c.name || '').trim() || 'خريطة ميلاد',
           when, c.place || '', c.tz || '',
         ] },
-      { x: 15, y: 24, anchor: 'start', lines: [
+      { x: 15, y: 24, anchor: LEFT, lines: [
           `الطالع ${at('الطالع')}`,
           `وسط السماء ${at('وسط السماء')}`,
           c.almuten && c.almuten.winner ? `سيّدها ${c.almuten.winner}` : '',
           c.houses && c.houses.system_name ? c.houses.system_name : '',
         ] },
-      { x: S - 15, y: S - 62, anchor: 'end', lines: [
+      { x: S - 15, y: S - 62, anchor: RIGHT, lines: [
           `الشمس ${posOf(sun)}`,
           `القمر ${posOf(moon)}`,
           c.sect ? `خريطة ${c.sect}` : '',
           c.moon && c.moon.mansion ? `منزلة ${c.moon.mansion.name}` : '',
         ] },
-      { x: 15, y: S - 62, anchor: 'start', lines: [
+      { x: 15, y: S - 62, anchor: LEFT, lines: [
           'أخضرُ الجِرم: له كرامة',
           'أحمرُه: في وبال أو هبوط',
           'خطٌّ أخضر: زاوية موافقة',
@@ -331,10 +368,10 @@ function wheelSVG(c, opts = {}) {
     ];
 
     const lineH = 16.18;                      /* من سُلَّم φ نفسه */
-    g += `<g class="corners" pointer-events="none">`;
+    g += `<g class="corners" pointer-events="none" direction="rtl">`;
     corners.forEach(k => {
       k.lines.filter(Boolean).forEach((t, i) => {
-        const first = i === 0 && k.anchor === 'end' && k.y < 100;
+        const first = i === 0 && k.anchor === RIGHT && k.y < 100;
         /* كل سطر نصٌّ واحد لا `tspan`ات — فالخريطة تُصدَّر ملفَّ
            SVG يفتحه صاحبها ببرامج لا تُحسن تدفّق الـ`tspan` ولا
            الاتجاه العربي، فترسمها فوق بعضها. رأيتُه في التصدير. */
@@ -348,7 +385,7 @@ function wheelSVG(c, opts = {}) {
   }
 
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" xmlns="http://www.w3.org/2000/svg"
-            font-family="Noto Kufi Arabic, system-ui, sans-serif" role="img"
+            font-family='${WHEEL_FONT}' role="img"
             aria-label="الخريطة الفلكية الدائرية">${g}</svg>`;
 }
 
@@ -519,6 +556,6 @@ function doubleWheelSVG(a, b, inter, opts = {}) {
           الخارج: ${b.name || 'الثاني'}</text>`;
 
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" xmlns="http://www.w3.org/2000/svg"
-            font-family="Noto Kufi Arabic, system-ui, sans-serif" role="img"
+            font-family='${WHEEL_FONT}' role="img"
             aria-label="العجلة المزدوجة — خريطتان متراكبتان">${g}</svg>`;
 }

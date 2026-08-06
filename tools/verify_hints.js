@@ -481,6 +481,130 @@ section('قائمة الاختيار');
   ok(total >= 16, `وفي الموقع ${total} قائمة يشملها المكوّن الواحد`);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ٧ ــ ما لا تُظهره أداة التحويل: الاتّجاه والرموز
+
+   **درسٌ مدفوع الثمن.** كنتُ أتحقّق من العجلة بتحويلها صورةً
+   بمكتبة `cairosvg`، وهي **لا تُطبّق اتّجاه النصّ ولا تملك خطّ
+   إيموجي**. فمرّ خللان إلى الموقع الحيّ ولم أرَهما:
+
+     · نصوص الأركان انقطعت أنصافها («الط» و«سيّد» و«Asi»)
+     · رموز البروج رُسمت مربّعاتٍ بنفسجية
+
+   ولا يُكشَف مثلُهما إلّا بفحصٍ يعرف القاعدة نفسها. فهذه الفحوص
+   تقرأ الشيفرة لا الصورة.
+   ══════════════════════════════════════════════════════════════ */
+section('الاتّجاه والرموز');
+{
+  const w = browser().w;
+  w.eval(read('assets/wheel.js'));
+  const svg = w.wheelSVG(CHART, { deep: DEEP });
+  const src = read('assets/wheel.js');
+
+  /* ــ الاتّجاه ــ
+     في RTL: `start` = يمين النصّ، و`end` = يساره. فالنصّ الملتصق
+     بالحافّة اليمنى (x قريب من S) يجب أن يكون `start` ليمتدّ
+     يسارًا؛ والملتصق باليسرى (x صغير) يجب أن يكون `end`. */
+  const dom = new JSDOM(`<!doctype html><html dir="rtl"><body>${svg}</body></html>`);
+  const d = dom.window.document;
+  const S = 620;
+  let wrong = [];
+  d.querySelectorAll('.corners text').forEach(t => {
+    const x = parseFloat(t.getAttribute('x'));
+    const a = t.getAttribute('text-anchor');
+    if (x > S * 0.7 && a !== 'start') wrong.push(`يمين x=${x} anchor=${a}`);
+    if (x < S * 0.3 && a !== 'end') wrong.push(`يسار x=${x} anchor=${a}`);
+  });
+  ok(wrong.length === 0,
+     '**نصوص الأركان لا تنقطع في RTL** — الملتصق باليمين `start` والملتصق باليسار `end`',
+     wrong.slice(0, 4).join(' · '));
+  ok(/direction="rtl"/.test(svg),
+     'والاتّجاه مُصرَّح به على المجموعة، فلا يعتمد على ما تَرِثه من الصفحة');
+  ok(d.querySelectorAll('.corners text').length >= 12,
+     `والأركان مملوءة (${d.querySelectorAll('.corners text').length} سطرًا)`);
+
+  /* ــ الرموز ــ
+     حروف البروج ♈–♓ صورتُها الافتراضية في يونيكود صورةُ إيموجي،
+     فتُرسَم مربّعاتٍ ملوّنة ما لم يُلحَق بها U+FE0E. */
+  const VS = '︎';
+  const SIGNS = [...'♈♉♊♋♌♍♎♏♐♑♒♓'];
+  const bare = SIGNS.filter(s => {
+    const i = svg.indexOf(`>${s}`);
+    return i >= 0 && svg[i + 2] !== VS;
+  });
+  ok(bare.length === 0,
+     '**كل رمز برج مُلحَق به U+FE0E** — وإلّا رسمه المتصفّح إيموجي بنفسجيًّا',
+     bare.join(' '));
+  ok(SIGNS.every(s => svg.includes(s + VS)),
+     'وكلّ البروج الاثني عشر مشمولة');
+  const glyphs = (svg.match(/>[☀-➿]︎</g) || []).length;
+  ok(glyphs >= 12, `ورموز الأجرام كذلك (${glyphs} رمزًا محميًّا)`);
+  ok(/Segoe UI Symbol|Noto Sans Symbols/.test(svg),
+     'وخطّ اللوحة يشمل خطًّا يعرف هذه الرموز');
+
+  ok(/const VS15/.test(src) && /function wSym|const wSym/.test(src),
+     'والحماية في دالّة واحدة، فلا تُنسى في موضع');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ٨ ــ البطاقات تُطوى
+   ══════════════════════════════════════════════════════════════ */
+section('طيّ البطاقات');
+{
+  const html = read('chart.html'), css = read('assets/style.css');
+  ok(/class="fold-btn"/.test(html) && /aria-expanded=/.test(html),
+     'زرُّ الطيّ حقيقيّ ويُعلن حاله لقارئ الشاشة');
+  ok(/aria-controls="\$\{id\}"/.test(html),
+     'ويُشير إلى ما يطويه');
+  ok(/data-fold=/.test(html) && /store\.set\('chartFold'/.test(html),
+     'وحالة الطيّ تُحفَظ، فلا يُطالَب الزائر بطيّها في كل مرّة');
+  ok(/\.card\.shut \.card-body\{display:none\}/.test(css), 'والمطويّ يختفي');
+  ok(/\.fold-btn:focus-visible/.test(css), 'وله حلقة تركيز');
+  ok(/@media print\{[\s\S]{0,200}\.card\.shut \.card-body\{display:block!important\}/.test(css),
+     '**والورقة تُطبَع كاملة** — فالطيّ للشاشة لا للورق');
+
+  /* **حارسٌ من خطأٍ كدتُ أشحنه**: جعلتُ رأس البطاقة كلَّه زرًّا،
+     وفي العناوين علامةُ المعجم `<button class="q">` — فزرٌّ داخل
+     زرّ، وهو بناءٌ غير صحيح يضيع معه الضغط. */
+  const dom2 = new JSDOM(read('chart.html'),
+    { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://alfalak.vercel.app/chart.html' });
+  const w2 = dom2.window;
+  w2.fetch = (u) => Promise.resolve({ ok: true, json: () => Promise.resolve(
+    String(u).includes('glossary') ? { terms: GLOSSARY }
+    : String(u).includes('depth') ? DEEP : CHART) });
+  const page2 = (read('chart.html').match(/<script>([\s\S]*?)<\/script>\s*<\/body>/) || [])[1];
+  w2.eval(['assets/app.js', 'assets/hint.js', 'assets/nav.js',
+           'assets/plain.js', 'assets/wheel.js'].map(read).join('\n;\n') + '\n;\n' + page2);
+  w2.eval('DEEP = ' + JSON.stringify(DEEP));
+  w2.render(CHART);
+  const o2 = w2.document.getElementById('out');
+  const nested = [...o2.querySelectorAll('button button')];
+  ok(nested.length === 0, '**ولا زرَّ داخل زرّ في الصفحة المرسومة**',
+     nested.slice(0, 2).map(b => b.className).join(' · '));
+
+  const cards = [...o2.querySelectorAll('.card[data-fold]')];
+  ok(cards.length >= 5, `كل بطاقة قابلة للطيّ (${cards.length})`);
+  const c1 = cards[1], body1 = c1.querySelector('.card-body');
+  ok(!c1.classList.contains('shut'), 'وهي مفتوحة أوّلًا');
+  c1.querySelector('.fold-btn').dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));
+  ok(c1.classList.contains('shut'), 'والضغط يطويها');
+  ok(c1.querySelector('.fold-btn').getAttribute('aria-expanded') === 'false',
+     'وتُعلن أنها طُويت');
+  c1.querySelector('.fold-btn').dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));
+  ok(!c1.classList.contains('shut'), 'والضغط ثانيةً يفتحها');
+  ok(!!body1, 'ومحتواها باقٍ لم يُحذَف');
+
+  /* علامة المعجم داخل عنوان بطاقة: تعمل ولا تطوي */
+  const qin = o2.querySelector('.card-top button.q[data-term]');
+  if (qin) {
+    const cardOf = qin.closest('.card');
+    const was = cardOf.classList.contains('shut');
+    qin.dispatchEvent(new w2.MouseEvent('click', { bubbles: true }));
+    ok(cardOf.classList.contains('shut') === was,
+       '**والضغط على «؟» في العنوان لا يطوي البطاقة** — يفتح الشرح وحده');
+  } else ok(true, 'ـ (لا علامة معجم في عنوان بطاقة في هذه الخريطة)');
+}
+
 /* ══════════════════════════════════════════════════════════════ */
 console.log(`\n${'═'.repeat(64)}`);
 console.log(`  ناجح: ${pass}   ·   فاشل: ${fail}`);

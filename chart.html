@@ -209,9 +209,44 @@ async function load() {
   catch (e) { out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`; }
 }
 
-const card = (title, body, chips) =>
-  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
-   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+/* البطاقات تُطوى وتُفتَح — فالنتيجة طويلة، ومن أراد جزءًا منها
+   لا ينبغي أن يمرّ على الباقي. والحالة تُحفَظ، فلا تُطالَب بطيّها
+   في كل مرّة. */
+let FOLD = store.get('chartFold', {});
+let CARD_N = 0;
+
+/* **لا زرّ داخل زرّ.** أوّل صياغة جعلت رأس البطاقة كلَّه `<button>`
+   — وعناوين كثيرة تحمل علامة المعجم `<button class="q">`. وزرٌّ
+   داخل زرّ **بناءٌ غير صحيح**، والمتصفّح يتصرّف فيه كما شاء فيضيع
+   الضغط. فالرأس `div`، وفيه زرٌّ واحد صغير للطيّ يحمل الوصف
+   والحالة — والضغط على الرأس كلّه يطوي أيضًا، تيسيرًا بالفأرة. */
+const card = (title, body, chips, key) => {
+  const k = key || title.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  const shut = !!FOLD[k];
+  const id = 'cb' + (++CARD_N);
+  return `<div class="card${shut ? ' shut' : ''}" data-fold="${esc2(k)}">
+    <div class="card-top">
+      <h2 class="card-title">${title}</h2>
+      <div class="chips">${chips || ''}</div>
+      <button class="fold-btn" type="button" aria-expanded="${!shut}"
+              aria-controls="${id}" aria-label="طيّ القسم أو فتحه">
+        <i class="fold-caret" aria-hidden="true"></i></button>
+    </div>
+    <div class="card-body" id="${id}">${body}</div></div>`;
+};
+
+out.addEventListener('click', e => {
+  const top = e.target.closest('.card-top');
+  if (!top || !out.contains(top)) return;
+  /* لا نخطف علامة المعجم ولا المصطلحات الموسومة ولا الروابط */
+  if (e.target.closest('button.q,b.hint-term,a,.sel')) return;
+  const cardEl = top.closest('.card');
+  const shut = cardEl.classList.toggle('shut');
+  const fb = top.querySelector('.fold-btn');
+  if (fb) fb.setAttribute('aria-expanded', String(!shut));
+  FOLD[cardEl.dataset.fold] = shut;
+  store.set('chartFold', FOLD);
+});
 
 /* ══════════════════════════════════════════════════════════════
    إعادة بناء الصفحة — لماذا؟
