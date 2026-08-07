@@ -471,9 +471,14 @@ function doubleWheelSVG(a, b, inter, opts = {}) {
     g += `<path d="${arcPath(st, st + 30, (R.zodiacOut + R.zodiacIn) / 2)}" fill="none"
            stroke="${ELEM_COLOR[i % 4]}" stroke-width="${R.zodiacOut - R.zodiacIn}" opacity=".12"/>`;
     g += line(st, R.zodiacIn, R.zodiacOut, 'stroke="var(--line2)" stroke-width="1"');
+    /* **أصلحتُ المفردة ونسيتُ المزدوجة** — وهذا عين ما تعلّمناه
+       مرارًا: الإصلاح في موضع لا يُصلح الموضع الآخر. فاسم البرج
+       بالعربية هنا كذلك، لا حرفُه الذي يُرسَم إيموجي. */
     const [tx, ty] = P(st + 15, (R.zodiacOut + R.zodiacIn) / 2);
-    g += `<text x="${tx.toFixed(1)}" y="${(ty + 7).toFixed(1)}" text-anchor="middle"
-           font-size="20" fill="${ELEM_COLOR[i % 4]}">${SIGN_SYMBOLS[i]}</text>`;
+    const znm = SIGN_NAMES[i];
+    g += `<text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle"
+           font-size="${znm.length > 6 ? 8.8 : 10.2}" font-weight="600"
+           fill="${ELEM_COLOR[i % 4]}">${wEsc(znm)}</text>`;
   }
 
   /* حلقتان فاصلتان */
@@ -558,7 +563,7 @@ function doubleWheelSVG(a, b, inter, opts = {}) {
         <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="12" fill="${fill}"
                 stroke="${stroke}" stroke-width=".8"/>
         <text x="${px.toFixed(1)}" y="${(py + 5.5).toFixed(1)}" text-anchor="middle"
-              font-size="15" fill="${tone === 'in' ? 'var(--text)' : 'var(--gold)'}">${it.symbol}</text>
+              font-size="15" fill="${tone === 'in' ? 'var(--text)' : 'var(--gold)'}">${wSym(it.symbol)}</text>
         <title>${ringName}: ${it.name} — ${it.text || ''}${it.retro ? ' (راجع)' : ''}</title>
       </g>`;
     });

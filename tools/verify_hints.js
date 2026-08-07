@@ -536,6 +536,19 @@ section('الاتّجاه والرموز');
   ok(missing.length === 0, 'وأسماء البروج الاثني عشر مكتوبة بالعربية', missing.join(' '));
   ok(SIGNS.every(s => svg.includes(s)),
      'والرمز باقٍ في الشرح عند التحويم لمن يريده');
+
+  /* **والعجلة المزدوجة كذلك**: أصلحتُ المفردة ونسيتُها، فبقيت
+     المربّعات البنفسجية في صفحة التوافق. رأيتُها في الموقع الحيّ. */
+  const dbl = w.doubleWheelSVG(CHART, CHART, CHART.aspects.slice(0, 10), {});
+  const dblBare = SIGNS.filter(s => new RegExp(`>[^<]*${s}[^<]*</text>`).test(dbl));
+  ok(dblBare.length === 0,
+     '**والعجلة المزدوجة لا ترسم حرف برجٍ كذلك** — والإصلاح في موضع لا يُصلح الآخر',
+     dblBare.join(' '));
+  ok(names.every(n => new RegExp(`>${n}</text>`).test(dbl)),
+     'وأسماء البروج فيها بالعربية');
+  ok((dbl.match(/>[☀-➿]︎</g) || []).length >= 20,
+     'ورموز أجرامها محميّة بـU+FE0E');
+  ok(!/undefined|NaN/.test(dbl), 'ولا «undefined» فيها');
 }
 
 /* ══════════════════════════════════════════════════════════════
