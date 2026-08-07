@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from . import patterns_deep as pdeep
+from . import stars_deep as sdeep
 
 # ── وظيفة كل جِرم ────────────────────────────────────────────────
 FUNCTION = {
@@ -369,9 +370,13 @@ def read_chart(c: dict) -> dict:
                       "note": p["note"],
                       "members": p["members"]}
                      for p in c["patterns"]],
+        # النجم يُقرأ **بما نزل عليه** لا وحده: صفةُ النجم مكتوبة
+        # من قبل في `stars.py`، والناقص ما يصنعه بهذا الجِرم بعينه.
         "stars": [{"title": f"{s['body']} مع {s['star']} ({s['star_la']})",
-                   "text": s["meaning"], "orb": s["orb"], "royal": s["royal"]}
-                  for s in c["stars"][:6]],
+                   "text": (sdeep.read(s) or s["meaning"]),
+                   "note": s["meaning"],
+                   "orb": s["orb"], "royal": s["royal"]}
+                  for s in c["stars"]],
     }
 
 

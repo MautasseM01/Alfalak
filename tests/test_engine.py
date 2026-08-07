@@ -2692,6 +2692,63 @@ def test_arabic_is_not_broken_by_the_plain_language_layer():
     assert plain.simplify("الوجاج", keep_original=False) != "الوجاج"
 
 
+def test_star_texts_read_the_body_not_only_the_star():
+    """
+    كان نصّ المقارنة صفةَ النجم وحدها: «الشمس مع رأس الغول» يشرح
+    رأس الغول ولا يقول ما يصنعه **بالشمس**. والنجم لا يُقرأ وحده
+    أصلًا — يُقرأ بما نزل عليه.
+
+    **وعلاجُه اختلف عن السهام والأشكال عمدًا**: صفاتُ النجوم
+    الثمانية والثلاثين مكتوبةٌ من قبل وجيّدة. فلم نُعِد كتابة ما
+    كُتب، بل أضفنا المحور الناقص وحده — ما يعنيه نزوله على هذا
+    الجِرم بعينه.
+    """
+    import difflib
+    import random
+    from api.index import dispatch
+    from falak import stars_deep, stars
+
+    cov = stars_deep.coverage()
+    assert cov["أجرام وأوتاد مكتوبة"] >= 19, cov
+    assert cov["حالات مُغطّاة"] >= 700, cov
+
+    # كل جِرم يمكن أن يقع عليه نجم له نصّ — والأوتاد كذلك
+    for body in ("الشمس", "القمر", "عطارد", "الزهرة", "المريخ", "المشتري",
+                 "زحل", "أورانوس", "نبتون", "بلوتو", "الرأس", "الذنب",
+                 "ليليث", "خيرون", "الطالع", "وسط السماء", "الغارب", "وتد الأرض"):
+        assert body in stars_deep.ON, f"لا نصّ لنزول نجم على {body}"
+
+    cities = ["حلب", "القاهرة", "بغداد", "دمشق", "تونس"]
+    rnd = random.Random(9)
+    worst, worst_at, total = 0.0, None, 0
+
+    for _ in range(8):
+        q = {"date": [f"{rnd.randint(1940, 2010)}-{rnd.randint(1, 12):02d}"
+                      f"-{rnd.randint(1, 28):02d}"],
+             "time": [f"{rnd.randint(0, 23):02d}:{rnd.randint(0, 59):02d}"],
+             "city": [rnd.choice(cities)], "system": ["whole"]}
+        got = dispatch("/api/chart", q)["reading"]["stars"]
+        total += len(got)
+        for s in got:
+            body = s["title"].split(" مع ")[0].strip()
+            assert s["text"] != s["note"], f"{body}: القراءة هي صفة النجم وحدها"
+            assert body in s["text"], f"{body}: النصّ لا يذكر الجِرم الذي نزل عليه"
+            assert len(s["text"]) >= 140, f"{body}: نصّ أقصر من أن يكون قراءة"
+            # شرط المقارنة الضيّقة مذكور — والنجم لا يعمل خارج الدرجة
+            assert s["orb"] <= 1.01, f"مقارنة أوسع من الحدّ: {s['orb']}"
+
+        texts = [s["text"] for s in got]
+        for i in range(len(texts)):
+            for j in range(i + 1, len(texts)):
+                r = difflib.SequenceMatcher(None, texts[i], texts[j]).ratio()
+                if r > worst:
+                    worst, worst_at = r, (got[i]["title"][:26], got[j]["title"][:26])
+
+    assert total >= 15, f"لم تُختبر مقارنات كافية ({total})"
+    assert worst <= 0.80, f"نصّا نجمين متشابهان {worst:.0%} — {worst_at}"
+    assert len(stars.STARS) == 38
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

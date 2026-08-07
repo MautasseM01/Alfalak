@@ -374,6 +374,16 @@ function render(c) {
     if (nm) readMap[nm] = x;
   });
   const deepPH = (DEEP && DEEP.planet_in_house) || {};
+  /* نصّ المقارنة يأتي من القراءة (`R.stars`) لا من `c.stars` الخام —
+     فالخام يحمل **صفة النجم وحدها**، والقراءة تحمل ما يصنعه بهذا
+     الجِرم بعينه. وكانت الصفحة تعرض الخام، فضاع المحور الناقص. */
+  const starRead = {};
+  (R.stars || []).forEach(x => {
+    const k = String(x.title).split('(')[0].trim();
+    starRead[k] = x.text;
+  });
+  const starText = s => starRead[`${s.body} مع ${s.star}`] || s.meaning;
+
   const starsOf = {};
   (c.stars || []).forEach(s => (starsOf[s.body] = starsOf[s.body] || []).push(s));
 
@@ -409,7 +419,7 @@ function render(c) {
           mine.map(a => `${esc2(a.name)} ${esc2(a.other)} <span style="color:var(--dim)">${a.orb}°${a.applying ? ' مُقبِلة' : ''}</span>`).join(' · ')}</p>`
           : `<p class="sub" style="color:var(--dim)">لا زاوية كبرى له مع سواه — يعمل وحده، وحاله في موضعه هو كلّ خبره.</p>`}
         ${st.length ? `<p class="sub"><b>نجوم ثابتة عليه:</b> ${
-          st.map(s => `${esc2(s.star)} (${s.orb}°)${s.royal ? ' — ملكي' : ''}: ${esc2(s.meaning)}`).join('؛ ')}</p>` : ''}
+          st.map(s => `<b>${esc2(s.star)}</b> (${s.orb}°)${s.royal ? ' — ملكي' : ''}: ${esc2(starText(s))}`).join('<br>')}</p>` : ''}
       </div>`;
     return `
     <tr class="opener" data-body="${esc2(b.name)}" data-open="pb${i}"
@@ -474,7 +484,7 @@ function render(c) {
        وهي أحسّ ما في الخريطة للوقت: أربع دقائق تُزحزح الطالع درجة كاملة.</p>
      <table><tbody>${angleRows}</tbody></table>
      ${angleStars.length ? `<p class="note" style="margin-top:12px"><b>نجوم ثابتة على الأوتاد:</b> ${
-       angleStars.map(s => `${esc2(s.star)} على ${esc2(s.body)} (${s.orb}°) — ${esc2(s.meaning)}`).join('؛ ')}</p>` : ''}
+       angleStars.map(s => `<b>${esc2(s.star)}</b> على ${esc2(s.body)} (${s.orb}°) — ${esc2(starText(s))}`).join('<br>')}</p>` : ''}
      <p class="note" style="margin-top:18px">اضغط أيّ بيت ينفتح على معناه، وما يقوى به وما يضعف،
        ومن سكنه من أجرام خريطتك.</p>
      <table class="opentbl"><thead><tr><th>البيت</th><th>الدرجة</th><th>البرج</th>
