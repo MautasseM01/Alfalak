@@ -100,7 +100,13 @@ async function copyText(text, btn, label) {
 }
 
 /* ── تحويل نصّ النشرة إلى HTML ── */
-const esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+/* **مشتركة، فلا تُعلَن في صفحة**: وسوم `<script>` المنفصلة تتشارك
+   بيئةً معجميةً واحدة، فإعلان `const esc` في صفحةٍ يصطدم بهذا
+   فيُلقي `SyntaxError` **يقتل سكربت الصفحة كلَّه**. وقد كانت ستّ
+   صفحات ميتةً بهذا السبب. وجُعلت آمنةً من `null` كما كانت نسخُ
+   الصفحات، فلم يَضِع شيء. */
+const esc = t => String(t == null ? '' : t)
+  .replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const hilite = t => t.replace(/(\d{1,2}:\d{2})/g, '<span class="t">$1</span>');
 
 function bulletinHtml(raw) {

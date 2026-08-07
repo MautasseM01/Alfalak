@@ -156,7 +156,7 @@ pageIntro('elections');
 const $ = id => document.getElementById(id);
 const out = $('out');
 markLive(out);
-const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+/* `esc` مشتركة في app.js — وإعلانها هنا كان يقتل الصفحة */
 const card = (title, body, chips) =>
   `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
    <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;

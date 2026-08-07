@@ -2822,19 +2822,91 @@ def test_glossary_is_deep_enough_for_a_beginner():
             f"شرح «{term}» يبدأ بتعريف نفسه بنفسه"
 
 
-def test_every_page_script_parses():
+def test_every_page_script_parses_together_with_its_files():
     """
-    حارس صريح: كل كتلة جافاسكربت في كل صفحة تُحلَّل بلا خطأ.
-    (كُتب بعد أن كسر تعبير نمطيّ عشر صفحات دفعةً واحدة.)
+    **الحارس الذي كان يفحص وهمًا.**
+
+    كان يُحلّل كل كتلة `<script>` **وحدها**، وهذا ليس ما يفعله
+    المتصفّح: وسوم `<script>` المنفصلة **تتشارك بيئةً معجميةً
+    واحدة**. فإعلان `const esc` في صفحةٍ يصطدم بإعلانه في
+    `app.js`، فيُلقي المتصفّح `SyntaxError` **يقتل سكربت الصفحة
+    كلَّه** — والصفحة تُعرَض فارغة لا تعمل.
+
+    وقد كانت **ستّ صفحات ميتة** بهذا السبب: الهندي والصيني
+    والتوافق والمسائل والاختيارات والواجهة البرمجية. ولم يرَها
+    الحارس القديم لأنه كان يفحص كلًّا على حدة، فلا تصادم.
+
+    **والدرس**: الحارس الذي لا يُحاكي الواقع يُطمئنك على خراب.
+    فصار يجمع ملفّات الصفحة وسكربتها **كما يجمعها المتصفّح**.
     """
-    import re, subprocess, json, shutil
+    import os
+    import re
+    import shutil
+    import subprocess
     node = shutil.which("node")
     if not node:
         pytest.skip("node غير متوفّر")
+
+    root = _root()
+    checked = 0
     for name, html in _pages().items():
+        files = re.findall(r'<script src="/assets/([^"]+)"></script>', html)
+        shared = []
+        for f in files:
+            path = os.path.join(root, "assets", f)
+            if os.path.exists(path):
+                shared.append(open(path, encoding="utf-8").read())
+        inline = re.findall(r'<script>([\s\S]*?)</script>', html)
+        bundle = "\n;\n".join(shared + inline)
+        assert bundle.strip(), f"{name}: لا سكربت"
+
+        # `node --check` لا يقرأ من الأنبوب في كل بيئة، فنكتب ملفًّا
+        import tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False,
+                                         encoding="utf-8") as fh:
+            fh.write(bundle)
+            tmp = fh.name
+        try:
+            r = subprocess.run([node, "--check", tmp],
+                               capture_output=True, text=True)
+        finally:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+        assert r.returncode == 0, (
+            f"{name}: الصفحة وملفّاتها لا تُحلَّل معًا — "
+            f"{(r.stderr or '').strip()[:200]}")
+        checked += 1
+
+    assert checked >= 14, f"لم تُفحَص إلّا {checked} صفحة"
+
+
+def test_no_shared_name_is_redeclared_in_a_page():
+    """
+    القاعدة صريحةً: **ما أُعلن في `assets/` لا يُعلَن في صفحة**.
+    والفحص أعلاه يكشف التصادم، وهذا يُسمّي المتصادمين فيُسهّل
+    الإصلاح.
+    """
+    import os
+    import re
+    root = _root()
+    top = re.compile(r'^(?:const|let|function|class)\s+([A-Za-z_$][\w$]*)',
+                     re.M)
+    shared: dict[str, str] = {}
+    for f in sorted(os.listdir(os.path.join(root, "assets"))):
+        if not f.endswith(".js"):
+            continue
+        for n in top.findall(open(os.path.join(root, "assets", f),
+                                  encoding="utf-8").read()):
+            shared.setdefault(n, f)
+
+    clashes = []
+    for name, html in _pages().items():
+        used = [f for f in re.findall(r'<script src="/assets/([^"]+)"></script>', html)]
         for block in re.findall(r'<script>([\s\S]*?)</script>', html):
-            r = subprocess.run(
-                [node, "-e", "new Function(require('fs')"
-                             ".readFileSync(0,'utf8'));"],
-                input=block, capture_output=True, text=True)
-            assert r.returncode == 0, f"{name}: {r.stderr[:160]}"
+            for n in top.findall(block):
+                if n in shared and shared[n] in used:
+                    clashes.append(f"{name}: «{n}» مُعلَن أيضًا في assets/{shared[n]}")
+
+    assert not clashes, "أسماء مُعلَنة مرّتين:\n  " + "\n  ".join(clashes[:8])

@@ -225,7 +225,7 @@ pre{background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:10px;
 <script>
 starfield('stars');
 const $ = id => document.getElementById(id);
-const esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+/* `esc` مشتركة في app.js — وإعلانها هنا كان يقتل الصفحة */
 const ORIGIN = location.origin;
 
 const DOC = {
