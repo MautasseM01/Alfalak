@@ -2611,6 +2611,87 @@ def test_pattern_texts_are_readings_not_definitions():
         "عاد النصّ لا يعرف حالته.")
 
 
+def test_lot_texts_say_where_the_lot_fell():
+    """
+    نصّ السهم كان تعريفًا له لا يذكر بيته ولا برجه — مع أن موضع
+    السهم هو كلّ فائدته. وقياسه: «سهم الأب» و«سهم الأم» متشابهان
+    **٩٢٪**، و«سهم الغيب» وشرحُ المعجم له **٨٨٪**.
+
+    والحدّ هنا ٨٨٪ لا ٨٠٪ كالأشكال، **وأقولها صراحةً**: سهمان
+    يقعان في بيتٍ واحد وبرجٍ واحد يتشاركان أكثر كلامهما بحقّ —
+    فالبيت والبرج يقولان فيهما الشيء نفسه، ولا يفترقان إلّا فيما
+    كلٌّ منهما موضوعٌ له. وهذا تشابهٌ في المعنى لا كسلٌ في الكتابة.
+    """
+    import difflib
+    import random
+    from api.index import dispatch
+    from falak import lots_deep
+
+    cov = lots_deep.coverage()
+    assert cov["حالات مُغطّاة"] >= 216, cov
+    assert cov["قطع مكتوبة"] >= 44, cov
+
+    cities = ["حلب", "القاهرة", "بغداد", "دمشق", "تونس"]
+    rnd = random.Random(5)
+    worst, worst_at, total = 0.0, None, 0
+
+    for _ in range(6):
+        q = {"date": [f"{rnd.randint(1940, 2010)}-{rnd.randint(1, 12):02d}"
+                      f"-{rnd.randint(1, 28):02d}"],
+             "time": [f"{rnd.randint(0, 23):02d}:{rnd.randint(0, 59):02d}"],
+             "city": [rnd.choice(cities)], "system": ["whole"]}
+        lots = dispatch("/api/chart", q)["reading"]["lots"]
+        total += len(lots)
+        assert len(lots) >= 18, "بعض السهام بلا قراءة"
+
+        for L in lots:
+            name = L["title"].split("—")[0].strip()
+            assert L["text"] != L["note"], f"{name}: القراءة هي التعريف نفسه"
+            assert L.get("note"), "ضاع تعريف السهم"
+            # القراءة تذكر الموضع — وهو أصل الشكوى
+            assert "البيت" in L["text"], f"{name}: النصّ لا يذكر البيت"
+            assert len(L["text"]) >= 120, f"{name}: نصّ أقصر من أن يكون قراءة"
+
+        texts = [L["text"] for L in lots]
+        for i in range(len(texts)):
+            for j in range(i + 1, len(texts)):
+                r = difflib.SequenceMatcher(None, texts[i], texts[j]).ratio()
+                if r > worst:
+                    worst, worst_at = r, (lots[i]["title"][:20], lots[j]["title"][:20])
+
+    assert total >= 100
+    assert worst <= 0.88, f"نصّا سهمين متشابهان {worst:.0%} — {worst_at}"
+
+
+def test_arabic_is_not_broken_by_the_plain_language_layer():
+    """
+    طبقة التبسيط كانت تستبدل «سهم» بـ«نقطة محسوبة» استبدالًا
+    حرفيًّا، فكسرت العربية في كل صيغة:
+        «سهم السعادة» ← «نقطة محسوبة السعادة»   تركيبٌ غير عربيّ
+        «والسهم»      ← «والنقطة محسوبة»        أشدّ كسرًا
+        «سهمُك»       ← «نقطة محسوبةُك»
+    والثالثة سببها أن حدّ الكلمة كان حروفَ الهجاء وحدها، **والحركةُ
+    خارجه** — فالضمّة في «سهمُك» عُدّت فاصلًا.
+
+    فأُصلح الحدّ ليشمل الحركات، وتُركت «سهم» على حالها: **التبسيط
+    أن يُشرَح المصطلح لا أن يُشوَّه**.
+    """
+    from falak import plain
+
+    # الحركة جزءٌ من الكلمة لا فاصلٌ بينها
+    for word in ("سهمُك", "الطالعُ", "البيتُ", "القمرُ"):
+        out = plain.simplify(word, keep_original=False)
+        assert out == word, f"«{word}» تبدّل إلى «{out}» — الحركة كُسِرت"
+
+    # ولا استبدال يكسر التركيب
+    for phrase in ("سهم السعادة", "والسهم", "سهم الغيب في البيت العاشر"):
+        out = plain.simplify(phrase, keep_original=False)
+        assert "نقطة محسوبة" not in out, f"«{phrase}» ← «{out}»"
+
+    # والتبسيط لا يزال يعمل حيث يصحّ
+    assert plain.simplify("الوجاج", keep_original=False) != "الوجاج"
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

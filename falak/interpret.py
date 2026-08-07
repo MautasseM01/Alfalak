@@ -327,13 +327,21 @@ def read_chart(c: dict) -> dict:
         f"{FUNCTION.get(alm['winner'], '')}."
     )
 
+    # ــ السهام: قراءةٌ لموضعها، لا تعريفٌ لها ــ
+    # كان النصّ `L["note"]` تعريفًا للسهم لا يذكر بيته ولا برجه —
+    # مع أن موضع السهم هو كلّ فائدته. وقياسه: «سهم الأب» و«سهم الأم»
+    # متشابهان ٩٢٪. و**كل السهام تُقرأ الآن**، لا الأساسية وحدها.
+    from . import lots_deep as ldeep
+    _sign_el = {b["sign"]: b.get("element") for b in c["bodies"] if b.get("element")}
     lots_text = []
     for L in c["lots"]:
-        if L["core"]:
-            lots_text.append({
-                "title": f"{L['name']} — {L['text']} (البيت {L['house']})",
-                "text": L["note"],
-            })
+        body = ldeep.read(L, _sign_el.get(L.get("sign")))
+        lots_text.append({
+            "title": f"{L['name']} — {L['text']} (البيت {L['house']})",
+            "text": body or L["note"],
+            "note": L["note"],
+            "core": L.get("core", False),
+        })
 
     # ملفّات البيوت والبروج المستعملة في هذه الخريطة
     from .depth import HOUSES, SIGNS_DEEP
