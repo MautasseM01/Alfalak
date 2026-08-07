@@ -2749,6 +2749,49 @@ def test_star_texts_read_the_body_not_only_the_star():
     assert len(stars.STARS) == 38
 
 
+def test_no_duplication_across_the_whole_page():
+    """
+    **الحارس الذي كان ناقصًا.**
+
+    بنينا حارسًا للأشكال وحارسًا للسهام وحارسًا للنجوم، وكلٌّ يقيس
+    عائلته وحدها. والزائر لا يقرأ عائلةً عائلة — يقرأ صفحةً واحدة.
+    فما تشابه بين عائلتين رآه هو ولم يرَه أحدٌ منّا. وهذا بعينه ما
+    وقع: «سهم الغيب» وشرحُ المعجم له كانا متشابهين ٨٨٪.
+
+    **وقد أسقط هذا الفحصُ خللين حقيقيّين أوّل تشغيل:**
+
+    ١. «عطارد – ليليث» و«عطارد – ليليث الحقيقية» متطابقان ١٠٠٪ —
+       فالليليثان **نقطةٌ واحدة بحسابين**، وكلٌّ منهما كان يُزاوي
+       سائر الأجرام على حدة. فصارت الزوايا تُحسَب من المتوسّطة
+       وحدها، والموضعان يبقيان في الجدول.
+    ٢. «عطارد نصفُ تربيعٍ زحل» و«المريخ نصفُ تربيعٍ زحل» متطابقان
+       ١٠٠٪ — فنصّ الزاوية الصغرى كان **طبعَها وحده**، وهو واحد
+       لكل زوج. فقُرن الطبع بموضوع الزوج.
+
+    ولم يكشفهما أيٌّ من الحرّاس الثلاثة، لأن عائلة الزوايا لم يكن
+    لها حارس أصلًا.
+    """
+    import importlib.util
+    import os
+    path = os.path.join(_root(), "tools", "measure_duplication.py")
+    if not os.path.exists(path):
+        pytest.skip("لا أدوات")
+    spec = importlib.util.spec_from_file_location("_measure_dup", path)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+
+    res = m.measure(n_charts=3)
+    assert res["pairs"] > 3000, f"لم يُقَس ما يكفي ({res['pairs']})"
+
+    names = {"same": "داخل العائلة الواحدة",
+             "cross": "بين عائلتين",
+             "gloss": "نصٌّ وشرحُ المعجم له"}
+    for key, limit in res["limits"].items():
+        got, where = res["worst"][key]
+        assert got <= limit, (
+            f"{names[key]}: تشابه {got:.0%} والحدّ {limit:.0%} — {where}")
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

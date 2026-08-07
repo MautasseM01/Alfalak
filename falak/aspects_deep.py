@@ -705,10 +705,18 @@ def pair_text(a: str, b: str, aspect: str) -> dict:
         d = PAIRS[k]
         if aspect in d:
             return {"theme": d["theme"], "text": d[aspect], "written": True}
-        # زاوية صغرى بين كوكبين تراثيين: موضوع الزوج + طبع الزاوية
+        # ــ الزاوية الصغرى بين كوكبين تراثيين ــ
+        # كان النصّ **طبعَ الزاوية وحده**، وهو واحدٌ لكل زوج —
+        # فخرج «عطارد نصفُ تربيعٍ زحل» و«المريخ نصفُ تربيعٍ زحل»
+        # متطابقين **مئةً في المئة**. كشفه فحصُ التكرار عبر
+        # العائلات، ولم يكشفه حارسٌ لأن عائلة الزوايا كانت بلا حارس.
+        #
+        # فالطبع يُقرَن بموضوع الزوج، فيصير لكل زوجٍ نصُّه.
         nat = MINOR_NATURE.get(aspect)
         if nat:
-            return {"theme": d["theme"], "text": nat, "written": True}
+            return {"theme": d["theme"],
+                    "text": f"{nat} وموضوعها بين هذين: {d['theme']}",
+                    "written": True}
         return {"theme": d["theme"], "text": d["theme"], "written": False}
 
     k = _key(a, b, GENERATIONAL)
