@@ -539,6 +539,50 @@ section('الاتّجاه والرموز');
 }
 
 /* ══════════════════════════════════════════════════════════════
+   ٧ب ــ طبقات العجلة
+   ══════════════════════════════════════════════════════════════ */
+section('طبقات العجلة');
+{
+  const w = browser().w;
+  w.eval(read('assets/wheel.js'));
+  const n = (s, re) => (s.match(re) || []).length;
+  const base = w.wheelSVG(CHART,
+    { deep: DEEP, layers: { mansions: true, minor: false, lots: false, degrees: true } });
+  const alt = w.wheelSVG(CHART,
+    { deep: DEEP, layers: { mansions: false, minor: true, lots: true, degrees: false } });
+
+  ok(/font-size="7.5"/.test(base) && !/font-size="7.5"/.test(alt),
+     'حلقة المنازل تُظهَر وتُخفى');
+  ok(n(alt, /g class="asp"/g) > n(base, /g class="asp"/g),
+     `الزوايا الصغرى تُضاف (${n(base, /g class="asp"/g)} ← ${n(alt, /g class="asp"/g)})`);
+  ok(n(base, /g class="lot"/g) === 0 && n(alt, /g class="lot"/g) === CHART.lots.length,
+     `السهام تُظهَر وتُخفى (${CHART.lots.length} سهمًا)`);
+  ok(n(base, /font-size="8.5"/g) === CHART.bodies.length && n(alt, /font-size="8.5"/g) === 0,
+     'ودرجات الأجرام كذلك');
+  ok(!/undefined|NaN/.test(base + alt), 'ولا «undefined» في أيّ حال');
+
+  /* السهم معينٌ لا دائرة — فهو نقطة محسوبة لا جِرم */
+  ok(/g class="lot"[\s\S]{0,400}<path/.test(alt),
+     'والسهم يُرسَم معينًا لا دائرةً، فلا يُشبه الكواكب');
+  const dl = new JSDOM(`<!doctype html><html dir="rtl"><body>${alt}</body></html>`).window.document;
+  ok([...dl.querySelectorAll('g.lot')].every(x => x.getAttribute('data-hint')),
+     'ولكل سهم في العجلة شرحُه');
+
+  /* المفاتيح في الصفحة، والتبديل لا يُعيد الطلب من الخادم */
+  const html = read('chart.html');
+  ok(/function layerBar|const layerBar/.test(html), 'وللطبقات مفاتيح في الصفحة');
+  ok(/store\.set\('chartLayers'/.test(html), 'وحالها تُحفَظ');
+  ok(/box\.innerHTML = wheelSVG\(current/.test(html),
+     '**والتبديل يُعيد الرسم وحده لا الطلب من الخادم** — فالمعطيات في اليد');
+  ok(/aria-pressed=/.test(html), 'وتُعلن حالها لقارئ الشاشة');
+
+  const css = read('assets/style.css');
+  ok(/ELEM_COLOR = \{ 0:'#e8836f'/.test(read('assets/wheel.js')),
+     'ولوحة العناصر أوضح، متباعدةً في درجة اللون لا في الإضاءة وحدها');
+  ok(/\.lay\.on\{/.test(css), 'وللمفتاح المُفعَّل شكلٌ يُميّزه');
+}
+
+/* ══════════════════════════════════════════════════════════════
    ٨ ــ البطاقات تُطوى
    ══════════════════════════════════════════════════════════════ */
 section('طيّ البطاقات');

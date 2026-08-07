@@ -473,6 +473,29 @@ tr[aria-expanded="true"] td.caret{color:var(--gold);transform:rotate(180deg)}
   .winf-c b{color:#111!important}
 }
 
+/* ── مفاتيح طبقات العجلة ────────────────────────────────────── */
+.layers{
+  display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;
+  margin-bottom:var(--s3);font-size:.8rem
+}
+.layers>span{color:var(--dim);margin-inline-end:var(--s1)}
+.lay{
+  cursor:pointer;font:inherit;font-size:.79rem;padding:5px 12px;
+  border-radius:var(--r-pill);border:1px solid var(--line2);
+  background:transparent;color:var(--muted);transition:.15s
+}
+.lay:hover{color:var(--text);border-color:var(--gold-dim)}
+.lay.on{
+  background:rgba(217,180,91,.14);border-color:var(--gold-dim);
+  color:var(--gold);font-weight:600
+}
+.lay:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media print{.layers{display:none}}
+
+/* السهام في العجلة: معينٌ صغير لا دائرة — فهي نقاط لا أجرام */
+svg g.lot{cursor:help}
+svg g.lot:hover path,svg g.lot.hint-on path{stroke-width:1.9;opacity:1}
+
 /* ── العجلة وشبكة الزوايا ── */
 .wheel{padding:8px 4px}
 .wheel svg{display:block;max-width:640px;margin:0 auto}

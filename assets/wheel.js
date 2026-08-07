@@ -3,7 +3,13 @@
 const SIGN_SYMBOLS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
 const SIGN_NAMES = ['الحمل','الثور','الجوزاء','السرطان','الأسد','العذراء',
                     'الميزان','العقرب','القوس','الجدي','الدلو','الحوت'];
-const ELEM_COLOR = { 0:'#e08a7d', 1:'#c9a227', 2:'#8fa5d8', 3:'#5fc7a1' };
+/* ── لوحة العناصر ──────────────────────────────────────────────
+   المفتاح `i % 4` والبروج مرتّبة: حمل(نار) ثور(تراب) جوزاء(هواء)
+   سرطان(ماء) — فالدورة رباعية منتظمة. والألوان اختيرت متباعدةً
+   في درجة اللون لا في الإضاءة وحدها، فتُقرأ على الخلفية الداكنة
+   ويُميّزها عمى الألوان الشائع (الأحمر–الأخضر) بالإضاءة. */
+const ELEM_COLOR = { 0:'#e8836f', 1:'#d4a537', 2:'#7fa8e8', 3:'#4fc7a6' };
+const ELEM_NAME  = { 0:'ناري', 1:'ترابي', 2:'هوائي', 3:'مائي' };
 const ASPECT_COLOR = { 'إيجابية':'#5fc7a1', 'سلبية':'#e08a7d', 'محايدة':'#d9b45b' };
 
 /* ══════════════════════════════════════════════════════════════
@@ -98,7 +104,14 @@ function wheelSVG(c, opts = {}) {
   R.aspect = INNER / PHI;                /* دائرة خطوط الزوايا */
   R.axisLbl = OUT + wZod * 0.62;         /* ووسم الوتد داخل اللوحة قطعًا */
   const asc = c.angles['الطالع'].lon;
-  const showMansions = opts.mansions !== false;
+  /* ── الطبقات ──────────────────────────────────────────────────
+     العجلة تحمل خمس حلقات ونحو أربعين خطًّا. ومن أراد أن ينظر في
+     الزوايا الكبرى وحدها لا ينبغي أن يُجبَر على النظر في الصغرى.
+     فصار لكل طبقة مفتاح، كما في Astrodienst. */
+  const L = opts.layers || {};
+  const showMansions = L.mansions !== false && opts.mansions !== false;
+  const showDeg = L.degrees !== false;
+  const showLots = !!L.lots;
 
   /* الطالع إلى اليسار، والبروج تدور عكس عقارب الساعة */
   const ang = lon => (180 + (lon - asc)) * Math.PI / 180;
@@ -244,7 +257,7 @@ function wheelSVG(c, opts = {}) {
   /* ── خطوط الزوايا ── */
   const pos = {};
   bodies.forEach(b => pos[b.name] = b.lon);
-  const asps = (c.aspects || []).filter(a => opts.minorLines ? true : a.major);
+  const asps = (c.aspects || []).filter(a => (L.minor || opts.minorLines) ? true : a.major);
   let lines = '';
   /* النصّ يصل مع الزاوية نفسها من الخادم. وكانت الواجهة تُطابق
      بجداول `/api/depth` الخام فتُصيب ٢٧ من ٤٠ — والمطابقة صارت في
@@ -304,9 +317,11 @@ function wheelSVG(c, opts = {}) {
       <text x="${px.toFixed(1)}" y="${(py + 6).toFixed(1)}" text-anchor="middle" font-size="16" fill="${col}">${wSym(it.symbol)}</text>
       <title>${wEsc(it.name)} — ${wEsc(it.text)}${it.retro ? ' (راجع)' : ''}${it.dignity ? ' · ' + wEsc(it.dignity) : ''}</title>
     </g>`;
-    const [dx, dy] = P(drawLon, R.degLbl);
-    g += `<text x="${dx.toFixed(1)}" y="${(dy + 3).toFixed(1)}" text-anchor="middle"
-           font-size="8.5" fill="var(--muted)">${it.deg}°${it.retro ? '℞' : ''}</text>`;
+    if (showDeg) {
+      const [dx, dy] = P(drawLon, R.degLbl);
+      g += `<text x="${dx.toFixed(1)}" y="${(dy + 3).toFixed(1)}" text-anchor="middle"
+             font-size="8.5" fill="var(--muted)">${it.deg}°${it.retro ? '℞' : ''}</text>`;
+    }
   });
 
   /* ══════════════════════════════════════════════════════════════
@@ -317,6 +332,27 @@ function wheelSVG(c, opts = {}) {
      فنضع فيه ما لو لم يقرأ الزائر سواه لعرف خريطته:
      الطالع، والشمس، والقمر، وسيّد الخريطة.
      ══════════════════════════════════════════════════════════════ */
+  /* ── طبقة السهام ─────────────────────────────────────────────
+     تُرسَم على حلقةٍ بين البيوت والأجرام، بعلامةٍ صغيرة لا بدائرة —
+     فهي نقاط محسوبة لا أجرام، ولا ينبغي أن تُشبه الكواكب. */
+  if (showLots && (c.lots || []).length) {
+    const rL = (R.houseIn + R.planet) / 2;
+    (c.lots || []).forEach(Lt => {
+      if (Lt.lon == null) return;
+      const [lx, ly] = P(Lt.lon, rL);
+      g += `<g class="lot"${hint(Lt.name, [
+          `${Lt.text} — في البيت ${HOUSE_ORD[Lt.house - 1] || Lt.house}.`,
+          Lt.formula ? `صيغته: ${Lt.formula}` : '',
+          'والسهم نقطة محسوبة لا جِرم لها، فلا تُزاوي كما تُزاوي الكواكب.',
+        ], ` data-term="السهم"`)}>
+        <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="7" fill="transparent"/>
+        <path d="M ${(lx - 3.4).toFixed(1)} ${ly.toFixed(1)} L ${lx.toFixed(1)} ${(ly - 3.4).toFixed(1)}
+                 L ${(lx + 3.4).toFixed(1)} ${ly.toFixed(1)} L ${lx.toFixed(1)} ${(ly + 3.4).toFixed(1)} Z"
+              fill="none" stroke="var(--gold)" stroke-width="1.1" opacity=".85"/>
+        <title>${wEsc(Lt.name)} — ${wEsc(Lt.text)}</title></g>`;
+    });
+  }
+
   /* ══════════════════════════════════════════════════════════════
      بيان الخريطة — **خارج الـSVG**
 

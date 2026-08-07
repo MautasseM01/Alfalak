@@ -215,6 +215,41 @@ async function load() {
 let FOLD = store.get('chartFold', {});
 let CARD_N = 0;
 
+/* ── طبقات العجلة ─────────────────────────────────────────────
+   العجلة تحمل خمس حلقات ونحو أربعين خطًّا. ومن أراد النظر في
+   الزوايا الكبرى وحدها لا ينبغي أن يُجبَر على النظر في الصغرى.
+   فلكل طبقة مفتاح، وحالُها تُحفَظ.
+
+   **ولا تُعاد الخريطة من الخادم عند التبديل** — الرسم وحده
+   يُعاد، فالمعطيات في اليد. */
+const LAYER_DEFS = [
+  ['mansions', 'المنازل القمرية', true],
+  ['minor', 'الزوايا الصغرى', false],
+  ['lots', 'السهام', false],
+  ['degrees', 'درجات الأجرام', true],
+];
+let LAYERS = Object.assign(
+  Object.fromEntries(LAYER_DEFS.map(([k, , d]) => [k, d])),
+  store.get('chartLayers', {}));
+
+const layerBar = () =>
+  `<div class="layers" role="group" aria-label="طبقات العجلة">
+     <span>أظهِر:</span>${LAYER_DEFS.map(([k, label]) =>
+      `<button type="button" class="lay${LAYERS[k] ? ' on' : ''}"
+        data-layer="${k}" aria-pressed="${!!LAYERS[k]}">${label}</button>`).join('')}</div>`;
+
+out.addEventListener('click', e => {
+  const b = e.target.closest('.lay[data-layer]');
+  if (!b || !out.contains(b)) return;
+  const k = b.dataset.layer;
+  LAYERS[k] = !LAYERS[k];
+  store.set('chartLayers', LAYERS);
+  b.classList.toggle('on', LAYERS[k]);
+  b.setAttribute('aria-pressed', String(!!LAYERS[k]));
+  const box = document.getElementById('wheelBox');
+  if (box && current) box.innerHTML = wheelSVG(current, { deep: DEEP, layers: LAYERS });
+});
+
 /* **لا زرّ داخل زرّ.** أوّل صياغة جعلت رأس البطاقة كلَّه `<button>`
    — وعناوين كثيرة تحمل علامة المعجم `<button class="q">`. وزرٌّ
    داخل زرّ **بناءٌ غير صحيح**، والمتصفّح يتصرّف فيه كما شاء فيضيع
@@ -351,7 +386,8 @@ function render(c) {
      <span class="chip">${c.houses.system_name}</span>`);
 
   const wheel = card('العجلة',
-    `<div class="wheel">${wheelSVG(c, { deep: DEEP })}</div>
+    `${layerBar()}
+     <div class="wheel" id="wheelBox">${wheelSVG(c, { deep: DEEP, layers: LAYERS })}</div>
      ${wheelInfo(c)}
      <p class="note" style="margin-top:14px">
        <b>مرّر المؤشّر على أيّ عنصر في العجلة</b> — كوكبٍ أو بيتٍ أو برجٍ أو
