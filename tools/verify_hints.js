@@ -587,13 +587,19 @@ section('طبقات العجلة');
    ══════════════════════════════════════════════════════════════ */
 section('طيّ البطاقات');
 {
-  const html = read('chart.html'), css = read('assets/style.css');
-  ok(/class="fold-btn"/.test(html) && /aria-expanded=/.test(html),
-     'زرُّ الطيّ حقيقيّ ويُعلن حاله لقارئ الشاشة');
-  ok(/aria-controls="\$\{id\}"/.test(html),
-     'ويُشير إلى ما يطويه');
-  ok(/data-fold=/.test(html) && /store\.set\('chartFold'/.test(html),
-     'وحالة الطيّ تُحفَظ، فلا يُطالَب الزائر بطيّها في كل مرّة');
+  const app = read('assets/app.js'), css = read('assets/style.css');
+  /* **الطيّ صار مشتركًا**: كان في `chart.html` وحدها، فبقيت الصفحات
+     الأخرى بأقسامٍ لا تُطوى — وفي «الهندية» قسمٌ يبلغ ثلاثة آلاف حرف. */
+  ok(/function autoFold/.test(app) && /function foldCard/.test(app),
+     '**الطيّ في `app.js`** — فيعمل في الصفحات الأربع عشرة لا في واحدة');
+  ok(!/class="fold-btn"/.test(read('chart.html')),
+     'ولا يُبنى في صفحةٍ بيدها، فلا يتكرّر الزرّ');
+  ok(/aria-expanded/.test(app) && /aria-controls/.test(app),
+     'ويُعلن حاله ويُشير إلى ما يطويه');
+  ok(/store\.set\(FOLD_KEY/.test(app) && /'fold:' \+ location\.pathname/.test(app),
+     'وحالُه تُحفَظ **لكل صفحة على حدة**');
+  ok(/if \(!FOLD_STATE\) FOLD_STATE = store\.get/.test(app),
+     'ويُهيَّأ عند أوّل حاجة، فلا يسقط لخطأٍ في غيره');
   ok(/\.card\.shut \.card-body\{display:none\}/.test(css), 'والمطويّ يختفي');
   ok(/\.fold-btn:focus-visible/.test(css), 'وله حلقة تركيز');
   ok(/@media print\{[\s\S]{0,200}\.card\.shut \.card-body\{display:block!important\}/.test(css),
@@ -647,6 +653,11 @@ section('طيّ البطاقات');
   ok(w3.document.querySelectorAll('b.hint-term').length > 0,
      'والماسح يعمل في النصّ العاديّ');
 
+  /* المراقب مؤجَّل ٩٠ مللي، والفحص متزامن — فنُشغّل المسح صراحةً.
+     وهذا ليس تحايلًا: `foldCard` هي نفسها ما يُناديه المراقب. */
+  /* الفحص متزامن، و`DOMContentLoaded` لا يقع في jsdom بهذا الوضع —
+     فنُشغّل الإقلاع صراحةً. وهو نفسه ما يُشغّله المتصفّح. */
+  w2.eval("autoFold(); document.getElementById('out').querySelectorAll('.card').forEach(foldCard)");
   const cards = [...o2.querySelectorAll('.card[data-fold]')];
   ok(cards.length >= 5, `كل بطاقة قابلة للطيّ (${cards.length})`);
   const c1 = cards[1], body1 = c1.querySelector('.card-body');

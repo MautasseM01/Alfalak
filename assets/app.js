@@ -158,6 +158,79 @@ function initGlossary() {
   console.warn('الفَلَك: لم يُدرَج assets/hint.js في هذه الصفحة، فلن يعمل الشرح.');
 }
 
+/* ══════════════════════════════════════════════════════════════
+   طيّ البطاقات — **في كل صفحة، من مكان واحد**
+
+   بنيتُه أوّلًا في `chart.html` وحدها، فبقيت الصفحات الأخرى
+   بأقسامٍ لا تُطوى — وفي «الخريطة الهندية» قسمٌ واحد يبلغ نحو
+   ثلاثة آلاف حرف.
+
+   ولا يُنسَخ في أربع عشرة صفحة: **مراقبٌ واحد هنا** يُلحق زرّ
+   الطيّ بكل بطاقة تظهر في `#out`. وهذا هو الدرس نفسه الذي تعلّمناه
+   من شريط الأدوات: ما يُنسَخ في الصفحات يُخطئ في بعضها.
+   ══════════════════════════════════════════════════════════════ */
+const FOLD_KEY = 'fold:' + location.pathname;
+let FOLD_STATE = null;
+
+function foldCard(card) {
+  const top = card.querySelector(':scope > .card-top');
+  if (!top || top.querySelector('.fold-btn')) return;   /* لا زرّين */
+  const body = card.querySelector(':scope > .card-body');
+  if (!body) return;
+  /* تُهيَّأ عند أوّل حاجة: فلو أخفق `autoToolbar` قبلنا لم يُهيَّئها
+     `autoFold`، فلا ينبغي أن يسقط الطيّ لأجل خطأٍ في غيره. */
+  if (!FOLD_STATE) FOLD_STATE = store.get(FOLD_KEY, {});
+
+  const key = (card.querySelector('.card-title') || {}).textContent || '';
+  const k = key.replace(/\s+/g, ' ').trim();
+  if (!k) return;
+  card.dataset.fold = k;
+
+  if (!body.id) body.id = 'cb' + Math.random().toString(36).slice(2, 8);
+  const shut = !!FOLD_STATE[k];
+  if (shut) card.classList.add('shut');
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'fold-btn';
+  btn.setAttribute('aria-expanded', String(!shut));
+  btn.setAttribute('aria-controls', body.id);
+  btn.setAttribute('aria-label', 'طيّ القسم أو فتحه');
+  btn.innerHTML = '<svg class="fold-caret" width="11" height="7" viewBox="0 0 12 8"' +
+    ' aria-hidden="true"><path d="M1 1.5 L6 6.5 L11 1.5" fill="none"' +
+    ' stroke="currentColor" stroke-width="1.8" stroke-linecap="round"' +
+    ' stroke-linejoin="round"/></svg>';
+  top.appendChild(btn);
+}
+
+function autoFold() {
+  const out = document.getElementById('out');
+  if (!out) return;
+  FOLD_STATE = store.get(FOLD_KEY, {});
+
+  /* المستمع على `document` لا على `#out`: فبعض الصفحات تُعيد بناء
+     `#out` نفسه لا محتواه، فيضيع المستمع معه. والتفويض من الأعلى
+     لا يضيع أبدًا. */
+  document.addEventListener('click', e => {
+    const top = e.target.closest && e.target.closest('.card-top');
+    if (!top) return;
+    if (e.target.closest('button.q,a,.sel,.lay,b.hint-term')) return;
+    const card = top.closest('.card');
+    if (!card || !card.dataset.fold) return;
+    const shut = card.classList.toggle('shut');
+    const btn = top.querySelector('.fold-btn');
+    if (btn) btn.setAttribute('aria-expanded', String(!shut));
+    FOLD_STATE[card.dataset.fold] = shut;
+    store.set(FOLD_KEY, FOLD_STATE);
+  });
+
+  const scan = () => out.querySelectorAll('.card').forEach(foldCard);
+  scan();
+  let t = 0;
+  new MutationObserver(() => { clearTimeout(t); t = setTimeout(scan, 90); })
+    .observe(out, { childList: true, subtree: true });
+}
+
 /* ── تخزين محلي ── */
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
@@ -377,8 +450,15 @@ function autoToolbar() {
   attach();
 }
 
+/* **كان `autoFold` في فرعٍ واحد** — فمن حمّل الصفحة قبل اكتمالها
+   لم يحصل على الطيّ. والفرعان يفعلان الشيء نفسه، فليُجمعا. */
+/* كلٌّ في محاولته: فخطأٌ في أحدهما لا يمنع الآخر */
+const _boot = () => {
+  try { autoToolbar(); } catch (e) { console.warn('الفَلَك:', e); }
+  try { autoFold(); } catch (e) { console.warn('الفَلَك:', e); }
+};
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', autoToolbar);
+  document.addEventListener('DOMContentLoaded', _boot);
 } else {
-  autoToolbar();
+  _boot();
 }
