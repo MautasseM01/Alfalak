@@ -2792,6 +2792,76 @@ def test_no_duplication_across_the_whole_page():
             f"{names[key]}: تشابه {got:.0%} والحدّ {limit:.0%} — {where}")
 
 
+def test_dominants_are_explained_not_only_measured():
+    """
+    كان القسم ثلاثة رسومٍ بنِسَبٍ مئوية وسطرًا واحدًا تحتها —
+    **والنسبة ليست معنًى**. ومن قرأ «مائي ٤٢٫٧٪» لم يعرف ماذا
+    يصنع به، ولا لماذا يهمّه أن يكون الناري ٦٫١٪.
+
+    والسطر الواحد **لم يكن يذكر الكواكب أصلًا**، مع أن ترتيب
+    الكواكب أدلّ على صاحب الخريطة من العنصر والطبع معًا.
+
+    والقاعدة التي نحرسها: **الغالب يُقرأ بضدّه، والناقص بابٌ
+    يُتعلَّم لا عيبٌ يُلام عليه.**
+    """
+    from api.index import dispatch
+    from falak import dominants_deep
+
+    cov = dominants_deep.coverage()
+    assert cov["كواكب"] >= 14 and cov["عناصر"] == 4, cov
+
+    c = dispatch("/api/chart", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["حلب"], "system": ["whole"]})
+    bd = c["reading"]["balance_deep"]
+    for k in ("elements", "modes", "planets", "caveat"):
+        assert bd.get(k), f"ينقص شرح {k}"
+        assert len(bd[k]) >= 90, f"شرح {k} أقصر من أن يُفيد"
+
+    # الغالب والناقص معًا — لا الغالب وحده
+    assert "وأضعفها" in bd["elements"], "لا يُذكَر الناقص"
+    assert "بابٌ يُتعلَّم" in bd["elements"] or "يُتعلَّم" in bd["elements"], \
+        "لا تُذكَر القاعدة: الناقص بابٌ لا عيب"
+    # والكواكب صارت مذكورة
+    assert "أقوى الأجرام" in bd["planets"]
+    # والتحفّظ صريح: النِّسَب وزنٌ لا حكم
+    assert "وزنٌ لا حكم" in bd["caveat"]
+
+
+def test_lunar_mansions_reach_the_wheel():
+    """
+    حلقة المنازل الثماني والعشرين كانت **أرقامًا مجرّدة**: يقرأ
+    الزائر «١٧» ولا يعرف ما هي. ونصوصها مكتوبة في `tables.py`
+    منذ البدء — فلم تكن تصل.
+
+    وهذا الدرس نفسه تكرّر في النجوم والعبور: **لا يكفي أن يُكتَب
+    الشيء، بل يجب أن يُوصَل إلى العين.**
+    """
+    from api.index import dispatch
+    from falak import tables
+
+    d = dispatch("/api/depth", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["حلب"]})
+    m = d.get("mansions")
+    assert m and len(m) == 28, f"المنازل {len(m or [])} لا ٢٨"
+    assert len(tables.MANSIONS) == 28
+
+    for i, x in enumerate(m):
+        assert x["index"] == i + 1
+        for k in ("name", "desc", "good_for", "mood"):
+            assert x.get(k), f"المنزلة {i + 1}: ينقص {k}"
+        assert len(x["desc"]) >= 25, f"المنزلة {i + 1}: وصفٌ مقتضب"
+        assert abs(x["start"] - i * (360 / 28)) < 0.01
+
+    names = {x["name"] for x in m}
+    assert len(names) == 28, "أسماء المنازل ليست متفرّدة"
+
+    # والعجلة ترسمها بشرحها
+    js = open(_root() + "/assets/wheel.js", encoding="utf-8").read()
+    assert "class=\"mns" in js, "حلقة المنازل بلا مجموعة تحمل شرحًا"
+    assert "deep.mansions" in js, "العجلة لا تقرأ المنازل"
+    assert "moonM === i + 1" in js, "منزلة القمر لا تُميَّز في الحلقة"
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

@@ -650,11 +650,20 @@ function render(c) {
     `<div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v}%"></div></div>
      <span class="val">${v}٪</span></div>`).join('') + `</div>`;
 
+  /* **النسبة ليست معنًى.** كانت ثلاثة رسومٍ بنِسَبٍ مئوية وسطرٌ
+     واحد تحتها لا يذكر الكواكب أصلًا — مع أن ترتيب الكواكب أدلّ
+     على صاحب الخريطة من العنصر والطبع معًا. فصار تحت كل رسمٍ
+     شرحُه، والغالبُ يُقرأ بضدّه. */
+  const BD = (R && R.balance_deep) || {};
+  const md = t => esc2(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   const dominants = card('الغالب في الخريطة',
-    `<div class="sec"><h3>العناصر</h3>${bars(D.elements)}</div>
-     <div class="sec"><h3>الطبائع</h3>${bars(D.modes)}</div>
-     <div class="sec"><h3>الكواكب</h3>${bars(Object.fromEntries(Object.entries(D.planets).slice(0,6)))}</div>
-     <p class="note">${R.balance}</p>`);
+    `<div class="sec"><h3>العناصر</h3>${bars(D.elements)}
+       ${BD.elements ? `<p class="why">${md(BD.elements)}</p>` : ''}</div>
+     <div class="sec"><h3>الطبائع</h3>${bars(D.modes)}
+       ${BD.modes ? `<p class="why">${md(BD.modes)}</p>` : ''}</div>
+     <div class="sec"><h3>الكواكب</h3>${bars(Object.fromEntries(Object.entries(D.planets).slice(0,6)))}
+       ${BD.planets ? `<p class="why">${md(BD.planets)}</p>` : ''}</div>
+     ${BD.caveat ? `<p class="note">${md(BD.caveat)}</p>` : ''}`);
 
   /* «قراءة الخريطة» حُذفت بطاقةً مستقلّة **لأنها كانت تكرارًا**:
      نصّ كل جِرم صار في صفّه، ونصّ كل زاوية في صفّها. وما بقي هنا
@@ -673,7 +682,12 @@ function render(c) {
   const moon = card('منزلة القمر',
     `<p><strong>${c.moon.mansion.name}</strong> — المنزلة ${c.moon.mansion.index} من ثمانٍ وعشرين
       ${q('المنازل القمرية')}</p>
-     <p class="note">${c.moon.mansion.desc} ${c.moon.mansion.good_for}</p>
+     <p>${esc2(c.moon.mansion.desc)}</p>
+     <p class="why">${esc2(c.moon.mansion.good_for)}</p>
+     <p class="note">طبعها ${esc2(c.moon.mansion.mood_text || c.moon.mansion.mood || '')}.
+       والمنازل ثمانٍ وعشرون يقطعها القمر في الشهر، لكلٍّ ١٢°٥١′ —
+       وهي أصل علم الاختيارات عند العرب. <b>وحلقتها في العجلة مرقّمة،
+       ومنزلتك مُضاءة فيها؛ مرّر المؤشّر على أيّ رقم يظهر لك شرحه.</b></p>
      <p style="color:var(--muted);font-size:.86rem">القمر في طور ${c.moon.phase.name}
        (${Math.round(c.moon.phase.illumination*100)}٪ إضاءة).</p>`,
     `<span class="chip gold">${c.moon.mansion.mood_text}</span>`);

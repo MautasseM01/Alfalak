@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from . import patterns_deep as pdeep
 from . import stars_deep as sdeep
+from . import dominants_deep as ddeep
 
 # ── وظيفة كل جِرم ────────────────────────────────────────────────
 FUNCTION = {
@@ -359,6 +360,8 @@ def read_chart(c: dict) -> dict:
         "others": others,
         "aspects": top_aspects,
         "balance": balance,
+        # شرحٌ كيفيّ تحت كل رسم: النسبة ليست معنًى
+        "balance_deep": ddeep.read(c.get("dominants") or {}),
         "almuten": almuten_text,
         "lots": lots_text,
         # نصّ الشكل يُقرأ بأعضائه وموضعه، لا من جدولٍ مفتاحه اسمه.

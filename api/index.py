@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
 from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import mundane, plain, timelords, transits  # noqa: E402
+from falak import mundane, plain, tables, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -551,6 +551,12 @@ def route_depth(q):
     return _apply_level({
         "houses": {str(k): v for k, v in depth.HOUSES.items()},
         "signs": depth.SIGNS_DEEP,
+        # المنازل الثماني والعشرون: كانت حلقةً في العجلة أرقامُها
+        # مجرّدة بلا شرح — ونصوصها مكتوبة في `tables.py` منذ البدء.
+        "mansions": [{"index": i + 1, "name": m[0], "mood": m[1],
+                      "desc": m[2], "good_for": m[3],
+                      "start": round(i * (360 / 28), 4)}
+                     for i, m in enumerate(tables.MANSIONS)],
         "planet_in_house": {p: {str(h): t for h, t in tbl.items()}
                             for p, tbl in depth.PLANET_IN_HOUSE.items()},
         "aspects": {f"{a} — {b}": v for (a, b), v in adeep.PAIRS.items()},

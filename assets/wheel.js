@@ -176,11 +176,30 @@ function wheelSVG(c, opts = {}) {
   if (showMansions) {
     const arc = 360 / 28;
     g += `<circle cx="${cx}" cy="${cy}" r="${R.mansionIn}" fill="none" stroke="var(--line)" stroke-width=".8"/>`;
+    /* **كانت أرقامًا مجرّدة بلا شرح** — ثمانٍ وعشرون خانة يقرأ
+       الزائر فيها «١٧» ولا يعرف ما هي. ونصوصُها مكتوبة في
+       `tables.py` منذ البدء، فلم تكن تصل. */
+    const mans = deep.mansions || [];
+    const moonM = (c.moon && c.moon.mansion) ? c.moon.mansion.index : null;
     for (let i = 0; i < 28; i++) {
       g += line(i * arc, R.mansionIn, R.mansionOut, 'stroke="var(--gold-dim)" stroke-width=".5" opacity=".55"');
       const [mx, my] = P(i * arc + arc / 2, (R.mansionIn + R.mansionOut) / 2);
-      g += `<text x="${mx.toFixed(1)}" y="${(my + 3).toFixed(1)}" text-anchor="middle"
-             font-size="7.5" fill="var(--gold-dim)" opacity=".85">${i + 1}</text>`;
+      const md = mans[i] || {};
+      const here = moonM === i + 1;
+      g += `<g class="mns${here ? ' here' : ''}"${hint(
+        `المنزلة ${i + 1} — ${md.name || ''}`, [
+          md.desc,
+          md.good_for,
+          md.mood ? `طبعها: ${md.mood}.` : '',
+          here ? '**وفيها قمرُك أنت.**' : '',
+          'والمنازل ثمانٍ وعشرون يقطعها القمر في الشهر، لكلٍّ ١٢°٥١′.',
+        ], ` data-term="المنازل القمرية"`)}>
+        <path d="${arcPath(i * arc, (i + 1) * arc, (R.mansionIn + R.mansionOut) / 2)}"
+              fill="none" stroke="${here ? 'var(--gold)' : 'transparent'}"
+              stroke-width="${R.mansionOut - R.mansionIn}" opacity="${here ? '.30' : '0'}"/>
+        <text x="${mx.toFixed(1)}" y="${(my + 3).toFixed(1)}" text-anchor="middle"
+             font-size="7.5" fill="var(--gold-dim)" opacity="${here ? '1' : '.85'}">${i + 1}</text>
+        <title>${wEsc(md.name || ('المنزلة ' + (i + 1)))}</title></g>`;
     }
   }
 
