@@ -205,6 +205,12 @@ async function load() {
       DEEP = d;
       if (current) render(current);
     }).catch(() => {});
+    /* والعبور كذلك: يصل بعد الخريطة فيملأ لسانه، ولا يُؤخّرها */
+    API('now', withLevel(f)).then(n => {
+      NOW = n;
+      const box = document.getElementById('pane-now');
+      if (box) box.innerHTML = nowCard();
+    }).catch(() => {});
   }
   catch (e) { out.innerHTML = `<div class="card"><div class="msg err">${e.message}</div></div>`; }
 }
@@ -312,6 +318,7 @@ out.addEventListener('click', e => {
    ══════════════════════════════════════════════════════════════ */
 const PANES = [
   ['sum',    'الخلاصة'],
+  ['now',    'ما يمرّ عليك الآن'],
   ['bodies', 'الأجرام'],
   ['houses', 'البيوت والأوتاد'],
   ['asp',    'الزوايا'],
@@ -366,6 +373,78 @@ function initTabs() {
     const n = tabs[(i + step + tabs.length) % tabs.length];
     n.focus(); go(n.dataset.pane);
   });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   «ما يمرّ عليك الآن»
+
+   **الحساب كان موجودًا ولم يكن يصل.** `transits.py` منذ المرحلة
+   الأولى، و`timelords.py` معه — لكنهما في «النشرة الشهرية»
+   و«أرباب الأزمنة»، وهما صفحتان لا يعرفهما من جاء يقرأ مولده.
+
+   والخريطة الميلادية ساكنة: تصف ما وُلدتَ به، لا ما يمرّ عليك.
+   وأكثر ما يبحث عنه الزائر هو الثاني.
+   ══════════════════════════════════════════════════════════════ */
+let NOW = null;
+
+const dateAr = iso => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
+function nowCard() {
+  if (!NOW) return card('ما يمرّ عليك الآن',
+    '<div class="msg">… أحسب العبور</div>', '', 'now');
+
+  const P = NOW.profection || {};
+  const row = (e, past) => `
+    <tr class="${past ? 'past' : ''}">
+      <td>${esc2(e.transit)}</td>
+      <td class="sym">${esc2(e.symbol)}</td>
+      <td>${esc2(e.target)}</td>
+      <td><span class="chip ${e.polarity === 'إيجابية' ? 'pos' : e.polarity === 'سلبية' ? 'neg' : ''}">${esc2(e.aspect)}</span></td>
+      <td class="num">${dateAr(e.exact)}</td>
+      <td style="color:var(--muted);font-size:.79rem">${esc2(e.target_sign || '')}${
+        e.target_house ? ' · البيت ' + e.target_house : ''}</td>
+    </tr>`;
+
+  const ahead = NOW.ahead || [], behind = NOW.behind || [];
+  return card('ما يمرّ عليك الآن',
+    `<p class="note">${esc2(NOW.note || '')}</p>
+
+     <div class="winf" style="margin-top:0">
+       <div class="winf-c">
+         <div><span>سنتك</span><b>${P.age != null ? P.age + 1 : '—'}</b></div>
+         <div><span>تُسيَّر إلى</span><b>البيت ${P.house || '—'}</b></div>
+         <div><span>وبرجه</span><b>${esc2(P.sign || '')}</b></div>
+         <div><span>فسيّد سنتك</span><b>${esc2(P.lord || '')}</b></div>
+       </div>
+       <div class="winf-c">
+         <div><span>شهرك</span><b>البيت ${P.month_house || '—'}</b></div>
+         <div><span>وبرجه</span><b>${esc2(P.month_sign || '')}</b></div>
+         <div><span>سيّده</span><b>${esc2(P.month_lord || '')}</b></div>
+         <div><span>عودتك الشمسية</span><b>${dateAr(NOW.solar_return)}</b></div>
+       </div>
+     </div>
+     ${P.note ? `<p style="margin-top:14px">${esc2(P.note)}</p>` : ''}
+
+     <h3 class="sec-h">ما يُقبِل عليك</h3>
+     ${ahead.length ? `<table><thead><tr><th>العابر</th><th></th><th>على</th>
+       <th>الزاوية</th><th>يتمّ في</th><th>موضعه من مولدك</th></tr></thead>
+       <tbody>${ahead.map(e => row(e, false)).join('')}</tbody></table>`
+      : '<p class="note">لا زاوية كبرى تُقبِل في هذه المدّة.</p>'}
+
+     ${behind.length ? `<h3 class="sec-h">وما انقضى قريبًا</h3>
+       <table><thead><tr><th>العابر</th><th></th><th>على</th>
+       <th>الزاوية</th><th>تمّ في</th><th>موضعه من مولدك</th></tr></thead>
+       <tbody>${behind.map(e => row(e, true)).join('')}</tbody></table>` : ''}
+
+     <p class="note" style="margin-top:16px">
+       العابر البطيء (زحل والمشتري وما بعدهما) أثقل أثرًا وأطول مُكثًا،
+       والسريع (القمر وعطارد) يمرّ في يوم أو يومين. والتفصيل في
+       <a href="/timelords.html">أرباب الأزمنة</a> و<a href="/monthly.html">النشرة الشهرية</a>.</p>`,
+    `<span class="chip gold">${ahead.length} مُقبِلة</span>`, 'now');
 }
 
 function render(c) {
@@ -645,6 +724,7 @@ function render(c) {
 
   out.innerHTML =
     gistHTML(c.gist) + head + tabsHTML(panes) +
+    pane('now',    nowCard(), panes) +
     pane('sum',    wheel + coreRead + dominants + moon + almuten, panes) +
     pane('bodies', planets, panes) +
     pane('houses', houses + compare, panes) +

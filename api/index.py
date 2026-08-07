@@ -559,6 +559,72 @@ def route_depth(q):
     }, q)
 
 
+def route_now(q):
+    """
+    **ما يمرّ عليك الآن** — العبور وربّ السنة والعودة الشمسية.
+
+    الحسابات كلّها كانت موجودة: `transits.py` منذ المرحلة الأولى،
+    و`timelords.py` معه. لكنها لم تكن تصل إلى صفحة خريطتك قطّ —
+    كانت في «النشرة الشهرية» و«أرباب الأزمنة»، وهما صفحتان لا
+    يعرفهما من جاء يقرأ مولده.
+
+    وهذه القاعدة تكرّرت في هذا المشروع حتى صارت درسًا:
+    **لا يكفي أن يُحسَب الشيء، بل يجب أن يُوصَل إلى العين.**
+    """
+    lat, lon, tzname, label = resolve_place(q)
+    # `parse_birth` يُرجع (الوقت، **تفاصيل التوقيت**) لا منطقةً زمنية.
+    when, tzinfo = parse_birth(q, tzname, lon)
+    natal = chart.compute(when, lat, lon, _one(q, "system", "whole"),
+                          tzname, minor_aspects=False, tz_info=tzinfo)
+
+    tz = ZoneInfo(tzname)
+    now = datetime.now(tz)
+    span = int(_one(q, "days", "45") or 45)
+    span = max(7, min(span, 180))
+    start = now - timedelta(days=7)
+    end = now + timedelta(days=span)
+
+    events = transits.find(natal, start, end, minor=False, top=24)
+    # المُقبِل أهمّ من المُدبِر: ما لم يتمّ بعدُ هو ما يُنتظَر
+    ahead = [e for e in events if e.get("exact") and e["exact"] >= now]
+    behind = [e for e in events if e.get("exact") and e["exact"] < now]
+
+    def fmt(e):
+        out = dict(e)
+        for k in ("exact", "enter", "leave"):
+            if isinstance(out.get(k), datetime):
+                out[k] = out[k].isoformat(timespec="minutes")
+        return out
+
+    prof = timelords.profection(when, now, natal["angles"]["الطالع"]["lon"])
+
+    # العودة الشمسية القادمة: نجرّب هذه السنة، فإن مضت فالتي تليها
+    sun_lon = next(b["lon"] for b in natal["bodies"] if b["name"] == "الشمس")
+    sr = None
+    for y in (now.year, now.year + 1):
+        try:
+            cand = timelords.solar_return_moment(sun_lon, y, tzname)
+        except Exception:
+            continue
+        if cand and cand >= now:
+            sr = cand
+            break
+
+    return _apply_level({
+        "when_local": when.isoformat(timespec="minutes"),
+        "place": _one(q, "city") or label,
+        "now": now.isoformat(timespec="minutes"),
+        "window_days": span,
+        "ahead": [fmt(e) for e in ahead[:14]],
+        "behind": [fmt(e) for e in behind[:6]],
+        "profection": prof,
+        "solar_return": sr.isoformat(timespec="minutes") if sr else None,
+        "note": ("العبور موضع الكوكب في السماء اليوم مقيسًا إلى خريطة "
+                 "ميلادك — وهو الوجه المتحرّك منها. والمُقبِل أهمّ من "
+                 "المُدبِر: ما لم يتمّ بعدُ هو ما يُنتظَر."),
+    }, q)
+
+
 def route_glossary(q):
     """معجم المصطلحات — لشروح «عند الطلب» في الواجهة."""
     return {"terms": interpret.GLOSSARY, "ui": plain.UI_LABELS,
@@ -796,6 +862,7 @@ ROUTES = {
     "ephemeris": route_ephemeris,
     "bulletin": route_bulletin,
     "chart": route_chart,
+    "now": route_now,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,
