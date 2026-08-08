@@ -631,6 +631,39 @@ def route_now(q):
     }, q)
 
 
+def route_options(q):
+    """
+    **كل قوائم الاختيار في الموقع، من موضع واحد.**
+
+    كانت ثلاث قوائم فارغة تمامًا ولا تُعبَّأ أبدًا — وفيها **قائمتان
+    هما المُدخَل الأوّل لصفحتيهما**:
+      · «لأيّ غرض؟» في الاختيارات — والمحرّك يعرف ثلاثين غرضًا
+      · «المسألة» في المسائل — والمحرّك يعرف أربعًا وعشرين مسألة
+      · «الشهر» في النشرة الشهرية
+    فالزائر يفتح الصفحة فيجد قائمةً لا شيء فيها، فلا يستطيع أن
+    يسأل شيئًا.
+
+    والعلّة أن كل صفحة كانت تُعبّئ قوائمها بيدها — أو تنسى. فصارت
+    القوائم كلّها هنا، وتُعبَّأ من `app.js` مرّةً واحدة بسمة
+    `data-options`. وهذا الدرس نفسه: **ما يُنسَخ في الصفحات
+    يُخطئ في بعضها.**
+    """
+    return {
+        "election_purposes": list(elections.PURPOSES),
+        # أغراض ساعات الكواكب: كانت قائمتها فارغةً حتى يُحسَب اليوم
+        # مرّةً — أي إن أداة التصفية لا تعمل قبل أن تُستعمَل.
+        "hour_purposes": list(hours.PURPOSE_HOURS),
+        "horary_questions": list(horary.QUESTIONS),
+        "ayanamshas": [{"value": k, "label": v["name"] if isinstance(v, dict) else str(v)}
+                       for k, v in jyotish.AYANAMSHAS.items()],
+        "months": [{"value": str(i), "label": n} for i, n in enumerate(
+            ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو",
+             "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"], start=1)],
+        "house_systems": [{"value": k, "label": v["name"]}
+                          for k, v in chart.HOUSE_SYSTEMS.items()],
+    }
+
+
 def route_glossary(q):
     """معجم المصطلحات — لشروح «عند الطلب» في الواجهة."""
     return {"terms": interpret.GLOSSARY, "ui": plain.UI_LABELS,
@@ -869,6 +902,7 @@ ROUTES = {
     "bulletin": route_bulletin,
     "chart": route_chart,
     "now": route_now,
+    "options": route_options,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,

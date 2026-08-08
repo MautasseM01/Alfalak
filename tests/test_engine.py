@@ -2862,6 +2862,60 @@ def test_lunar_mansions_reach_the_wheel():
     assert "moonM === i + 1" in js, "منزلة القمر لا تُميَّز في الحلقة"
 
 
+def test_no_select_in_the_site_is_left_empty():
+    """
+    **الحارس الذي كان ناقصًا تمامًا.**
+
+    وُجدت في الموقع **ثلاث قوائم اختيار خاوية لا شيء فيها**، وفيها
+    اثنتان هما المُدخَل الأوّل لصفحتيهما:
+      · «لأيّ غرض؟» في الاختيارات — والمحرّك يعرف ثلاثين غرضًا
+      · «المسألة» في المسائل — والمحرّك يعرف أربعًا وعشرين مسألة
+      · «الشهر» في النشرة الشهرية
+    فيفتح الزائر الصفحة فيجد قائمةً فارغة، فلا يستطيع أن يسأل شيئًا.
+
+    والعلّة أن كل صفحة كانت تُعبّئ قوائمها بيدها — أو تنسى. فصارت
+    القوائم في `/api/options`، وتُعبَّأ من `app.js` بسمة
+    `data-options`.
+
+    **والقاعدة هنا**: كل `<select>` في الموقع إمّا فيه خيارات
+    مكتوبة، أو **موسومٌ بمصدرها**. ولا ثالث.
+    """
+    import re
+    from api.index import dispatch
+
+    opts = dispatch("/api/options", {})
+    assert len(opts["election_purposes"]) >= 30, "أغراض الاختيارات ناقصة"
+    assert len(opts["horary_questions"]) >= 24, "مسائل الوقتية ناقصة"
+    assert len(opts["months"]) == 12
+    assert len(opts["ayanamshas"]) >= 4
+    for k, v in opts.items():
+        assert v, f"مفتاح فارغ في /api/options: {k}"
+
+    empty = []
+    for name, html in _pages().items():
+        for m in re.finditer(r'<select([^>]*)>([\s\S]*?)</select>', html):
+            attrs, body = m.group(1), m.group(2)
+            sid = (re.search(r'id="([^"]+)"', attrs) or [None, "?"])[1]
+            # خيار بقيمة حقيقية = مكتوب في الصفحة
+            real = len(re.findall(r'<option value="(?!")[^"]+"', body))
+            src = re.search(r'data-options="([^"]+)"', attrs)
+            if real == 0 and not src:
+                empty.append(f"{name}#{sid}")
+            if src:
+                assert src.group(1) in opts, \
+                    f"{name}#{sid}: مفتاح «{src.group(1)}» غير موجود في /api/options"
+
+    assert not empty, ("قوائم فارغة بلا مصدر:\n  " + "\n  ".join(empty))
+
+    # والمعبّئ في موضع واحد
+    app = open(_root() + "/assets/app.js", encoding="utf-8").read()
+    assert "function autoOptions" in app and "function fillSelect" in app
+    assert "select[data-options]" in app
+    # ولا يُطلق `change`: التعبئة ليست اختيارًا من أحد
+    assert "sel.dispatchEvent(new Event('change'" not in app, \
+        "التعبئة تُطلق `change` — وهي ليست اختيارًا، وقد فجّرت مستمعًا من قبل"
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

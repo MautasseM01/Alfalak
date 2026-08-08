@@ -231,6 +231,74 @@ function autoFold() {
     .observe(out, { childList: true, subtree: true });
 }
 
+/* ══════════════════════════════════════════════════════════════
+   تعبئة قوائم الاختيار — **من موضع واحد**
+
+   كانت كل صفحة تُعبّئ قوائمها بيدها، أو تنسى. فوُجدت ثلاث قوائم
+   **فارغة تمامًا لا شيء فيها**، وفيها اثنتان هما المُدخَل الأوّل
+   لصفحتيهما:
+     · «لأيّ غرض؟» في الاختيارات — والمحرّك يعرف ثلاثين غرضًا
+     · «المسألة» في المسائل — والمحرّك يعرف أربعًا وعشرين مسألة
+     · «الشهر» في النشرة الشهرية
+   فيفتح الزائر الصفحة فيجد قائمةً خاوية، فلا يستطيع أن يسأل شيئًا.
+
+   والعلاج: تُوسَم القائمة بـ`data-options="key"`، ويتولّى هذا
+   الملفّ جلبها وتعبئتها — **فلا صفحةٌ تنسى بعد اليوم**.
+   ══════════════════════════════════════════════════════════════ */
+let OPTIONS = null;
+const optionsReady = () =>
+  OPTIONS ? Promise.resolve(OPTIONS)
+          : API('options').then(o => (OPTIONS = o)).catch(() => (OPTIONS = {}));
+
+function fillSelect(sel, list) {
+  if (!sel || !list || !list.length) return false;
+  /* ما كان في الصفحة يبقى: عنصرٌ نائب («— اختر —») لا يُمحى */
+  const keep = [...sel.options].filter(o => o.value === '');
+  const want = sel.dataset.selected || sel.value || '';
+  sel.innerHTML = '';
+  keep.forEach(o => sel.appendChild(o));
+  list.forEach(item => {
+    const o = document.createElement('option');
+    if (typeof item === 'string') { o.value = item; o.textContent = item; }
+    else { o.value = item.value; o.textContent = item.label; }
+    if (o.value === want) o.selected = true;
+    sel.appendChild(o);
+  });
+  /* القائمة المخصّصة بُنيت قبل التعبئة، فتُعاد بناءً على الجديد */
+  if (sel.dataset.selDone && typeof enhanceSelect === 'function') {
+    const wrap = sel.closest('.sel');
+    if (wrap) {
+      delete sel.dataset.selDone;
+      sel.classList.remove('sel-native');
+      sel.removeAttribute('aria-hidden');
+      sel.removeAttribute('tabindex');
+      wrap.parentNode.insertBefore(sel, wrap);
+      wrap.remove();
+      enhanceSelect(sel);
+    }
+  }
+  /* **ولا نُطلق `change`**: تعبئةُ القائمة ليست اختيارًا من أحد.
+     أوّل صياغة أطلقته، فاستُدعِيَ مستمعُ الصفحة قبل أن تجهز
+     جداولُه فانفجر — «Cannot read properties of undefined». وهذا
+     فرقٌ في المعنى قبل أن يكون فرقًا في الشيفرة: الحدث يُخبر عن
+     فعل الإنسان، لا عن تهيئة الواجهة. */
+  return true;
+}
+
+function autoOptions() {
+  const need = document.querySelectorAll('select[data-options]');
+  if (!need.length) return;
+  optionsReady().then(o => {
+    need.forEach(sel => {
+      const key = sel.dataset.options;
+      if (!fillSelect(sel, o[key])) {
+        /* لا نصمت: قائمةٌ فارغة عيبٌ يُرى، فليُعلَن في السجلّ */
+        console.warn('الفَلَك: لا خيارات للمفتاح', key, 'في /api/options');
+      }
+    });
+  });
+}
+
 /* ── تخزين محلي ── */
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
@@ -456,6 +524,7 @@ function autoToolbar() {
 const _boot = () => {
   try { autoToolbar(); } catch (e) { console.warn('الفَلَك:', e); }
   try { autoFold(); } catch (e) { console.warn('الفَلَك:', e); }
+  try { autoOptions(); } catch (e) { console.warn('الفَلَك:', e); }
 };
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _boot);
