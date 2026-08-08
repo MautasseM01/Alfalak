@@ -2916,6 +2916,139 @@ def test_no_select_in_the_site_is_left_empty():
         "التعبئة تُطلق `change` — وهي ليست اختيارًا، وقد فجّرت مستمعًا من قبل"
 
 
+def test_every_body_has_a_text_in_every_sign():
+    """
+    كان في `interpret.py` نصوصٌ لسبعة أجرام في البروج، **وسبعةٌ بلا
+    نصّ**: أورانوس ونبتون وبلوتو، والعقدتان، وليليث وخيرون. ومن كان
+    له أحدها في برجٍ لم يجد كلمة — بل وجد `OUTER_IN_SIGN` الذي
+    يُرجع **نصًّا واحدًا للكوكب مهما كان برجه**، أي تعريفًا لا
+    قراءة. وهي العلّة نفسها التي عالجناها في الأشكال والسهام
+    والنجوم.
+
+    > **وقياسٌ أسقط صياغتي**: أوّل نسخة ألحقت بالخارجية تحفّظًا
+    > طوله ١٥٦ حرفًا من نصٍّ طوله ٢٠١ — فالمشترك بينها أضعافُ ما
+    > يخصّ كلًّا منها، وتشابهت ٨٣٪. والتحفّظ حقّ، لكنّ موضعه ألّا
+    > يبتلع القراءة. فأُقصِر.
+    """
+    import difflib
+    from falak import interpret as I, signs_deep as S
+
+    SIGNS = ["الحمل", "الثور", "الجوزاء", "السرطان", "الأسد", "العذراء",
+             "الميزان", "العقرب", "القوس", "الجدي", "الدلو", "الحوت"]
+    BODIES = ["الشمس", "القمر", "عطارد", "الزهرة", "المريخ", "المشتري",
+              "زحل", "أورانوس", "نبتون", "بلوتو", "الرأس", "الذنب",
+              "ليليث", "خيرون"]
+
+    assert S.coverage()["نصوص"] >= 84, S.coverage()
+
+    for b in BODIES:
+        for g in SIGNS:
+            t = I.planet_in_sign(b, g)
+            # الحدّ ثلاثون: بعض نصوص عطارد القديمة موجزةٌ عمدًا
+            # («بطيء التصديق، وإذا فهمت لم تنسَ») — والمقصود هنا
+            # **ألّا يكون ناقصًا**، لا أن يكون طويلًا.
+            assert t and len(t) >= 30, f"{b} في {g}: نصٌّ ناقص"
+
+    # والخارجية تُعلن أنها علامة جيل — فهذا ممّا يُساء فيه كثيرًا
+    for b in ("أورانوس", "نبتون", "بلوتو"):
+        assert "علامة جيل" in I.planet_in_sign(b, "الجدي"), \
+            f"{b}: لا يُقال إنه علامة جيل"
+    # والعقدتان لا تُعلَنان كذلك، فهما أسرع
+    assert "علامة جيل" not in I.planet_in_sign("الرأس", "الجدي")
+
+    # ولا نصّين متشابهين فوق الحدّ داخل البرج الواحد
+    worst, at = 0.0, None
+    for g in SIGNS:
+        ts = [(b, I.planet_in_sign(b, g)) for b in BODIES]
+        for i in range(len(ts)):
+            for j in range(i + 1, len(ts)):
+                r = difflib.SequenceMatcher(None, ts[i][1], ts[j][1]).ratio()
+                if r > worst:
+                    worst, at = r, (ts[i][0], ts[j][0], g)
+    assert worst <= 0.80, f"نصّان متشابهان {worst:.0%} — {at}"
+
+
+def test_sanskrit_names_reach_the_indian_page():
+    """
+    «راهو» و«كيتو» هما **الاسمان المتعارَفان** للعقدتين في المدرسة
+    الهندية، وكتبُها لا تكاد تذكر غيرهما. وكانت البيانات تحملهما
+    (`sanskrit`) **والصفحة تعرض العربي وتُصغّر السنسكريتي** — أي
+    إن الاسم الذي يبحث عنه القارئ كان في الهامش.
+    """
+    from api.index import dispatch
+
+    r = dispatch("/api/jyotish", {"date": ["1990-05-17"], "time": ["08:30"],
+                                  "city": ["حلب"]})
+    by = {b["name"]: b.get("sanskrit") for b in r["bodies"]}
+    assert by.get("الرأس") == "راهو", by
+    assert by.get("الذنب") == "كيتو", by
+    for name in ("الشمس", "القمر", "المريخ", "زحل"):
+        assert by.get(name), f"{name}: لا اسم سنسكريتي"
+
+    html = _pages()["jyotish.html"]
+    assert "b.sanskrit || b.name" in html, \
+        "الصفحة لا تُقدّم الاسم السنسكريتي"
+
+    from falak import interpret
+    for t in ("راهو", "كيتو"):
+        assert t in interpret.GLOSSARY, f"«{t}» ليس في المعجم"
+
+
+def test_tissue_salts_lead_with_the_caveat():
+    """
+    باب حسّاس — صحّة الناس. فيُعامَل كما عوملت «الفَرْنا» و«نادي
+    دوشا»: يُعرَض كما هو، ويُقال من قاله ومتى، **ويُصدَّر بتحفّظ
+    لا يُطوى**.
+
+    وفيه تصحيحٌ يهمّ: يُنسَب هذا الباب أحيانًا إلى **شاوبرجر**،
+    وهو خطأ — شاوبرجر بحث في الماء والدوّامات ولا صلة له بالأملاح.
+    والصواب **شوسلر** (١٨٧٣) للأملاح، و**كيري** (١٩٢٠) للربط
+    بالبروج.
+    """
+    from api.index import dispatch
+    from falak import salts
+
+    assert len(salts.SALTS) == 12
+    d = dispatch("/api/salts", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["حلب"]})
+
+    cav = " ".join(d["caveat"]["lines"])
+    assert "طبيب" in cav, "لا إحالة إلى طبيب"
+    assert "تشخيص" in cav, "لا يُقال إنه ليس تشخيصًا"
+    assert "لا تدعم" in cav or "الإيحاء" in cav, "لا يُذكر حال الأدلّة"
+    assert len(d["caveat"]["lines"]) >= 4
+
+    hist = " ".join(b for _, b in d["history"])
+    assert "شوسلر" in hist and "كيري" in hist, "لا يُنسَب إلى أصحابه"
+    assert "شاوبرجر" in salts.__doc__, "لا يُصحَّح الخلط في الاسم"
+
+    for sg, s in salts.SALTS.items():
+        for k in ("salt", "latin", "mineral", "carey", "food"):
+            assert s.get(k), f"{sg}: ينقص {k}"
+
+    html = _pages()["salts.html"]
+    # التحفّظ يُبنى أوّلًا في المخرجات، لا في الذيل
+    assert html.index("caveat +") < html.index("+ hist"), \
+        "التحفّظ ليس أوّل ما يُعرَض"
+    assert "لا يُقدّم استشارة طبّية" in html
+
+
+def test_learn_page_guides_to_every_page():
+    """
+    صفحة «تعلّم» كانت معجمًا ودروسًا — **ولا تقول ما في كل صفحة**.
+    فمن دخلها لا يعرف أين يذهب. فصار في صدرها دليلُ الصفحات.
+    """
+    import re
+    html = _pages()["learn.html"]
+    assert 'id="guide"' in html, "لا دليل صفحات"
+    links = set(re.findall(r'<a class="tile" href="([^"]+)"', html))
+    pages = {"/" + p for p in _pages() if p != "learn.html"} | {"/"}
+    missing = {p for p in pages if p not in links}
+    # نستثني ما لا يُقصَد بذاته
+    missing -= {"/index.html"}
+    assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
+
+
 def test_glossary_is_deep_enough_for_a_beginner():
     """
     قال صاحب المشروع: «التبسيط والبساطة قبل كل شيء» — ولمن لا يعرف

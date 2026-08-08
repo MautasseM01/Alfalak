@@ -235,7 +235,7 @@ function render(d) {
       <thead><tr><th>الجرم</th><th>الموضع</th><th>البيت</th>
         <th>المنزلة النجمية</th><th>عند العرب</th><th>الحال</th></tr></thead>
       <tbody>${d.bodies.map(b => `<tr>
-        <td>${esc(b.name)} <small style="color:var(--dim)">${esc(b.sanskrit)}</small></td>
+        <td>${esc(b.sanskrit || b.name)}<small style="color:var(--dim);display:block;line-height:1.4">${esc(b.name)}</small></td>
         <td class="num">${esc(b.short)} ${esc(b.sign)}</td>
         <td class="num">${b.house}</td>
         <td class="nak"><b>${esc(b.nakshatra.name)}</b>
@@ -283,7 +283,7 @@ function render(d) {
 
   const reading = card('قراءة المواضع',
     `<div>${d.bodies.map(b => `<div class="rd">
-       <h4>${esc(b.name)} في البيت ${b.house} — ${esc(b.bhava.sanskrit)}</h4>
+       <h4>${esc(b.sanskrit || b.name)}${b.sanskrit && b.sanskrit !== b.name ? ` <span style="color:var(--dim);font-size:.82rem">(${esc(b.name)})</span>` : ''} في البيت ${b.house} — ${esc(b.bhava.sanskrit)}</h4>
        <div class="pos2">${esc(b.bhava.rules)}</div>
        ${b.reading ? `<p>${esc(b.reading)}</p>` : ''}
        ${b.nakshatra.deep && b.nakshatra.deep.gift ? `<div class="nk">
