@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="أملاح شوسلر الاثنا عشر وربطها بالبروج عند جورج كيري (١٩٢٠): تاريخُ فكرةٍ، لا تشخيصٌ ولا دواء.">
+<title>أملاح المولد — شوسلر وكيري — الفَلَك</title>
+<link rel="canonical" href="https://alfalak.vercel.app/salts.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/salts.html">
+<meta property="og:title" content="أملاح المولد — الفَلَك">
+<meta property="og:description" content="أملاح شوسلر الاثنا عشر وربطها بالبروج عند جورج كيري (١٩٢٠): تاريخُ فكرةٍ، لا تشخيصٌ ولا دواء.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="أملاح المولد — الفَلَك">
+<meta name="twitter:description" content="أملاح شوسلر الاثنا عشر وربطها بالبروج عند جورج كيري (١٩٢٠): تاريخُ فكرةٍ، لا تشخيصٌ ولا دواء.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"أملاح المولد","url":"https://alfalak.vercel.app/salts.html","description":"الأركان الأربعة الصينية وميزان العناصر الخمسة ودورات الحظّ، بحساب الفصول الشمسية.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"أملاح المولد","item":"https://alfalak.vercel.app/salts.html"}]}</script>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav><a href="/">الرئيسة</a><a href="/chart.html">خريطة الميلاد</a>
+    <a href="/salts.html" class="on">أملاح المولد</a><a href="/learn.html">تعلّم</a></nav>
+</div>
+
+<div class="printhead"><h1>الفَلَك — أملاح المولد</h1>
+  <p>alfalak.vercel.app · شوسلر (١٨٧٣) وكيري (١٩٢٠)</p></div>
+<main id="main">
+<h2 class="page">أملاح المولد</h2>
+<p class="lede">
+  اثنا عشر ملحًا معدنيًّا عند الطبيب الألماني <b>فيلهلم شوسلر</b>،
+  ربطها الأمريكي <b>جورج كيري</b> بالبروج الاثني عشر بعده بأربعين سنة.
+  <b>وهذه صفحة تاريخِ فكرة، لا تشخيصٍ ولا دواء.</b>
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="name">الاسم (اختياري)</label>
+        <input type="text" id="name" placeholder="اختياري"></div>
+      <div class="field"><label for="date">تاريخ الميلاد</label>
+        <input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة الميلاد</label>
+        <input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">مكان الميلاد</label>
+        <input type="text" id="city" placeholder="دمشق…" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">اعرض</button>
+      <a class="btn ghost" href="/chart.html">خريطة الميلاد</a>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+</main>
+<footer>
+  المصدر: W. H. Schüßler «Eine abgekürzte Therapie» (1873)،
+  وG. W. Carey «The Zodiac and the Salts of Salvation» (1920).<br>
+  <b>الفَلَك لا يُقدّم استشارة طبّية.</b>
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/hint.js"></script>
+<script src="/assets/select.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+const $ = id => document.getElementById(id);
+const out = $('out');
+markLive(out);
+cityInput($('city'));
+
+const card2 = (title, body, chips) =>
+  `<div class="card"><div class="card-top"><h2 class="card-title">${title}</h2>
+   <div class="chips">${chips || ''}</div></div><div class="card-body">${body}</div></div>`;
+const md2 = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+function saltCard(s, role) {
+  return `<div class="item">
+    <h4>${esc(s.sign)} — ${esc(s.salt)}${role ? ` <span style="color:var(--dim);font-size:.8rem">(${esc(role)})</span>` : ''}</h4>
+    <p class="sub" style="color:var(--dim)">${esc(s.latin)} · ${esc(s.mineral)}</p>
+    <p>${md2(s.carey)}</p>
+    <p class="sub"><b>من الطعام:</b> ${md2(s.food)}</p></div>`;
+}
+
+async function load() {
+  const city = $('city').value.trim(), date = $('date').value;
+  if (!date || !city) {
+    out.innerHTML = '<div class="card"><div class="msg err">أدخل تاريخ الميلاد ومكانه.</div></div>';
+    return;
+  }
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب</div></div>';
+  try {
+    const d = await API('salts', withLevel({
+      date, time: $('time').value, city, name: $('name').value.trim() }));
+
+    /* التحفّظ **أوّل ما يُقرأ**، لا حاشيةً في الذيل */
+    const caveat = `<div class="card"><div class="card-top">
+        <h2 class="card-title">${esc(d.caveat.title)}</h2></div>
+      <div class="card-body">${d.caveat.lines.map(l => `<p>${md2(l)}</p>`).join('')}</div></div>`;
+
+    const mine = card2('ملح مولدك',
+      `<p>${md2(d.birth_note)}</p>${saltCard(d.birth)}
+       ${d.also ? `<p class="note" style="margin-top:16px">${md2(d.also_note)}</p>
+         <div class="read">${d.also.map(x => saltCard(x, x.role)).join('')}</div>` : ''}`,
+      `<span class="chip gold">${esc(d.birth.salt)}</span>`);
+
+    const hist = card2('من أين جاءت هذه الفكرة؟',
+      d.history.map(([h, b]) => `<div class="sec"><h3>${esc(h)}</h3><p>${md2(b)}</p></div>`).join(''));
+
+    const all = card2('الأملاح الاثنا عشر',
+      `<p class="note">لكل برجٍ ملحُه عند كيري. وهذه المائدة كاملةً
+         لمن أراد النظر في غير برجه.</p>
+       <div class="read">${Object.entries(d.all).map(([sg, s]) =>
+         saltCard({ ...s, sign: sg })).join('')}</div>`);
+
+    out.innerHTML = caveat + mine + hist + all;
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="msg err">${esc(e.message)}</div></div>`;
+  }
+}
+
+$('go').onclick = load;
+const st = urlState(['date', 'time', 'city', 'name']);
+if (st.date) {
+  $('date').value = st.date; $('time').value = st.time || '12:00';
+  $('city').value = st.city || ''; $('name').value = st.name || '';
+  setTimeout(load, 300);
+}
+initShare();
+</script>
+</body>
+</html>

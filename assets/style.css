@@ -181,14 +181,41 @@ input::placeholder{color:var(--dim)}
 }
 .sel.open .sel-caret{transform:rotate(225deg) translateY(-2px);border-color:var(--gold)}
 
+/* ── القائمة المنسدلة ──────────────────────────────────────────
+   كان سقفها ٢٨٠ بكسل، فتُخفي أكثر خياراتها خلف شريط تمرير —
+   وقائمة أغراض الاختيارات ثلاثون. والزائر لا يعرف أن تحتها بقيّة.
+
+   فرُفع السقف إلى ما تحتمله الشاشة، وصارت **تتعمّد أن تتّسع**؛
+   وإن لزم التمرير فالشريط رفيعٌ من لون اللوحة لا شريطُ النظام
+   الفِجّ. ومعه ظِلّان في أعلاها وأسفلها يقولان للعين: **تحتها
+   مزيد** — وهي إشارةٌ أصدق من شريطٍ لا يُلحَظ. */
 .sel-list{
   position:absolute;z-index:60;inset-inline:0;top:calc(100% + var(--s2));
-  max-height:280px;overflow-y:auto;overscroll-behavior:contain;
-  padding:var(--s2);border-radius:var(--r-lg);          /* ← الحوافّ المستديرة */
+  max-height:min(62vh,520px);overflow-y:auto;overscroll-behavior:contain;
+  padding:var(--s2);border-radius:var(--r-lg);
   background:var(--panel2);border:1px solid var(--line2);
   box-shadow:0 20px 46px rgba(0,0,0,.62);
-  animation:selIn .14s ease-out
+  animation:selIn .14s ease-out;
+  scrollbar-width:thin;
+  scrollbar-color:var(--gold-dim) transparent;
+  /* الظلّان يظهران عند التمرير وحده، ويختفيان عند الطرفين */
+  background-image:
+    linear-gradient(var(--panel2) 30%,rgba(24,34,64,0)),
+    linear-gradient(rgba(24,34,64,0),var(--panel2) 70%),
+    radial-gradient(farthest-side at 50% 0,rgba(0,0,0,.45),transparent),
+    radial-gradient(farthest-side at 50% 100%,rgba(0,0,0,.45),transparent);
+  background-position:0 0,0 100%,0 0,0 100%;
+  background-repeat:no-repeat;
+  background-size:100% 34px,100% 34px,100% 11px,100% 11px;
+  background-attachment:local,local,scroll,scroll
 }
+.sel-list::-webkit-scrollbar{width:8px}
+.sel-list::-webkit-scrollbar-track{background:transparent}
+.sel-list::-webkit-scrollbar-thumb{
+  background:var(--gold-dim);border-radius:var(--r-pill);
+  border:2px solid var(--panel2)
+}
+.sel-list::-webkit-scrollbar-thumb:hover{background:var(--gold)}
 .sel.up .sel-list{top:auto;bottom:calc(100% + var(--s2))}
 @keyframes selIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .sel-opt{

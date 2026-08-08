@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
 from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import mundane, plain, tables, timelords, transits  # noqa: E402
+from falak import mundane, plain, salts, tables, timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -631,6 +631,25 @@ def route_now(q):
     }, q)
 
 
+def route_salts(q):
+    """
+    أملاح شوسلر الاثنا عشر وربطها بالبروج.
+
+    **باب حسّاس**، فيُعامَل كما عوملت «الفَرْنا» و«نادي دوشا»:
+    يُعرَض كما هو، ويُقال من قاله ومتى، **ويُصدَّر بتحفّظ صريح
+    لا يُطوى ولا يُصغَّر**. ولا يُبنى عليه حكمٌ في بدن أحد.
+    """
+    lat, lon, tzname, label = resolve_place(q)
+    when, tzinfo = parse_birth(q, tzname, lon)
+    c = chart.compute(when, lat, lon, _one(q, "system", "whole"),
+                      tzname, minor_aspects=False, tz_info=tzinfo)
+    out = salts.read(c)
+    out["place"] = _one(q, "city") or label
+    out["when_local"] = when.isoformat(timespec="minutes")
+    out["name"] = _one(q, "name", "")
+    return _apply_level(out, q)
+
+
 def route_options(q):
     """
     **كل قوائم الاختيار في الموقع، من موضع واحد.**
@@ -903,6 +922,7 @@ ROUTES = {
     "chart": route_chart,
     "now": route_now,
     "options": route_options,
+    "salts": route_salts,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,

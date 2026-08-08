@@ -124,8 +124,13 @@ function enhanceSelect(native) {
     mark(native.selectedIndex);
     /* إن ضاق ما تحتها فُتحت إلى أعلى — وإلّا خرجت عن الشاشة */
     const r = btn.getBoundingClientRect();
-    wrap.classList.toggle('up', innerHeight - r.bottom < Math.min(280, opts.length * 40) + 16
-                                 && r.top > innerHeight - r.bottom);
+    /* تُفتَح إلى أعلى إن كان ما فوقها أوسع — والحساب على ارتفاعها
+       الحقيقي لا على رقمٍ ثابت، فقد صارت تتّسع لخياراتها. */
+    const need = Math.min(list.scrollHeight + 16, innerHeight * 0.62);
+    wrap.classList.toggle('up', innerHeight - r.bottom < need && r.top > innerHeight - r.bottom);
+    /* وإن ضاق الجانبان فلتأخذ أوسعهما، ولا تخرج عن الشاشة */
+    const room = Math.max(innerHeight - r.bottom, r.top) - 18;
+    list.style.maxHeight = Math.max(160, Math.min(need, room)) + 'px';
   };
   const close = (focus) => {
     if (list.hidden) return;
