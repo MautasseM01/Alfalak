@@ -3064,6 +3064,71 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_the_atlas_covers_the_places_its_own_placeholder_promises():
+    """
+    **الوعد في الواجهة والخُلف في البيانات.**
+
+    حقلُ المكان في صفحة الخريطة يقول حرفيًّا:
+    «دمشق، معرّة النعمان، **أي قرية**».
+    ومعرّة النعمان نفسها لم تكن في الأطلس.
+
+    والأطلس كان **٤٥٪ عربيًّا وأهلُ الموقع عرب** — والاحتياط
+    العالمي موجود، لكنه **نداءُ شبكةٍ داخل دالّةٍ بلا خادم**:
+    إن بطؤ أو سقط لم يستطع الزائر حساب مولده أصلًا.
+
+    > **وعلّةٌ ثانية أخطر**: نداء الشبكة كان يُبتلَع صامتًا،
+    > فيُقال لمن طلب قريتَه «لم أجد مدينة بهذا الاسم» —
+    > **وذلك كذبٌ** إن كانت الشبكة هي التي سقطت. فبين
+    > «لم أجد» و«لم أصل» فرقٌ للزائر لا لنا.
+    """
+    from api.index import dispatch
+    from falak import atlas
+
+    # ــ ما تَعِد به الواجهة يجب أن يُوفى به بلا شبكة ــ
+    page = _pages()["chart.html"]
+    assert "معرّة النعمان" in page or "معرة النعمان" in page
+
+    promised = ["دمشق", "معرة النعمان", "جبلة", "منبج", "دوما",
+                "سوهاج", "بعلبك", "النجف", "بيت لحم", "الزرقاء",
+                "مكناس", "القيروان", "تعز", "صلالة"]
+    missing = [q for q in promised if not atlas.find(q, remote=False)]
+    assert not missing, f"ليست في الأطلس المحلّي: {missing}"
+
+    # ــ ونصفُ الأطلس فأكثر عربيّ، فأهلُه عرب ــ
+    ARAB = {"سوريا", "مصر", "لبنان", "الأردن", "فلسطين", "العراق",
+            "السعودية", "المغرب", "الجزائر", "تونس", "ليبيا",
+            "السودان", "اليمن", "عُمان", "الكويت", "قطر",
+            "البحرين", "الإمارات", "موريتانيا"}
+    n = sum(1 for c in atlas.CITIES if c["country"] in ARAB)
+    assert n / len(atlas.CITIES) >= 0.5, \
+        f"العربية {n} من {len(atlas.CITIES)} — والقارئ عربيّ"
+
+    # ــ ولا مدينتين في موضعٍ واحد ولا اسمين متطابقين ــ
+    pos, names = set(), set()
+    for c in atlas.CITIES:
+        k = (round(c["lat"], 2), round(c["lon"], 2))
+        assert k not in pos, f"موضعٌ مكرَّر: {c['ar']}"
+        assert (c["ar"], c["country"]) not in names, f"اسمٌ مكرَّر: {c['ar']}"
+        pos.add(k)
+        names.add((c["ar"], c["country"]))
+        assert -90 <= c["lat"] <= 90 and -180 <= c["lon"] <= 180
+        ZoneInfo(c["tz"])          # منطقةٌ زمنية حقيقية
+
+    # ــ والخريطة تُحسَب لها فعلًا ــ
+    d = dispatch("/api/chart", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["معرة النعمان"], "system": ["whole"]})
+    assert d["angles"]["الطالع"]["text"]
+    assert abs(d["lat"] - 35.65) < 0.1 and abs(d["lon"] - 36.68) < 0.1
+
+    # ــ والرسالة تُفرّق بين «لم أجد» و«لم أصل» ــ
+    import os as _os
+    _root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    with open(_os.path.join(_root, "api", "index.py"), encoding="utf-8") as _f:
+        src = _f.read()
+    assert "_REMOTE_DOWN" in src and "لم أبلغ الأطلس العالمي" in src, \
+        "سقوطُ الشبكة يُقال للزائر «قريتُك غير موجودة» — وهذا كذب"
+
+
 def test_hidden_aspects_add_and_do_not_replace():
     """
     الزوايا الخفيّة — الموازاة بالمَيْل والأنطسيا.

@@ -303,6 +303,76 @@ _RAW = """
 بريزبن|Brisbane|أستراليا|-27.4698|153.0251|Australia/Brisbane
 بيرث|Perth|أستراليا|-31.9505|115.8605|Australia/Perth
 أوكلاند|Auckland|نيوزيلندا|-36.8485|174.7633|Pacific/Auckland
+معرة النعمان|Maarat al-Numan|سوريا|35.6494|36.6797|Asia/Damascus
+جبلة|Jableh|سوريا|35.3611|35.9256|Asia/Damascus
+بانياس|Baniyas|سوريا|35.1821|35.9469|Asia/Damascus
+دوما|Douma|سوريا|33.5714|36.4022|Asia/Damascus
+داريا|Darayya|سوريا|33.4581|36.2361|Asia/Damascus
+الزبداني|Zabadani|سوريا|33.7247|36.1006|Asia/Damascus
+منبج|Manbij|سوريا|36.5281|37.9553|Asia/Damascus
+عفرين|Afrin|سوريا|36.5119|36.8686|Asia/Damascus
+الباب|Al-Bab|سوريا|36.3706|37.5158|Asia/Damascus
+سلمية|Salamiyah|سوريا|35.0114|37.0531|Asia/Damascus
+تلكلخ|Tell Kalakh|سوريا|34.6672|36.2589|Asia/Damascus
+مصياف|Masyaf|سوريا|35.0653|36.3411|Asia/Damascus
+القامشلي|Qamishli|سوريا|37.0522|41.2317|Asia/Damascus
+البوكمال|Albu Kamal|سوريا|34.4531|40.9186|Asia/Damascus
+تدمر|Palmyra|سوريا|34.5567|38.2839|Asia/Damascus
+النبك|An-Nabk|سوريا|34.0261|36.7278|Asia/Damascus
+يبرود|Yabroud|سوريا|33.9678|36.6572|Asia/Damascus
+جرمانا|Jaramana|سوريا|33.4856|36.3444|Asia/Damascus
+سوهاج|Sohag|مصر|26.5591|31.6957|Africa/Cairo
+قنا|Qena|مصر|26.1551|32.7160|Africa/Cairo
+بني سويف|Beni Suef|مصر|29.0661|31.0994|Africa/Cairo
+الفيوم|Faiyum|مصر|29.3084|30.8428|Africa/Cairo
+دمياط|Damietta|مصر|31.4165|31.8133|Africa/Cairo
+كفر الشيخ|Kafr El Sheikh|مصر|31.1117|30.9397|Africa/Cairo
+المحلة الكبرى|El Mahalla El Kubra|مصر|30.9700|31.1669|Africa/Cairo
+شبين الكوم|Shibin El Kom|مصر|30.5525|31.0100|Africa/Cairo
+بنها|Banha|مصر|30.4611|31.1839|Africa/Cairo
+دسوق|Desouk|مصر|31.1310|30.6470|Africa/Cairo
+إدفو|Edfu|مصر|24.9781|32.8733|Africa/Cairo
+مرسى مطروح|Marsa Matruh|مصر|31.3543|27.2373|Africa/Cairo
+العريش|Arish|مصر|31.1316|33.7984|Africa/Cairo
+جبيل|Byblos|لبنان|34.1230|35.6519|Asia/Beirut
+النبطية|Nabatieh|لبنان|33.3789|35.4839|Asia/Beirut
+بشري|Bsharri|لبنان|34.2506|36.0106|Asia/Beirut
+بعبدا|Baabda|لبنان|33.8339|35.5442|Asia/Beirut
+عاليه|Aley|لبنان|33.8106|35.5983|Asia/Beirut
+البترون|Batroun|لبنان|34.2553|35.6581|Asia/Beirut
+طولكرم|Tulkarm|فلسطين|32.3104|35.0286|Asia/Hebron
+قلقيلية|Qalqilya|فلسطين|32.1897|34.9706|Asia/Hebron
+أريحا|Jericho|فلسطين|31.8667|35.4500|Asia/Hebron
+خان يونس|Khan Yunis|فلسطين|31.3400|34.3061|Asia/Gaza
+رفح|Rafah|فلسطين|31.2968|34.2436|Asia/Gaza
+صفد|Safed|فلسطين|32.9646|35.4960|Asia/Jerusalem
+عكا|Acre|فلسطين|32.9281|35.0819|Asia/Jerusalem
+مأدبا|Madaba|الأردن|31.7167|35.7950|Asia/Amman
+الكرك|Karak|الأردن|31.1850|35.7047|Asia/Amman
+معان|Ma'an|الأردن|30.1962|35.7341|Asia/Amman
+الحلة|Hillah|العراق|32.4637|44.4197|Asia/Baghdad
+الديوانية|Diwaniyah|العراق|31.9928|44.9247|Asia/Baghdad
+العمارة|Amarah|العراق|31.8356|47.1447|Asia/Baghdad
+تكريت|Tikrit|العراق|34.6100|43.6786|Asia/Baghdad
+دهوك|Duhok|العراق|36.8671|42.9881|Asia/Baghdad
+سامراء|Samarra|العراق|34.1959|43.8742|Asia/Baghdad
+عرعر|Arar|السعودية|30.9753|41.0381|Asia/Riyadh
+سكاكا|Sakaka|السعودية|29.9697|40.2064|Asia/Riyadh
+الباحة|Al Bahah|السعودية|20.0129|41.4677|Asia/Riyadh
+القطيف|Qatif|السعودية|26.5196|50.0115|Asia/Riyadh
+الجديدة|El Jadida|المغرب|33.2316|-8.5007|Africa/Casablanca
+بني ملال|Beni Mellal|المغرب|32.3373|-6.3498|Africa/Casablanca
+الناظور|Nador|المغرب|35.1681|-2.9335|Africa/Casablanca
+ورزازات|Ouarzazate|المغرب|30.9335|-6.9370|Africa/Casablanca
+بجاية|Bejaia|الجزائر|36.7509|5.0567|Africa/Algiers
+تيزي وزو|Tizi Ouzou|الجزائر|36.7118|4.0455|Africa/Algiers
+غرداية|Ghardaia|الجزائر|32.4909|3.6735|Africa/Algiers
+نابل|Nabeul|تونس|36.4561|10.7376|Africa/Tunis
+المنستير|Monastir|تونس|35.7643|10.8113|Africa/Tunis
+البيضاء|Bayda|ليبيا|32.7627|21.7551|Africa/Tripoli
+درنة|Derna|ليبيا|32.7671|22.6367|Africa/Tripoli
+كسلا|Kassala|السودان|15.4510|36.4000|Africa/Khartoum
+الأبيض|El Obeid|السودان|13.1839|30.2176|Africa/Khartoum
 """
 
 
@@ -351,6 +421,19 @@ ALIASES = {
 }
 
 
+
+# ══════════════════════════════════════════════════════════
+# توسعةُ الديار العربية
+#
+# **الأطلس كان ٤٥٪ عربيًّا وأهلُ الموقع عرب.** وحقلُ المكان في
+# صفحة الخريطة يقول «دمشق، معرّة النعمان، **أي قرية**» — و‍معرّة
+# النعمان نفسها لم تكن فيه. فالوعد في الواجهة والخُلف في البيانات.
+#
+# والاحتياط العالمي (Open-Meteo) موجود، لكنه **نداءُ شبكةٍ داخل
+# دالّةٍ بلا خادم**: إن بطؤ أو سقط لم يستطع الزائر حساب مولده
+# أصلًا. فالأولى أن تُغني بلادُ قارئه عن الشبكة.
+# ══════════════════════════════════════════════════════════
+
 def _load():
     out = []
     for line in _RAW.strip().splitlines():
@@ -396,12 +479,17 @@ _REMOTE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 _REMOTE_CACHE: dict = {}
 
 
+_REMOTE_DOWN = False
+
+
 def search_remote(q: str, limit: int = 8, timeout: float = 4.0):
     """أي قرية في العالم لا يعرفها الأطلس المحلّي."""
     import json
     import urllib.parse
     import urllib.request
 
+    global _REMOTE_DOWN
+    _REMOTE_DOWN = False
     q = (q or "").strip()
     if len(q) < 2:
         return []
@@ -417,6 +505,11 @@ def search_remote(q: str, limit: int = 8, timeout: float = 4.0):
             with urllib.request.urlopen(url, timeout=timeout) as r:
                 data = json.loads(r.read().decode("utf-8"))
         except Exception:
+            # **الفرق بين «لم أجد» و«لم أصل» فرقٌ للزائر لا لنا.**
+            # كان الخطأ يُبتلَع صامتًا، فيُقال لمن طلب قريتَه:
+            # «لم أجد مدينة بهذا الاسم» — وهذا **كذبٌ** إن كانت
+            # الشبكة هي التي سقطت. فيُرفَع العَلَم ليُقال الصدق.
+            globals()["_REMOTE_DOWN"] = True
             continue
         for h in (data.get("results") or []):
             if not h.get("timezone"):

@@ -64,6 +64,15 @@ def resolve_place(q: dict):
     if city:
         hit = atlas.find(city)
         if not hit:
+            # **لا نقل «لم أجد» إن كنّا لم نصل.** الأطلس المحلّي
+            # يُغني عن الشبكة في البلاد العربية، فإن خرجنا عنها
+            # فالاحتياط عالميّ عبر الشبكة — وسقوطُه غيرُ خلوّ
+            # الأرض من هذه القرية.
+            if getattr(atlas, "_REMOTE_DOWN", False):
+                raise ApiError(
+                    f"لم أبلغ الأطلس العالمي الآن، و«{city}» ليست في "
+                    "أطلسنا المحلّي. أعد المحاولة بعد قليل، أو أرسل "
+                    "lat و lon و tz مباشرةً.", 503)
             raise ApiError(f"لم أجد مدينة باسم «{city}». جرّب اسمًا آخر أو أرسل lat و lon و tz.")
         lat = lat or hit["lat"]
         lon = lon or hit["lon"]
