@@ -251,6 +251,11 @@ def route_chart(q):
                 _a["theme"] = _t.get("theme")
                 _a["meaning"] = _t["text"]
 
+        # **ولا نُلحق `lots_deep` بالسهام هنا.** جرّبتُ ذلك ثم
+        # قِسْتُه فإذا هو **مطابقٌ مئةً بالمئة** لِما في
+        # `reading.lots` — فكنتُ سأزرع التكرار الذي جئتُ أقلعه.
+        # فنصّ السهم يبقى في موضعٍ واحد، وجدولُ السهام يفتحه.
+
     # الخريطة نفسها بنظام آخر، لتيسير المقارنة
     if _one(q, "both", "1") == "1":
         other = _one(q, "compare") or ("placidus" if system == "whole" else "whole")

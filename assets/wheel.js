@@ -192,7 +192,8 @@ function wheelSVG(c, opts = {}) {
           md.good_for,
           md.mood ? `طبعها: ${md.mood}.` : '',
           here ? '**وفيها قمرُك أنت.**' : '',
-          'والمنازل ثمانٍ وعشرون يقطعها القمر في الشهر، لكلٍّ ١٢°٥١′.',
+          /* «والمنازل ثمانٍ وعشرون…» حُذف: هو تعريف المعجم نفسه،
+             والمعجم يظهر في هذه البطاقة تحت خطٍّ فاصل. */
         ], ` data-term="المنازل القمرية"`)}>
         <path d="${arcPath(i * arc, (i + 1) * arc, (R.mansionIn + R.mansionOut) / 2)}"
               fill="none" stroke="${here ? 'var(--gold)' : 'transparent'}"
@@ -359,10 +360,20 @@ function wheelSVG(c, opts = {}) {
     (c.lots || []).forEach(Lt => {
       if (Lt.lon == null) return;
       const [lx, ly] = P(Lt.lon, rL);
+      /* **ما هو؟ قبل: أين هو؟**
+         كانت البطاقة تقول الدرجةَ والبيتَ والصيغة — ولا تقول
+         **ما هذا السهم أصلًا**، فيخرج القارئ بموضعٍ بلا معنى.
+         و`note` («موضع العلّة والضعف في البدن») و`read` كانتا
+         محسوبتين ولا تصلان. وهو الدرس نفسه في موضعٍ جديد.
+
+         **وحُذف سطرٌ كان يُعيد تعريف المعجم حرفًا بحرف**: المعجم
+         يظهر في البطاقة نفسها تحت خطٍّ فاصل، فقولُنا فوقه
+         «السهم نقطة محسوبة لا جِرم لها» تكرارٌ في نَفَسٍ واحد. */
       g += `<g class="lot"${hint(Lt.name, [
-          `${Lt.text} — في البيت ${HOUSE_ORD[Lt.house - 1] || Lt.house}.`,
-          Lt.formula ? `صيغته: ${Lt.formula}` : '',
-          'والسهم نقطة محسوبة لا جِرم لها، فلا تُزاوي كما تُزاوي الكواكب.',
+          Lt.note || '',
+          `${Lt.text} — في البيت ${HOUSE_ORD[Lt.house - 1] || Lt.house}${
+            Lt.formula ? ' · صيغته: ' + Lt.formula : ''}.`,
+          'وتفصيلُه في جدول السهام أسفلَ الصفحة.',
         ], ` data-term="السهم"`)}>
         <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="7" fill="transparent"/>
         <path d="M ${(lx - 3.4).toFixed(1)} ${ly.toFixed(1)} L ${lx.toFixed(1)} ${(ly - 3.4).toFixed(1)}

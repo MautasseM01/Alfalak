@@ -212,9 +212,37 @@ function initBodyEcho() {
    ══════════════════════════════════════════════════════════════ */
 const HINT_SEL = '[data-term],[data-hint]';
 
+/* ══════════════════════════════════════════════════════════════
+   `<title>` يُبتَلع حين نتولّى الشرح
+
+   في العجلة كان كل عنصرٍ يحمل شيئين: `data-hint` لبطاقتنا،
+   و`<title>` داخل الـSVG. وكان ذلك **بنيّةٍ حسنة**: `<title>`
+   ما تقرأه قارئات الشاشة، وما يبقى إن تعطّل السكربت.
+
+   لكنّ أثره في المتصفّح **تلميحان يظهران معًا**: فقاعة النظام
+   الصفراء فوق بطاقتنا، تُعيد الاسم والدرجة اللذين في رأس
+   البطاقة. فيقرأ الزائر الشيء مرّتين في نَفَسٍ واحد.
+
+   والحلّ **لا يكون بحذف `<title>` من الرسم** — فذلك يُسقط
+   القارئ الضرير ومَن عطّل الجافاسكربت. بل يُنقَل مضمونُه إلى
+   `aria-label` ثم يُحذَف العنصر: فمَن جاء بلا سكربت وجد
+   `<title>` كما كان، ومَن تولّينا صفحتَه وجد بطاقةً واحدة
+   وقارئُ شاشته يقرأ التسمية نفسها.
+   ══════════════════════════════════════════════════════════════ */
+function hintEatTitles(root) {
+  (root || document).querySelectorAll(`${HINT_SEL}`).forEach(el => {
+    const t = el.querySelector(':scope > title');
+    if (!t) return;
+    const txt = (t.textContent || '').trim();
+    if (txt && !el.getAttribute('aria-label')) el.setAttribute('aria-label', txt);
+    t.remove();
+  });
+}
+
 function initHints() {
   hintTerms();
   hintPanel();
+  hintEatTitles();
 
   /* التحويم — بالفأرة وحدها. واللمس يولّد pointerenter كذلك، فنُقصيه
      صراحةً كي لا تفتح اللوحةُ مرّتين على الجوّال. */
@@ -458,7 +486,11 @@ function initAutoTerms() {
     const obs = new MutationObserver(() => {
       if (HINT_MARKING) return;
       clearTimeout(t);
-      t = setTimeout(() => { markTerms(document.body); hintFirstTip(); }, 160);
+      /* **والعجلة تُرسَم بعد التحميل**، فلا يكفي ابتلاعُ العناوين
+         مرّةً عند الإقلاع: كل رسمٍ جديد يأتي بـ`<title>` جديدة. */
+      t = setTimeout(() => {
+        markTerms(document.body); hintEatTitles(document.body); hintFirstTip();
+      }, 160);
     });
     obs.observe(document.body, { childList: true, subtree: true });
   });
