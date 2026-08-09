@@ -28,7 +28,8 @@ from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noq
 from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import bulletin_more, mundane, plain, progress, salts  # noqa: E402
+from falak import bulletin_more, figures, mundane, plain  # noqa: E402
+from falak import progress, salts  # noqa: E402
 from falak import tables  # noqa: E402
 from falak import timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
@@ -726,6 +727,36 @@ def route_astromap(q):
     return _apply_level(data, q)
 
 
+def route_figures(q):
+    """
+    **خرائط المشاهير** — وحدُّ ما تقوله بيانات ناقصة.
+
+    عند Astrotheme خمسٌ وستّون ألف خريطة، وعند Astrodienst مثلُها،
+    **ولا شيء منها بالعربية**.
+
+    والفرق بيننا وبينهما مقصود: **ساعةُ الميلاد لا تُعرَف لأحدٍ
+    من هؤلاء**. وأكثر المواقع تضع ١٢:٠٠ وترسم عجلةً بطالعٍ
+    وبيوت — والطالع يدور اثنتي عشرة مرّةً في اليوم، فذلك اختراع.
+
+    فنُرجع ما يصحّ بالتاريخ وحده: برجَ الشمس والبطيئة وزواياها.
+    **ولا طالع ولا بيوت.** ومن بحث عن طالع أم كلثوم فلم يجده
+    عندنا، فذلك أصدقُ ممّا لو وجده.
+    """
+    key = _one(q, "who")
+    if key:
+        out = figures.sky(key)
+        if not out:
+            raise ApiError(f"لا أعرف علَمًا بالمفتاح «{key}».", 404)
+        out["moon_note"] = figures.moon_check(key)
+        out["ratings"] = figures.RATINGS
+        return _apply_level(out, q)
+
+    return {"figures": figures.listing(_one(q, "q", "")),
+            "ratings": figures.RATINGS,
+            "no_time": figures.NO_TIME,
+            "count": len(figures.FIGURES)}
+
+
 def route_options(q):
     """
     **كل قوائم الاختيار في الموقع، من موضع واحد.**
@@ -1004,6 +1035,7 @@ ROUTES = {
     "options": route_options,
     "salts": route_salts,
     "astromap": route_astromap,
+    "figures": route_figures,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,

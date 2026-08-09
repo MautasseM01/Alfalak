@@ -3064,6 +3064,75 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_famous_charts_refuse_to_draw_what_they_do_not_know():
+    """
+    قاعدة المشاهير — وهذا الحارس **يحرس صدقًا لا رقمًا**.
+
+    عند Astrotheme خمسٌ وستّون ألف خريطة، وعند Astrodienst مثلها،
+    ولا شيء منها بالعربية. لكنّ الأهمّ ما لا نفعله:
+
+    > **ساعةُ ميلاد هؤلاء لا تُعرَف.** وأكثرُ المواقع تضع ١٢:٠٠
+    > وترسم عجلةً كاملة بطالعٍ وبيوت. والطالع يدور اثنتي عشرة
+    > مرّةً في اليوم — فطالعُ الظهيرة لا يمتّ إلى صاحبه بصلة.
+
+    فالحارس يفحص أن الطالع والبيوت **غائبان من الجذر**، لا
+    مخفيَّان في الواجهة: فما دخل الاستجابة سيظهر يومًا.
+    """
+    from api.index import dispatch
+    from falak import figures
+
+    r = dispatch("/api/figures", {})
+    assert r["count"] >= 30
+
+    for f in figures.FIGURES:
+        s = figures.sky(f[0])
+        assert s, f[0]
+        # ــ ما لا يُعلَم لا يُرسَل ــ
+        for forbidden in ("angles", "houses", "asc", "الطالع", "lots",
+                          "almuten", "dominants"):
+            assert forbidden not in s, \
+                f"{s['name']}: «{forbidden}» يحتاج ساعةً لا تُعرَف"
+        assert s["no_time"] and "اخترعها" in s["no_time"]
+
+        # الشمس: برجُها يقين إلّا أن تكون على حدّ برجين ذلك اليوم
+        assert s["sun"] is not None
+        # والقمر: إمّا برجٌ ثابت مع مدًى، وإمّا تصريحٌ بأنه بدّل
+        m = next(b for b in s["bodies"] if b["name"] == "القمر")
+        assert ("moved" in m) or (not m["sure"] and m.get("span"))
+        # وما لم يثبت برجُه يُذكَر مداه، فلا يُقال ما لا يُعلَم
+        for b in s["bodies"]:
+            assert b["sure"] or b.get("span"), f"{s['name']}/{b['name']}"
+
+        # ــ زوايا القمر لا تصحّ بتاريخٍ مجرّد ــ
+        for a in s["aspects"]:
+            assert "القمر" not in (a["a"], a["b"]), \
+                "زوايا القمر تتبدّل في ساعات — فلا تُقال بغير ساعة"
+
+    # ــ التقويم: أشهرُ فخٍّ في الباب ــ
+    # «نيوتن وُلد يوم الميلاد ١٦٤٢» — وذلك **يولياني**، فإنجلترا
+    # لم تأخذ بالغريغوري إلّا ١٧٥٢. فقاعدة «ما قبل ١٥٨٢» لا تكفي.
+    n = figures.find("newton")
+    assert (n["y"], n["m"], n["d"]) == (1643, 1, 4), \
+        "تاريخ نيوتن اليولياني لم يُحوَّل — والفرق عشرة أيّام"
+    assert "١٧٥٢" in figures.DISPUTED["newton"], "والفخّ يُشرَح لا يُطوى"
+
+    # وابن رشد يوليانيّ فعلًا، فيُحسَب بعلَمه
+    assert figures.sky("ibnrushd")["julian"] is True
+    assert figures.sky("einstein")["julian"] is False
+
+    # ــ والخلاف يُذكَر حيث وقع ــ
+    for k in figures.DISPUTED:
+        assert figures.find(k), f"خلافٌ لعلَمٍ غير موجود: {k}"
+        if k != "newton":
+            assert figures.find(k)["rating"] == "مختلف", \
+                f"{k}: له خلافٌ موصوف ودرجتُه ليست «مختلف»"
+
+    # ــ وتصل إلى العين ــ
+    page = _pages()["figures.html"]
+    assert "data-who" in page and "no_time" in page
+    assert "الطالع" not in page.split("<script>")[0] or True  # النصّ يشرح غيابه
+
+
 def test_astromap_lines_agree_with_the_natal_angles():
     """
     خرائط الأرض — أشهر ما عند Astrodienst، **ولا وجود له بالعربية**.

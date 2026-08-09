@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خرائط المشاهير — الفَلَك</title>
+<meta name="description" content="مواليد أعلام العرب والعالم: برج الشمس والكواكب البطيئة وزواياها — بلا طالع ولا بيوت، لأن ساعة ميلادهم لا تُعرَف.">
+<link rel="canonical" href="https://alfalak.vercel.app/figures.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/figures.html">
+<meta property="og:title" content="خرائط المشاهير — الفَلَك">
+<meta property="og:description" content="ما يصحّ بالتاريخ وحده، ولا نرسم ما لا نعلم: لا طالع ولا بيوت لمن جُهلت ساعة مولده.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="خرائط المشاهير — الفَلَك">
+<meta name="twitter:description" content="ما يصحّ بالتاريخ وحده — بلا طالع ولا بيوت.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"خرائط المشاهير","url":"https://alfalak.vercel.app/figures.html","description":"مواليد الأعلام بما يصحّ بالتاريخ وحده.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"خرائط المشاهير","item":"https://alfalak.vercel.app/figures.html"}]}</script>
+<style>
+.figs { display:grid; gap:10px;
+        grid-template-columns:repeat(auto-fill,minmax(238px,1fr)); }
+.fig { text-align:start; background:rgba(255,255,255,.02);
+       border:1px solid var(--line); border-radius:13px; padding:12px 14px;
+       color:inherit; font:inherit; cursor:pointer; }
+.fig:hover, .fig:focus-visible { border-color:var(--gold-dim); }
+.fig b { display:block; color:var(--gold); font-size:.98rem; }
+.fig small { display:block; color:var(--muted); font-size:.79rem; margin-top:3px; }
+.rate { display:inline-block; font-size:.7rem; border-radius:999px;
+        padding:1px 8px; border:1px solid var(--line); color:var(--muted);
+        margin-top:7px; }
+.rate.r-موثق  { color:#5fc7a1; border-color:#5fc7a166; }
+.rate.r-مختلف { color:#e0b34a; border-color:#e0b34a66; }
+.warn { border-inline-start:3px solid var(--gold); padding-inline-start:12px; }
+tr.unsure td { color:var(--muted); }
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/figures.html" class="on">خرائط المشاهير</a>
+    <a href="/astromap.html">خرائط الأرض</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<div class="printhead">
+  <h1>الفَلَك — خرائط المشاهير</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+
+<main id="main">
+<h2 class="page">خرائط المشاهير</h2>
+<p class="lede">
+  مواليد أعلامٍ من العرب والعالم. <em>وما نعرضه محدود عمدًا</em>:
+  ساعةُ ميلاد هؤلاء لا تُعرَف، فلا طالعَ لهم هنا ولا بيوت — وأكثر المواقع
+  تضع الساعة ١٢:٠٠ وترسم عجلةً كاملة، والطالع يدور اثنتي عشرة مرّةً في اليوم.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="q">ابحث في الأعلام</label>
+        <input type="text" id="q" placeholder="شاعر، مصر، عالِم، ابن…" autocomplete="off"></div>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+</main>
+<footer>
+  درجات التوثيق على اصطلاح لويس رودِن، معرَّبةً.
+  وما قبل ١٥٨٢/١٠/١٥ محسوبٌ بالتقويم اليولياني كما سجّلته المصادر.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/hint.js"></script>
+<script src="/assets/select.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+
+const $ = id => document.getElementById(id);
+const out = $('out');
+markLive(out);
+
+let FCARD_N = 0;
+const fcard = (title, body, chips) => `<div class="card">
+    <div class="card-top">
+      <h2 class="card-title">${title}</h2>
+      <div class="chips">${chips || ''}</div>
+    </div>
+    <div class="card-body" id="fb${++FCARD_N}">${body}</div></div>`;
+
+const bold = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+let LIST = null, NOTIME = '';
+
+async function loadList(q) {
+  const d = await API('figures', q ? { q } : {});
+  LIST = d.figures; NOTIME = d.no_time;
+  out.innerHTML = fcard(`الأعلام`,
+    `<p class="note warn">${bold(d.no_time)}</p>
+     <div class="figs">${d.figures.map(f => `
+       <button type="button" class="fig" data-who="${esc(f.key)}">
+         <b>${esc(f.name)}</b>
+         <small>${esc(f.note)}</small>
+         <small>${esc(f.date)}${f.julian ? ' · يولياني' : ''} — ${esc(f.place)}</small>
+         <span class="rate r-${esc(f.rating)}">${esc(f.rating_text.split('—')[0].trim())}</span>
+       </button>`).join('')}</div>`,
+    `<span class="chip gold">${d.figures.length}</span>`);
+}
+
+async function loadOne(who) {
+  out.innerHTML = `<div class="card"><div class="card-body">
+    <div class="msg">… أحسب</div></div></div>`;
+  const s = await API('figures', { who });
+
+  /* **الجدول يُميّز اليقين من الظنّ في العمود نفسه.**
+     فما لم يثبت برجُه ذلك اليوم يُكتب مداه لا برجُه — وهذا
+     أنفعُ من حاشيةٍ عامّة أسفل الصفحة لا يقرؤها أحد. */
+  const rows = s.bodies.map(b => `
+    <tr class="${b.sure ? '' : 'unsure'}">
+      <td>${esc(b.name)}</td><td class="sym">${esc(b.symbol)}</td>
+      <td>${b.sure ? esc(b.sign) : '<b>' + esc(b.span) + '</b>'}</td>
+      <td style="color:var(--muted);font-size:.79rem">${
+        b.sure ? (b.name === 'القمر' ? 'برجُه يصحّ، ودرجتُه لا' : esc(b.text))
+               : 'بدّل برجه في ذلك اليوم'}</td>
+    </tr>`).join('');
+
+  const asp = (s.aspects || []).map(a => `
+    <tr><td>${esc(a.a)}</td><td class="sym">${esc(a.symbol)}</td>
+      <td>${esc(a.b)}</td><td>${esc(a.name)}</td>
+      <td class="num">${a.orb.toFixed ? a.orb.toFixed(1) : a.orb}°</td></tr>`).join('');
+
+  out.innerHTML =
+    fcard(esc(s.name),
+      `<p>${esc(s.note)}</p>
+       <p class="note">${esc(s.date)}${s.julian ? ' (بالتقويم اليولياني)' : ''}
+         — ${esc(s.place)} · <b>${esc(s.rating_text)}</b></p>
+       ${s.disputed ? `<p class="note warn">${bold(s.disputed)}</p>` : ''}
+       <p class="note warn">${bold(s.no_time)}</p>`,
+      `<span class="chip">${esc(s.rating)}</span>`) +
+    fcard('ما يصحّ بالتاريخ وحده',
+      `<table><thead><tr><th>الجِرم</th><th></th><th>البرج</th><th></th></tr></thead>
+        <tbody>${rows}</tbody></table>
+       <p class="note" style="margin-top:14px">${bold(s.moon_note)}</p>`) +
+    (asp ? fcard('زوايا الكواكب البطيئة',
+      `<p class="note">وهذه تصحّ بغير ساعة: الكواكب البطيئة لا تُبدّل
+         زواياها في يوم. <b>وزوايا القمر ليست منها</b> — تتبدّل في ساعات.</p>
+       <table><thead><tr><th>الأوّل</th><th></th><th>الثاني</th>
+         <th>الزاوية</th><th>فرقُها</th></tr></thead>
+       <tbody>${asp}</tbody></table>`) : '') +
+    `<div class="row" style="margin-top:14px">
+       <button class="btn ghost" id="back">← عودة إلى الأعلام</button></div>`;
+}
+
+out.addEventListener('click', e => {
+  const f = e.target.closest('.fig[data-who]');
+  if (f) { loadOne(f.dataset.who).catch(err => {
+    out.innerHTML = `<div class="card"><div class="card-body">
+      <div class="msg err">${esc(err.message)}</div></div></div>`; }); return; }
+  if (e.target.closest('#back')) loadList($('q').value.trim());
+});
+
+let t = 0;
+$('q').addEventListener('input', () => {
+  clearTimeout(t);
+  t = setTimeout(() => loadList($('q').value.trim()).catch(() => {}), 220);
+});
+
+loadList('').catch(e => {
+  out.innerHTML = `<div class="card"><div class="card-body">
+    <div class="msg err">${esc(e.message)}</div></div></div>`;
+});
+</script>
+</body>
+</html>
