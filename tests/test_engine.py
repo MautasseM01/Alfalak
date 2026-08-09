@@ -3064,6 +3064,60 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_progressions_and_solar_arc_reach_the_chart_page():
+    """
+    التسيير الثانوي والقوس الشمسي: أشهر تقنيتَي تنبّؤ عند
+    Astrotheme وAstrodienst، وكانتا **الناقصتين وحدَنا** بين
+    أدوات الزمن — عندنا العبور والانتهاءات والفردارات.
+
+    > **والتوقيت كان يُحسَب بفارقٍ غير مُوجَّه.** `_sep` يُرجع
+    > بُعدًا بلا جهة، فأوّل حسابٍ لي كان يخلط ما وقع بما لم يقع.
+    > والقوس **يتقدّم ولا يرجع**، فالجهة تُعرَف إن حُسبت موجَّهةً.
+    """
+    from datetime import datetime as _dt
+    from zoneinfo import ZoneInfo as _Z
+
+    from api.index import dispatch
+    from falak import progress
+
+    tz = _Z("Asia/Damascus")
+    birth = _dt(1990, 5, 17, 8, 30, tzinfo=tz)
+    now = _dt(2026, 8, 9, 12, 0, tzinfo=tz)
+    g = progress.compute(birth, 33.5, 36.3, "Asia/Damascus", now, "placidus")
+
+    # يومٌ لسنة: من بلغ ٣٦ سنة تُقرأ سماء يومه السادس والثلاثين
+    assert 36 < g["age"] < 37
+    pm = _dt.fromisoformat(g["prog_moment"])
+    assert 35 <= (pm - birth).days <= 37, "لحظة التسيير ليست يومًا لسنة"
+
+    # القوس نحو درجةٍ في السنة — فلا يبعد كثيرًا عن العمر
+    assert abs(g["arc"] - g["age"]) < 5, f"قوسٌ شاذّ: {g['arc']}"
+
+    m = g["moon"]
+    assert 1 <= m["house"] <= 12
+    assert m["sign_read"] and m["house_read"], "قمرٌ مُسيَّر بلا قراءة"
+    assert m["next"].get("sign") and m["next"]["sign"] != m["sign"], \
+        "لا يُذكَر متى ينتقل القمر المُسيَّر — وهو أنفع ما في الباب"
+
+    # ــ التوقيت مُوجَّه: فيه ماضٍ ومستقبل، لا كلّه جهةً واحدة ــ
+    assert g["arcs"], "لا مسائل في القوس"
+    for a in g["arcs"]:
+        assert "past" in a and a.get("when"), "قوسٌ بلا توقيت"
+        assert len(a["when"]) == 7, "التوقيت يكون بالشهر لا أدقّ"
+    assert len({a["past"] for a in g["arcs"]}) == 2 or len(g["arcs"]) < 3, \
+        "كل المسائل في جهةٍ واحدة — رائحةُ حسابٍ غير مُوجَّه"
+
+    # ــ وتصل إلى العين، لا إلى الخادم وحده ــ
+    r = dispatch("/api/now", {"date": ["1990-05-17"], "time": ["08:30"],
+                              "city": ["دمشق"], "system": ["placidus"]})
+    assert r.get("progress"), "المسار لا يُرجع التسيير"
+    page = _pages()["chart.html"]
+    assert "progBlock()" in page and "function progBlock" in page, \
+        "التسيير مَحسوبٌ ولا يُعرَض — وهو عين ما نُصلحه في كل مرّة"
+
+    assert progress.coverage()["نصوص القمر المُسيَّر"] == 24
+
+
 def test_daily_bulletin_shows_the_whole_sky():
     """
     قال صاحب المشروع إن النشرة «فقيرة جدًّا». وقياسُها أثبت ذلك:

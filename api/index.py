@@ -27,7 +27,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
 from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import bulletin_more, mundane, plain, salts, tables  # noqa: E402
+from falak import bulletin_more, mundane, plain, progress, salts  # noqa: E402
+from falak import tables  # noqa: E402
 from falak import timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
@@ -36,6 +37,14 @@ from falak import timezone as ftz  # noqa: E402
 def _one(q: dict, key: str, default=None):
     v = q.get(key)
     return v[0] if v else default
+
+
+def _safe(fn, default=None):
+    """يُجرّب فيُرجع، وإن أخفق أرجع البديل — **لا تسقط صفحةٌ لأجل زيادة**."""
+    try:
+        return fn()
+    except Exception:
+        return default
 
 
 class ApiError(Exception):
@@ -639,6 +648,12 @@ def route_now(q):
         "behind": [fmt(e) for e in behind[:6]],
         "profection": prof,
         "solar_return": sr.isoformat(timespec="minutes") if sr else None,
+        # ــ التسيير الثانوي والقوس الشمسي ــ
+        # أشهر تقنيتَي تنبّؤ عند Astrotheme وAstrodienst، وكانتا
+        # ناقصتين عندنا وحدَنا. وموضعُهما هنا لا في صفحةٍ جديدة:
+        # مَن جاء يسأل «ما يمرّ عليّ الآن» يسأل عنهما وإن لم يُسمّهما.
+        "progress": _safe(lambda: progress.compute(
+            when, lat, lon, tzname, now, _one(q, "system", "whole"))),
         "note": ("العبور موضع الكوكب في السماء اليوم مقيسًا إلى خريطة "
                  "ميلادك — وهو الوجه المتحرّك منها. والمُقبِل أهمّ من "
                  "المُدبِر: ما لم يتمّ بعدُ هو ما يُنتظَر."),

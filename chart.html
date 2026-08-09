@@ -362,6 +362,69 @@ const dateAr = iso => {
   return d.toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
+/* ── التسيير الثانوي والقوس الشمسي ──────────────────────────────
+   موضعُهما هنا لا في صفحةٍ جديدة: مَن فتح «ما يمرّ عليك الآن»
+   يسأل عنهما وإن لم يعرف اسمَيهما.
+
+   **والقمر المُسيَّر يتصدّر** لأنه وحده يُحسّ في السنة: يقطع
+   البرج في سنتين ونصف. وسائرُ المُسيَّرات أبطأ من أن تُقرأ
+   في عمرٍ واحد. */
+function progBlock() {
+  const G = NOW && NOW.progress;
+  if (!G) return '';
+  const m = G.moon || {}, s = G.sun || {};
+
+  const line = (h, past) => `
+    <tr class="${past ? 'past' : ''}">
+      <td>${esc2(h.body)}</td>
+      <td class="sym">${esc2(h.symbol)}</td>
+      <td>${esc2(h.target)}</td>
+      <td>${esc2(h.name)}</td>
+      <td class="num">${h.orb}°</td>
+      <td style="color:var(--muted);font-size:.79rem">${esc2(h.when || '')}</td>
+    </tr>`;
+
+  const hits = G.hits || [], arcs = G.arcs || [];
+  return `
+    <h3 class="sec-h">تسييرُ عمرك — يومٌ لسنة</h3>
+    <p class="note">${esc2(G.method || '')}</p>
+
+    <div class="winf">
+      <div class="winf-c">
+        <div><span>عمرك</span><b>${G.age != null ? Math.floor(G.age) : '—'}</b></div>
+        <div><span>قمرك المُسيَّر</span><b>${esc2(m.text || '')}</b></div>
+        <div><span>وبيتُه من مولدك</span><b>${m.house ? 'البيت ' + m.house : '—'}</b></div>
+      </div>
+      <div class="winf-c">
+        <div><span>شمسك المُسيَّرة</span><b>${esc2(s.text || '')}</b></div>
+        <div><span>وكانت في</span><b>${esc2(s.natal_sign || '')}</b></div>
+        <div><span>القوس الشمسي</span><b>${esc2(G.arc_text || '')}</b></div>
+      </div>
+    </div>
+
+    ${m.sign_read ? `<p style="margin-top:14px">${esc2(m.sign_read)}</p>` : ''}
+    ${m.house_read ? `<p>${esc2(m.house_read)}</p>` : ''}
+    ${m.next && m.next.sign
+      ? `<p class="note">ثم ينتقل إلى ${esc2(m.next.sign)} نحو ${esc2(m.next.when)} — ${esc2(m.next.read || '')}</p>`
+      : ''}
+    ${s.shifted && s.note
+      /* `md` مُعرَّفة داخل دالّةٍ أخرى فلا تُرى من هنا — والتعبير
+         عنها هنا أسلمُ من نقلها ونقضِ ما يعتمد عليها. */
+      ? `<p style="margin-top:10px">${esc2(s.note).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</p>`
+      : ''}
+
+    ${hits.length ? `<h3 class="sec-h">زوايا المُسيَّر إلى مولدك</h3>
+      <table><thead><tr><th>المُسيَّر</th><th></th><th>على</th>
+        <th>الزاوية</th><th>فرقُها</th><th></th></tr></thead>
+        <tbody>${hits.map(h => line(h, false)).join('')}</tbody></table>` : ''}
+
+    ${arcs.length ? `<h3 class="sec-h">القوس الشمسي</h3>
+      <p class="note">${esc2(G.arc_note || '')}</p>
+      <table><thead><tr><th>النقطة</th><th></th><th>تبلغ</th>
+        <th>الزاوية</th><th>فرقُها</th><th>نحو</th></tr></thead>
+        <tbody>${arcs.map(h => line(h, h.past)).join('')}</tbody></table>` : ''}`;
+}
+
 function nowCard() {
   if (!NOW) return card('ما يمرّ عليك الآن',
     '<div class="msg">… أحسب العبور</div>', '', 'now');
@@ -408,6 +471,8 @@ function nowCard() {
        <table><thead><tr><th>العابر</th><th></th><th>على</th>
        <th>الزاوية</th><th>تمّ في</th><th>موضعه من مولدك</th></tr></thead>
        <tbody>${behind.map(e => row(e, true)).join('')}</tbody></table>` : ''}
+
+     ${progBlock()}
 
      <p class="note" style="margin-top:16px">
        العابر البطيء (زحل والمشتري وما بعدهما) أثقل أثرًا وأطول مُكثًا،
