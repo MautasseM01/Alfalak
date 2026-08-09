@@ -25,7 +25,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
-from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
+from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
+from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
 from falak import bulletin_more, mundane, plain, progress, salts  # noqa: E402
 from falak import tables  # noqa: E402
@@ -679,6 +680,47 @@ def route_salts(q):
     return _apply_level(out, q)
 
 
+def route_astromap(q):
+    """
+    **خرائط الأرض** — أين تقع كواكبك على وجه الأرض.
+
+    أشهرُ ما عند Astrodienst، **ولا وجود له بالعربية**. والحساب
+    كلّه من `astromap`، وهو خفيف: خمسون جزءًا من الثانية.
+
+    ويُرجع أمرين: الخطوط كلّها لترسَم، **وما يمرّ قريبًا من
+    مدينةٍ بعينها** — وهذا هو المقصود عمليًّا، إذ لا ينتفع أحدٌ
+    بأربعين خطًّا على كرةٍ ما لم يعرف ما يمرّ فوق داره.
+    """
+    lat, lon, tzname, label = resolve_place(q)
+    when, tzinfo = parse_birth(q, tzname, lon)
+
+    data = astromap.lines(when)
+    orb = float(_one(q, "orb", "6") or 6)
+    orb = max(1.0, min(orb, 15.0))
+
+    # المكان المسؤول عنه: مدينةُ الاختبار إن أُرسلت، وإلّا فالمولد
+    tcity = _one(q, "where")
+    tlat, tlon, tlabel = lat, lon, _one(q, "city") or label
+    if tcity:
+        hit = atlas.find(tcity)
+        if hit:
+            tlat, tlon, tlabel = float(hit["lat"]), float(hit["lon"]), hit["label"]
+
+    data.update({
+        "birth": when.isoformat(timespec="minutes"),
+        "birth_place": _one(q, "city") or label,
+        "birth_lat": lat, "birth_lon": lon,
+        "where": tlabel, "where_lat": tlat, "where_lon": tlon,
+        "orb": orb,
+        "near": astromap.near(when, tlat, tlon, orb),
+        # المدن تُرسَل لترسَم على الخريطة معالمَ يُهتدى بها —
+        # فلا صور ولا حدود، والأطلس عندنا أصلًا.
+        "cities": [{"n": c["ar"], "lat": round(c["lat"], 2),
+                    "lon": round(c["lon"], 2)} for c in atlas.CITIES],
+    })
+    return _apply_level(data, q)
+
+
 def route_options(q):
     """
     **كل قوائم الاختيار في الموقع، من موضع واحد.**
@@ -956,6 +998,7 @@ ROUTES = {
     "now": route_now,
     "options": route_options,
     "salts": route_salts,
+    "astromap": route_astromap,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,

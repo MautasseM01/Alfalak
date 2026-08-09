@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خرائط الأرض — الفَلَك</title>
+<meta name="description" content="أين تقع كواكبك على وجه الأرض: خطوط الطالع والغارب ووسط السماء ووتد الأرض لكل كوكب، وما يمرّ منها فوق مدينتك.">
+<link rel="canonical" href="https://alfalak.vercel.app/astromap.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/astromap.html">
+<meta property="og:title" content="خرائط الأرض — أين تقع كواكبك — الفَلَك">
+<meta property="og:description" content="لكل كوكب أربعة خطوط على وجه الأرض. ومَن سكن قريبًا من خطٍّ منها اشتدّ عليه ذلك الكوكب هناك.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="خرائط الأرض — الفَلَك">
+<meta name="twitter:description" content="لكل كوكب أربعة خطوط على وجه الأرض.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"خرائط الأرض","url":"https://alfalak.vercel.app/astromap.html","description":"خطوط الكواكب على وجه الأرض.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"خرائط الأرض","item":"https://alfalak.vercel.app/astromap.html"}]}</script>
+<style>
+/* ── الخريطة ──────────────────────────────────────────────────
+   إسقاطٌ مستطيل متساوي المسافات: س من الطول، وص من العرض.
+   وهو أبسط الإسقاطات وأصدقُها لغرضنا، إذ خطوط وسط السماء
+   فيه **مستقيمة رأسية** كما هي في الحقيقة. */
+.mapbox { width:100%; border-radius:14px; overflow:hidden;
+          background:rgba(10,15,29,.55); border:1px solid var(--line); }
+.mapbox svg { display:block; width:100%; height:auto; }
+.grat  { stroke:var(--line); stroke-width:.4; opacity:.55; fill:none; }
+.eqline{ stroke:var(--line); stroke-width:.8; opacity:.9; }
+.city  { fill:var(--muted); opacity:.42; }
+.here  { fill:var(--gold); }
+.mapleg{ display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:12px; }
+.mapleg button { background:none; border:1px solid var(--line);
+  border-radius:999px; padding:3px 11px; color:var(--muted);
+  font:inherit; font-size:.8rem; cursor:pointer; }
+.mapleg button.on { color:var(--ink); border-color:currentColor; }
+.mapleg i { display:inline-block; width:9px; height:9px; border-radius:50%;
+  margin-inline-end:6px; vertical-align:-1px; }
+.angkey { color:var(--muted); font-size:.8rem; margin-top:8px; }
+.angkey span { margin-inline-end:16px; }
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/astromap.html" class="on">خرائط الأرض</a>
+    <a href="/timelords.html">أرباب الأزمنة</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<div class="printhead">
+  <h1>الفَلَك — خرائط الأرض</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+
+<main id="main">
+<h2 class="page">خرائط الأرض</h2>
+<p class="lede">
+  خريطتك سماءُ لحظةٍ واحدة، مرئيّةً من مكانٍ واحد. ولو وُلدتَ في اللحظة نفسها
+  في مكانٍ آخر لكانت الكواكب هي هي — لكن <em>أوتادها</em> تختلف: ما كان طالعًا
+  يصير في وسط السماء، وما كان غاربًا يصير طالعًا.
+  فلكل كوكبٍ على وجه الأرض أربعة خطوط.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="date">تاريخ الميلاد</label><input type="date" id="date"></div>
+      <div class="field"><label for="time">ساعة الميلاد</label><input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">مكان الميلاد</label>
+        <input type="text" id="city" placeholder="حلب، دمشق…" autocomplete="off"></div>
+      <div class="field"><label for="where">مدينةٌ تسأل عنها</label>
+        <input type="text" id="where" placeholder="اتركه لمكان مولدك" autocomplete="off"></div>
+      <div class="field"><label for="orb">حدُّ القرب</label>
+        <select id="orb">
+          <option value="3">٣ درجات — الأشدّ وحده</option>
+          <option value="6" selected>٦ درجات — المعتاد</option>
+          <option value="10">١٠ درجات — الواسع</option>
+        </select></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">ارسم</button>
+      <button class="btn ghost" id="save">حفظ ميلادي</button>
+    </div>
+  </div>
+</div>
+
+<div id="out"></div>
+
+</main>
+<footer>
+  الحساب من المطالع المستقيمة والمَيْل والوقت النجمي بغرينتش.
+  والخريطة إسقاطٌ مستطيل، والمدن من أطلس الموقع نفسه.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/hint.js"></script>
+<script src="/assets/select.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+initLevelSwitch(() => { if (typeof load === 'function') load(); });
+
+const $ = id => document.getElementById(id);
+const out = $('out');
+markLive(out);
+
+/* ملاحظة: `esc` مُعرَّفة في app.js ومشتركة بين كل الوسوم —
+   وإعادة تعريفها هنا تكسر الصفحة كلَّها (وقد وقع ذلك في ستّ
+   صفحات مرّةً). فنستعملها كما هي. */
+/* البطاقة: **مُعرَّفة في `chart.html` وحدها**، وليست مشتركة —
+   ونسخُ صيغتها هنا أسلمُ من نقلها إلى `app.js` ونقضِ ما بُني
+   عليها. والطيّ يأتي من `autoFold` في `app.js` تلقائيًّا. */
+let CARD_N = 0;
+const card = (title, body, chips) => `<div class="card">
+    <div class="card-top">
+      <h2 class="card-title">${title}</h2>
+      <div class="chips">${chips || ''}</div>
+    </div>
+    <div class="card-body" id="cb${++CARD_N}">${body}</div></div>`;
+
+const MAPC = {
+  'الشمس':'#e0b34a','القمر':'#b9c6e0','عطارد':'#8fa5d8','الزهرة':'#5fc7a1',
+  'المريخ':'#e08a7d','المشتري':'#c9a227','زحل':'#7c8aa6',
+  'أورانوس':'#6fc4d8','نبتون':'#7f9fd8','بلوتو':'#a98bbf'
+};
+/* الأوتاد تُميَّز بالنقش لا باللون، فاللون للكوكب:
+   الطالع متّصل، والغارب متقطّع، ووسط السماء غليظ، ووتد الأرض منقوط. */
+const DASH = { asc:'', dsc:'5 4', mc:'', ic:'1.5 3.5' };
+const WID  = { asc:1.1, dsc:1.1, mc:1.7, ic:1.1 };
+
+const W = 720, H = 360;
+const px = lon => (lon + 180) / 360 * W;
+const py = lat => (90 - lat) / 180 * H;
+
+let DATA = null;
+let SHOW = store.get('mapBodies', null);
+
+/* ــ تقطيع المنحنى عند خطّ التأريخ ــ
+   الخطّ الذي يخرج من طرف الخريطة يدخل من الطرف الآخر. فلو رُسم
+   متّصلًا لعبَر الخريطة كلّها بخطٍّ كاذب. فيُقطَع عند كل قفزةٍ
+   تجاوز نصفَ الدور. */
+function segs(pts) {
+  const out = [];
+  let cur = [];
+  for (let i = 0; i < pts.length; i++) {
+    if (i && Math.abs(pts[i][1] - pts[i-1][1]) > 180) { out.push(cur); cur = []; }
+    cur.push(pts[i]);
+  }
+  if (cur.length) out.push(cur);
+  return out.filter(s => s.length > 1);
+}
+
+function drawMap() {
+  if (!DATA) return '';
+  const on = b => !SHOW || SHOW.includes(b);
+  let g = '';
+
+  /* الشبكة: كل ثلاثين درجة */
+  for (let lo = -180; lo <= 180; lo += 30)
+    g += `<line class="grat" x1="${px(lo)}" y1="0" x2="${px(lo)}" y2="${H}"/>`;
+  for (let la = -60; la <= 60; la += 30)
+    g += `<line class="${la === 0 ? 'eqline grat' : 'grat'}" x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`;
+
+  /* المدن معالمُ يُهتدى بها — ولا حاجة إلى صورةٍ للعالم:
+     مواضع العمران ترسم اليابسة بنفسها. */
+  g += (DATA.cities || []).map(c =>
+    `<circle class="city" cx="${px(c.lon).toFixed(1)}" cy="${py(c.lat).toFixed(1)}" r="1.1"/>`).join('');
+
+  (DATA.bodies || []).forEach(b => {
+    if (!on(b.name)) return;
+    const col = MAPC[b.name] || '#9aa7bd';
+    const V = (x, k) => `<line x1="${px(x)}" y1="0" x2="${px(x)}" y2="${H}"
+        stroke="${col}" stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}"
+        opacity=".85"><title>${esc(b.name)} — ${k === 'mc' ? 'وسط السماء' : 'وتد الأرض'}</title></line>`;
+    g += V(b.mc, 'mc') + V(b.ic, 'ic');
+    ['asc', 'dsc'].forEach(k => {
+      segs(b[k] || []).forEach(s => {
+        const d = s.map(p => `${px(p[1]).toFixed(1)},${py(p[0]).toFixed(1)}`).join(' ');
+        g += `<polyline points="${d}" fill="none" stroke="${col}"
+          stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"
+          ><title>${esc(b.name)} — ${k === 'asc' ? 'الطالع' : 'الغارب'}</title></polyline>`;
+      });
+    });
+  });
+
+  /* المكان المسؤول عنه */
+  if (DATA.where_lat != null)
+    g += `<circle class="here" cx="${px(DATA.where_lon)}" cy="${py(DATA.where_lat)}" r="4"/>
+          <circle cx="${px(DATA.where_lon)}" cy="${py(DATA.where_lat)}" r="8"
+            fill="none" stroke="var(--gold)" stroke-width="1" opacity=".6"/>`;
+
+  return `<div class="mapbox"><svg viewBox="0 0 ${W} ${H}" role="img"
+      aria-label="خريطة العالم وعليها خطوط كواكب مولدك">${g}</svg></div>`;
+}
+
+const legend = () => `<div class="mapleg" role="group" aria-label="الأجرام">
+  ${(DATA.bodies || []).map(b => {
+    const act = !SHOW || SHOW.includes(b.name);
+    return `<button type="button" data-body="${esc(b.name)}" class="${act ? 'on' : ''}"
+      aria-pressed="${act}"><i style="background:${MAPC[b.name] || '#999'}"></i>${esc(b.name)}</button>`;
+  }).join('')}</div>
+  <div class="angkey">
+    <span>▬ وسط السماء (غليظ)</span><span>┄ وتد الأرض (منقوط)</span>
+    <span>— الطالع (متّصل)</span><span>– – الغارب (متقطّع)</span>
+  </div>`;
+
+function nearTable() {
+  const n = DATA.near || [];
+  if (!n.length) return `<p class="note">لا خطّ يمرّ على ${esc(DATA.where)} في هذا الحدّ.
+    وسّع الحدّ، أو جرّب مدينةً أخرى — <b>وخلوُّ المكان من الخطوط ليس عيبًا فيه</b>:
+    معناه أن لا كوكب يعلو فيه على غيره.</p>`;
+  return `<table><thead><tr><th>الكوكب</th><th></th><th>على</th>
+      <th>بُعده</th><th>ما يشتدّ هناك</th></tr></thead><tbody>
+    ${n.map(h => `<tr>
+      <td>${esc(h.body)}</td><td class="sym"
+        style="color:${MAPC[h.body] || ''}">${esc(h.symbol)}</td>
+      <td>${esc(h.angle)}</td>
+      <td class="num">${h.km} كم</td>
+      <td>${esc(h.text)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+function render() {
+  out.innerHTML =
+    card('خطوط كواكبك على الأرض',
+      `<p class="note">مولدك: ${esc(DATA.birth_place)} — ${esc(DATA.birth.slice(0, 16).replace('T', ' '))}</p>
+       ${drawMap()}${legend()}`, '', 'map') +
+    card(`ما يمرّ على ${esc(DATA.where)}`,
+      `${nearTable()}
+       <p class="note" style="margin-top:16px">${
+         esc(DATA.caveat).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</p>`, '', 'near');
+}
+
+/* تبديل الأجرام: الرسم وحده يُعاد، ولا يُطلَب الخادم ثانيةً */
+out.addEventListener('click', e => {
+  const b = e.target.closest('button[data-body]');
+  if (!b || !DATA) return;
+  const name = b.dataset.body;
+  const all = DATA.bodies.map(x => x.name);
+  SHOW = SHOW || all.slice();
+  SHOW = SHOW.includes(name) ? SHOW.filter(x => x !== name) : SHOW.concat([name]);
+  if (SHOW.length === all.length) SHOW = null;
+  store.set('mapBodies', SHOW);
+  render();
+});
+
+cityInput($('city'));
+cityInput($('where'));
+
+async function load() {
+  const date = $('date').value, city = $('city').value.trim();
+  if (!date || !city) {
+    out.innerHTML = `<div class="card"><div class="card-body">
+      <div class="msg">أدخل تاريخ مولدك ومكانه.</div></div></div>`;
+    return;
+  }
+  out.innerHTML = `<div class="card"><div class="card-body">
+    <div class="msg">… أحسب الخطوط</div></div></div>`;
+  try {
+    const q = { date, time: $('time').value || '12:00', city, orb: $('orb').value };
+    const w = $('where').value.trim();
+    if (w) q.where = w;
+    DATA = await API('astromap', withLevel(q));
+    render();
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="card-body">
+      <div class="msg err">${esc(e.message)}</div></div></div>`;
+  }
+}
+
+$('go').addEventListener('click', load);
+$('save').addEventListener('click', () => {
+  store.set('natal', { date: $('date').value, time: $('time').value || '12:00',
+                       city: $('city').value.trim() });
+  /* التأكيد في الزرّ نفسه، كما في سائر الصفحات — ولا `toast`
+     في هذا الموقع أصلًا، فلا نخترع واحدًا لصفحةٍ واحدة. */
+  const b = $('save');
+  b.textContent = '✓ حُفظ'; b.classList.add('ok');
+  setTimeout(() => { b.textContent = 'حفظ ميلادي'; b.classList.remove('ok'); }, 1600);
+});
+['date', 'time', 'orb'].forEach(id =>
+  $(id).addEventListener('change', () => { if ($('date').value && $('city').value) load(); }));
+
+const saved = store.get('natal', null);
+if (saved && saved.date) {
+  $('date').value = saved.date;
+  $('time').value = saved.time || '12:00';
+  $('city').value = saved.city || '';
+  load();
+}
+</script>
+</body>
+</html>

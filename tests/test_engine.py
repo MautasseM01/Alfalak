@@ -3064,6 +3064,76 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_astromap_lines_agree_with_the_natal_angles():
+    """
+    خرائط الأرض — أشهر ما عند Astrodienst، **ولا وجود له بالعربية**.
+
+    والتحقّق هنا **لا يكون بمقارنة أرقامٍ بأرقام**، بل بثابتٍ
+    يلزم من التعريف نفسه:
+
+    > الكوكب الذي هو على وتدٍ في خريطة المولد، **يجب أن يمرّ
+    > خطُّه لذلك الوتد فوق مكان المولد** — وإلّا فالحساب خطأ.
+
+    فأورانوس في مولد ١٩٩٠ على غارب دمشق، فخطّ غاربه يمرّ عليها.
+    وهذا فحصٌ لا تُنجيك منه صدفة.
+    """
+    from datetime import datetime as _dt
+    from zoneinfo import ZoneInfo as _Z
+
+    from api.index import dispatch
+    from falak import astromap, chart
+
+    tz = _Z("Asia/Damascus")
+    birth = _dt(1990, 5, 17, 8, 30, tzinfo=tz)
+    LAT, LON = 33.5138, 36.2765
+
+    natal = chart.compute(birth, LAT, LON, "whole", "Asia/Damascus",
+                          minor_aspects=False)
+    ang = {k: v["lon"] for k, v in natal["angles"].items()}
+    hits = {(h["body"], h["angle"]) for h in astromap.near(birth, LAT, LON, 6)}
+
+    checked = 0
+    for b in natal["bodies"]:
+        if b["name"] not in astromap.MAP_BODIES:
+            continue
+        for aname in ("الطالع", "الغارب", "وسط السماء", "وتد الأرض"):
+            d = abs((b["lon"] - ang[aname]) % 360.0)
+            d = min(d, 360.0 - d)
+            if d <= 2.0:          # مقترنٌ بالوتد في المولد
+                checked += 1
+                assert (b["name"], aname) in hits, (
+                    f"{b['name']} على {aname} في المولد، "
+                    f"ولا يمرّ خطُّه فوق مكان المولد")
+    assert checked >= 1, "لم يقع في هذا المولد جِرمٌ على وتد — جرّب غيره"
+
+    # ــ لا خطّ حيث لا شروق ــ
+    data = astromap.lines(birth)
+    for b in data["bodies"]:
+        for pts in (b["asc"], b["dsc"]):
+            for phi, lam in pts:
+                assert -90 <= phi <= 90 and -180 <= lam <= 180
+
+    # وخطّا وسط السماء ووتد الأرض متقابلان دائمًا
+    for b in data["bodies"]:
+        d = abs((b["mc"] - b["ic"]) % 360.0)
+        assert abs(min(d, 360 - d) - 180.0) < 0.01
+
+    assert astromap.coverage()["نصوص"] == 40
+
+    # ــ وتصل إلى العين ــ
+    r = dispatch("/api/astromap", {"date": ["1990-05-17"], "time": ["08:30"],
+                                   "city": ["دمشق"], "where": ["باريس"]})
+    assert r["near"] is not None and r["cities"], "لا معالم تُهتدى بها"
+    page = _pages()["astromap.html"]
+    assert "polyline" in page and "astromap" in page
+
+    # **والحمولة تُقاس**: أوّل صياغةٍ أخرجت ١٦٥ كيلوبايت من فرط
+    # التنقيط، وذلك ثقلٌ يُدفَع في كل زيارة ولا تراه عين.
+    import json as _j
+    size = len(_j.dumps(r, ensure_ascii=False).encode("utf-8"))
+    assert size < 70_000, f"استجابة ثقيلة: {size} بايت"
+
+
 def test_progressions_and_solar_arc_reach_the_chart_page():
     """
     التسيير الثانوي والقوس الشمسي: أشهر تقنيتَي تنبّؤ عند
