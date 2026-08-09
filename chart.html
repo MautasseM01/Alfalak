@@ -672,6 +672,13 @@ function render(c) {
   }).join('');
 
   const written = c.aspects.filter(a => { const T = aspTexts(a); return T.theme || T.text; }).length;
+  /* `md` كانت مُعرَّفة أسفل الدالّة عند «الغالب»، فلمّا
+     استعملتُها هنا وقعتُ في **منطقة الموت المؤقّت**: `const`
+     لا تُقرأ قبل سطرها وإن كانت في المجال نفسه، فتسقط
+     الصفحة كلُّها بـ ReferenceError. فرُفعت إلى أعلى الدالّة
+     ولم تُنسَخ — فنسخُها يزرع تعريفين يتباعدان. */
+  const md = t => esc2(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
   const aspects = card(`الزوايا ${q('الزاوية')}`,
     `<p class="note">الشبكة تُريك الزوايا كلّها دفعةً واحدة، والجدول تحتها يُفصّلها.
        واضغط أيّ صفّ فيه علامة ▾ يُظهر لك ما تعنيه تلك الزاوية.</p>
@@ -681,6 +688,47 @@ function render(c) {
       <tbody>${aspRows}</tbody></table>`,
     `<span class="chip">${c.aspects.length} زاوية</span>
      <span class="chip gold">${written} مشروحة</span>`);
+
+  /* ── الزوايا الخفيّة ──────────────────────────────────────────
+     العجلة تعرض **الطول البروجي وحده**. وللجِرم موضعٌ آخر لا
+     تُظهره العجلة قطّ: المَيْل. فكوكبان بينهما تسعون درجةً في
+     البروج قد يكونان على مَيْلٍ واحد فيعملان كالمقترنَين.
+
+     **والترتيب هنا بالفائدة لا بالدقّة**: ما لا زاوية ظاهرة
+     بين طرفيه هو وحده الخبر الجديد، وما بينهما زاويةٌ ظاهرة
+     فالخفيّ فيه تأكيدٌ لا كشف. فالجديد يتصدّر ويُوسَم. */
+  const H = c.hidden;
+  const hRow = x => `<tr class="${x.new ? '' : 'past'}">
+      <td>${esc2(x.a)}</td><td class="sym">${esc2(x.symbol)}</td>
+      <td>${esc2(x.b)}</td>
+      <td><span class="chip${x.new ? ' gold' : ''}">${esc2(x.kind)}</span></td>
+      <td class="num">${x.orb}°</td>
+      <td style="color:var(--muted);font-size:.79rem">${
+        x.new ? esc2(x.note) : 'يؤكّد زاويةً ظاهرة بينهما'}</td></tr>`;
+  const hSort = l => (l || []).slice().sort((a, b) =>
+    (b.new - a.new) || (a.orb - b.orb));
+
+  const hidden = (H && (H.parallels.length || H.antiscia.length)) ? card(
+    'الزوايا الخفيّة',
+    `<p class="note">${md(H.method)}</p>
+     ${H.parallels.length ? `<h3 class="sec-h">الموازاة بالمَيْل</h3>
+       <table><thead><tr><th>الأوّل</th><th></th><th>الثاني</th>
+         <th>النوع</th><th>فرقُها</th><th>ما يعني</th></tr></thead>
+       <tbody>${hSort(H.parallels).map(hRow).join('')}</tbody></table>` : ''}
+     ${H.antiscia.length ? `<h3 class="sec-h">الأنطسيا</h3>
+       <p class="note">${md(H.antiscia_note)}</p>
+       <table><thead><tr><th>الأوّل</th><th></th><th>الثاني</th>
+         <th>النوع</th><th>فرقُها</th><th>ما يعني</th></tr></thead>
+       <tbody>${hSort(H.antiscia).map(hRow).join('')}</tbody></table>` : ''}
+     ${H.extreme.length ? `<p class="note" style="margin-top:14px">
+       <b>خارج الحدّ:</b> ${H.extreme.map(x =>
+         esc2(x.name) + ' (' + esc2(x.text) + ')').join('، ')} —
+       مَيْلٌ يجاوز مَيْل الشمس الأقصى (٢٣°٢٦′)، وعدّه القدماء
+       شدّةً في الجِرم. ولا يُرى في العجلة أيضًا.</p>` : ''}
+     <p class="note" style="margin-top:16px">${md(H.caveat)}</p>`,
+    `<span class="chip">${H.parallels.length + H.antiscia.length}</span>
+     <span class="chip gold">${
+       [...H.parallels, ...H.antiscia].filter(x => x.new).length} جديدة</span>`) : '';
 
   /* السهام: كانت الأسماء في جدول والنصوص في قائمة أسفله، فيقرأ
      الزائر ثمانية عشر اسمًا ثم سبعة نصوص لا يدري لأيّها. */
@@ -720,7 +768,6 @@ function render(c) {
      على صاحب الخريطة من العنصر والطبع معًا. فصار تحت كل رسمٍ
      شرحُه، والغالبُ يُقرأ بضدّه. */
   const BD = (R && R.balance_deep) || {};
-  const md = t => esc2(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   const dominants = card('الغالب في الخريطة',
     `<div class="sec"><h3>العناصر</h3>${bars(D.elements)}
        ${BD.elements ? `<p class="why">${md(BD.elements)}</p>` : ''}</div>
@@ -776,7 +823,7 @@ function render(c) {
     pane('sum',    wheel + coreRead + dominants + moon + almuten, panes) +
     pane('bodies', planets, panes) +
     pane('houses', houses + compare, panes) +
-    pane('asp',    aspects, panes) +
+    pane('asp',    aspects + hidden, panes) +
     pane('lots',   lots + patterns, panes);
 
   initTabs();

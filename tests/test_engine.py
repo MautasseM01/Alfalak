@@ -3064,6 +3064,86 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_hidden_aspects_add_and_do_not_replace():
+    """
+    الزوايا الخفيّة — الموازاة بالمَيْل والأنطسيا.
+
+    العجلة تعرض **الطول البروجي وحده**. وللجِرم موضعٌ آخر لا
+    تُظهره قطّ: المَيْل. فكوكبان بينهما تسعون درجةً في البروج
+    قد يكونان على مَيْلٍ واحد فيعملان كالمقترنَين.
+
+    والأنطسيا **عربيّة بطلَميّة لا غربيّة حديثة**: سمّاها القدماء
+    «الموازاة في البروج»، وهي انعكاسٌ حول محور الانقلابين.
+
+    > **والفائدة كلّها في وسم الجديد.** فما بين طرفيه زاويةٌ
+    > ظاهرة، فالخفيّ فيه تأكيدٌ لا كشف. ولولا هذا الوسم لكان
+    > الجدول زيادةً في العدد لا في المعرفة.
+    """
+    from datetime import datetime as _dt
+    from zoneinfo import ZoneInfo as _Z
+
+    from api.index import dispatch
+    from falak import chart, ephem, hidden
+
+    # ــ الحساب أوّلًا، بأمثلةٍ تُعرَف نتيجتها بالقلم ــ
+    # ١٠٠° (١٠° السرطان) انعكاسُه ٨٠° (٢٠° الجوزاء): محورُ
+    # الأنطسيا هو الانقلاب، فما بَعُد عنه بعشرٍ يقابل ما قَبله بعشر.
+    assert hidden.antiscion(100.0)[0] == 80.0
+    assert hidden.antiscion(100.0)[1] == 260.0
+    # و٩٠° (رأس السرطان) هو المحور نفسه، فأنطسيونُه نفسُه
+    assert hidden.antiscion(90.0)[0] == 90.0
+
+    tz = _Z("Asia/Damascus")
+    w = _dt(1990, 5, 17, 8, 30, tzinfo=tz)
+    c = chart.compute(w, 33.5, 36.3, "placidus", "Asia/Damascus",
+                      minor_aspects=False)
+    h = hidden.find(ephem.to_jd(w), c["bodies"])
+
+    assert len(h["declinations"]) >= 12
+    assert h["parallels"], "لا موازاة في خريطةٍ فيها ثلاثة عشر جِرمًا"
+
+    for x in h["parallels"] + h["antiscia"]:
+        assert x["orb"] <= max(hidden.PARALLEL_ORB, hidden.ANTISCIA_ORB)
+        assert "new" in x, "لا يُعرَف أجديدٌ هو أم مؤكِّد"
+        assert x["note"]
+
+    # ــ التوازي والمضادّ: الجهة هي الفارق، لا المقدار ــ
+    dec = {d["name"]: d["dec"] for d in h["declinations"]}
+    for p in h["parallels"]:
+        same = (dec[p["a"]] >= 0) == (dec[p["b"]] >= 0)
+        assert (p["kind"] == "توازٍ") == same, \
+            f"{p['a']}–{p['b']}: الجهة لا توافق النوع"
+
+    # ــ والوسم صادق: «جديد» يعني لا زاوية ظاهرة بين طرفيه ــ
+    seen = {frozenset((a["a"], a["b"])) for a in c["aspects"]}
+    for x in h["parallels"] + h["antiscia"]:
+        assert x["new"] == (frozenset((x["a"], x["b"])) not in seen)
+
+    # ــ وتُوجَد فعلًا في المواليد، فالفحص ليس فارغًا ــ
+    hits = 0
+    for y in range(1960, 2000, 5):
+        d2 = _dt(y, 7, 11, 14, 20, tzinfo=tz)
+        cc = chart.compute(d2, 33.5, 36.3, "whole", "Asia/Damascus",
+                           minor_aspects=False)
+        hits += len(hidden.find(ephem.to_jd(d2), cc["bodies"])["antiscia"])
+    assert hits >= 4, f"الأنطسيا لا تقع أبدًا ({hits}) — رائحةُ حسابٍ خطأ"
+
+    # ــ وتصل إلى العين ــ
+    r = dispatch("/api/chart", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["دمشق"], "system": ["placidus"]})
+    assert r.get("hidden"), "المسار لا يُرجع الخفيّة"
+    page = _pages()["chart.html"]
+    assert "c.hidden" in page and "aspects + hidden" in page, \
+        "مَحسوبةٌ ولا تُعرَض"
+
+    # **ولا `md` تُستعمَل قبل سطرها.** `const` في منطقة الموت
+    # المؤقّت تُسقط الصفحة كلَّها بـ ReferenceError، وقد وقعتُ فيها.
+    body = page.split("<script>")[-1]
+    assert body.index("const md = t =>") < body.index("md(H.method)"), \
+        "`md` تُستعمَل قبل تعريفها — منطقة موتٍ مؤقّت"
+    assert body.count("const md = t =>") == 1, "تعريفان لـ`md` يتباعدان"
+
+
 def test_famous_charts_refuse_to_draw_what_they_do_not_know():
     """
     قاعدة المشاهير — وهذا الحارس **يحرس صدقًا لا رقمًا**.

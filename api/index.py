@@ -28,7 +28,8 @@ from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noq
 from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import bulletin_more, figures, mundane, plain  # noqa: E402
+from falak import bulletin_more, figures, hidden, mundane  # noqa: E402
+from falak import plain  # noqa: E402
 from falak import progress, salts  # noqa: E402
 from falak import tables  # noqa: E402
 from falak import timelords, transits  # noqa: E402
@@ -256,6 +257,15 @@ def route_chart(q):
         # قِسْتُه فإذا هو **مطابقٌ مئةً بالمئة** لِما في
         # `reading.lots` — فكنتُ سأزرع التكرار الذي جئتُ أقلعه.
         # فنصّ السهم يبقى في موضعٍ واحد، وجدولُ السهام يفتحه.
+
+    # ــ الزوايا الخفيّة ــ
+    # العجلة تعرض الطول البروجي وحده، وللجِرم موضعٌ آخر لا
+    # تُظهره: **المَيْل**. فكوكبان بينهما تسعون درجةً في البروج
+    # قد يكونا على مَيْلٍ واحد فيعملا كالمقترنَين. وهي في
+    # «الخريطة الموسّعة» عند Astrodienst، ولا عربيَّ منها.
+    if _one(q, "hidden", "1") == "1":
+        out["hidden"] = _safe(lambda: hidden.find(
+            ephem.to_jd(when.astimezone(ephem.UTC)), out["bodies"]))
 
     # الخريطة نفسها بنظام آخر، لتيسير المقارنة
     if _one(q, "both", "1") == "1":
