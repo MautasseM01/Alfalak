@@ -163,7 +163,6 @@ async function load() {
   out.innerHTML = '<div class="card"><div class="msg">… أحسب الشروق والغروب</div></div>';
   try {
     data = await API('hours', withLevel({ date: $('date').value, city, purpose: $('purpose').value }));
-    fillPurposes(data.purposes);
     render(data);
     renderSources(data.sources);
   } catch (e) {
@@ -171,10 +170,11 @@ async function load() {
   }
 }
 
-function fillPurposes(list) {
+/* **معبّئٌ واحد**: التعبئة في `app.js` بسمة `data-options`. وكانت
+   هنا كذلك، ولم يمنع الازدواجَ إلّا حارسٌ محلّي (`options.length > 1`)
+   — وهو يعمل بالمصادفة لا بالقاعدة. */
+function fillPurposes() {
   const sel = $('purpose');
-  if (sel.options.length > 1) return;
-  list.forEach(p => { const o = document.createElement('option'); o.value = o.textContent = p; sel.appendChild(o); });
   const s = store.get('hrs', {});
   if (s.purpose) sel.value = s.purpose;
 }

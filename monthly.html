@@ -177,7 +177,8 @@ const WD = ['الإثنين','الثلاثاء','الأربعاء','الخميس
 const ICON = { ingress:'⇢', station:'℞', aspect:'∠', lunation:'☾', eclipse:'◐', season:'☀', combust:'☼' };
 let data = null, focusPurpose = null, natal = null;
 
-MONTHS.forEach((m,i) => { const o=document.createElement('option'); o.value=i+1; o.textContent=m; $('month').appendChild(o); });
+/* الشهور تُعبَّأ من `app.js` — وكانت تُضاف هنا كذلك بلا حارس،
+   فتخرج أربعة وعشرين شهرًا. */
 cityInput($('city'), () => load());
 
 function esc2(t){ return String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }

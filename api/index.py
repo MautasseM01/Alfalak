@@ -672,7 +672,11 @@ def route_options(q):
         # أغراض ساعات الكواكب: كانت قائمتها فارغةً حتى يُحسَب اليوم
         # مرّةً — أي إن أداة التصفية لا تعمل قبل أن تُستعمَل.
         "hour_purposes": list(hours.PURPOSE_HOURS),
-        "horary_questions": list(horary.QUESTIONS),
+        # القيمة والوصف معًا: صفحة المسائل كانت تُعلّق على كل مسألة
+        # ملاحظةً في `title`، فنقلناها إلى المصدر المشترك لئلّا تضيع.
+        "horary_questions": [{"value": k, "label": k,
+                              "note": (v or {}).get("note", "")}
+                             for k, v in horary.QUESTIONS.items()],
         "ayanamshas": [{"value": k, "label": v["name"] if isinstance(v, dict) else str(v)}
                        for k, v in jyotish.AYANAMSHAS.items()],
         "months": [{"value": str(i), "label": n} for i, n in enumerate(

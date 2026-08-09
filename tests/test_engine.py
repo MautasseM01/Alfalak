@@ -2911,6 +2911,21 @@ def test_no_select_in_the_site_is_left_empty():
     app = open(_root() + "/assets/app.js", encoding="utf-8").read()
     assert "function autoOptions" in app and "function fillSelect" in app
     assert "select[data-options]" in app
+
+    # **ولا مُعبِّئَين لقائمةٍ واحدة.** كانت صفحة المسائل تُعبّئ
+    # قائمتها بنفسها و`app.js` يُعبّئها كذلك — فخرجت ثمانٍ وأربعون
+    # مسألة بدل أربع وعشرين. رأيتُه في الموقع الحيّ.
+    double = []
+    for name, html in _pages().items():
+        marked = set(re.findall(r'<select[^>]*id="([^"]+)"[^>]*data-options=', html))
+        for sid in marked:
+            for block in re.findall(r'<script>([\s\S]*?)</script>', html):
+                if re.search(rf"\$\('{re.escape(sid)}'\)[\s\S]{{0,400}}?appendChild",
+                             block) or re.search(
+                             rf"getElementById\('{re.escape(sid)}'\)[\s\S]{{0,400}}?appendChild",
+                             block):
+                    double.append(f"{name}#{sid}")
+    assert not double, ("قوائم لها مُعبِّئان:\n  " + "\n  ".join(double))
     # ولا يُطلق `change`: التعبئة ليست اختيارًا من أحد
     assert "sel.dispatchEvent(new Event('change'" not in app, \
         "التعبئة تُطلق `change` — وهي ليست اختيارًا، وقد فجّرت مستمعًا من قبل"

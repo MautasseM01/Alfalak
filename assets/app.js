@@ -260,7 +260,10 @@ function fillSelect(sel, list) {
   list.forEach(item => {
     const o = document.createElement('option');
     if (typeof item === 'string') { o.value = item; o.textContent = item; }
-    else { o.value = item.value; o.textContent = item.label; }
+    else {
+      o.value = item.value; o.textContent = item.label;
+      if (item.note) o.title = item.note;   /* ما كانت الصفحة تزيده */
+    }
     if (o.value === want) o.selected = true;
     sel.appendChild(o);
   });

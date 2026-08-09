@@ -152,15 +152,15 @@ let D = null;
 
 cityInput($('city'));
 
-API('horary', { list: '1' }).then(r => {
-  const sel = $('question');
-  Object.entries(r.questions).forEach(([k, v]) => {
-    const o = document.createElement('option');
-    o.value = k; o.textContent = k; o.title = v.note;
-    sel.appendChild(o);
-  });
+/* **كانت القائمة تُملأ مرّتين**: هذه الصفحة تُعبّئها، و`app.js`
+   يُعبّئها كذلك بسمة `data-options` — فخرجت ثمانيًا وأربعين مسألة
+   بدل أربع وعشرين. رأيتُه في الموقع الحيّ.
+   والقاعدة التي وضعناها: **معبّئٌ واحد**. فالتعبئة في `app.js`،
+   وما كانت هذه الصفحة تزيده (ملاحظةُ كل مسألة) نُقل إلى
+   `/api/options` فلم يضِع. */
+optionsReady().then(() => {
   const s = store.get('hor', {});
-  if (s.question) sel.value = s.question;
+  if (s.question) $('question').value = s.question;
 });
 
 function setNow() {
