@@ -877,3 +877,13 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible,
   .printhead p{margin:2px 0 0;font-size:9.5pt;color:#555}
 }
 .printhead{display:none}
+
+
+/* ── القفز من العجلة إلى النصّ ─────────────────────────────────
+   الصفّ المقصود يومض مرّةً: القفزة وحدها تترك القارئ يسأل
+   «أين وقعتُ؟»، والوميضُ يجيب قبل أن يُسأل. */
+@keyframes falakFlash{0%{background:rgba(217,180,91,.30)}100%{background:transparent}}
+tr.flash>td{animation:falakFlash 1.4s ease-out}
+/* والجِرم في العجلة يُعلن أنه يُنقَر */
+g.pl{cursor:pointer}
+@media print{tr.flash>td{animation:none}}
