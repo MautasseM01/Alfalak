@@ -27,7 +27,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noqa: E402
 from falak import apikeys, depth, gist, horary, ics, interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import mundane, plain, salts, tables, timelords, transits  # noqa: E402
+from falak import bulletin_more, mundane, plain, salts, tables  # noqa: E402
+from falak import timelords, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -173,10 +174,23 @@ def route_bulletin(q):
     place = _one(q, "city") or label
     text = bulletin.render_text(d, for_tomorrow=for_tomorrow, location=place)
 
+    # ــ الأقسام التي كانت محسوبةً ولا تصل ــ
+    # سماء اليوم كاملةً، وزوايا الكواكب بعضها ببعض، وما يقترب —
+    # كلّها من محرّكاتٍ قائمة. وإن أخفق شيءٌ منها بقيت النشرة كما
+    # كانت، فلا تسقط لأجل زيادة.
+    sky, soon = None, []
+    try:
+        sky = bulletin_more.sky_today(day, tzname, lat, lon)
+        soon = bulletin_more.coming(day, tzname)
+        text = text.rstrip() + "\n" + "\n".join(bulletin_more.render(sky, soon))
+    except Exception:
+        sky, soon = None, []
+
     return _apply_level({
         "date": day.isoformat(), "tz": tzname, "place": place,
         "lat": lat, "lon": lon, "mansion_shift": config.MANSION_SHIFT,
         "text": text,
+        "sky": sky, "coming": soon,
         "summary": {
             "moon_sign": d["moon_sign_noon"], "sun_sign": d["sun_sign"],
             "phase": d["phase"]["name"],
