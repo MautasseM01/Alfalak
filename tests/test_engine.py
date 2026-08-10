@@ -3134,7 +3134,22 @@ def test_translation_layer_degrades_to_arabic_and_never_to_blank():
     assert "MutationObserver" in js, \
         "الصفحات تُعيد بناء نفسها بعد الحساب، فما تُرجم يعود عربيًّا"
 
-    assert i18n.coverage()["تامّة"] is True
+    assert i18n.coverage()["كل مفتاح تامّ اللغتين"] is True
+
+    # ــ **والتغطية تُقاس من الصفحات، ولا تنزل** ــ
+    # كتبتُ أوّلًا `"تامّة": True` لأن كل مفتاحٍ له لغتان — وهي
+    # تامّةٌ **بالنسبة إلى نفسها**. ثم قِسْتُها من الصفحات فإذا
+    # هي ١١٪. فقياسُ الشيء بنفسه يُطمئن على خراب.
+    import sys as _sys
+    _sys.path.insert(0, _os.path.join(_root, "tools"))
+    import i18n_todo
+    ui = {s: c for s, c in i18n_todo.phrases().items()
+          if len(s) <= i18n_todo.UI_MAX}
+    done = sum(1 for s in ui if s in i18n.UI)
+    pct = done * 100 / max(len(ui), 1)
+    assert pct >= 20, (
+        f"تغطية الواجهة {pct:.0f}٪ — وقد بلغت ٢٢٪ من قبل، "
+        f"فهذا تراجع لا تقدّم")
 
 
 def test_the_atlas_covers_the_places_its_own_placeholder_promises():

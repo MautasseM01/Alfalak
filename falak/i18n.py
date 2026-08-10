@@ -177,6 +177,104 @@ UI = {
     "القوس الشمسي": ("Solar arc", "Arc solaire"),
     "الأعلام": ("Figures", "Personnalités"),
 
+    # ══════════════════════════════════════════════════════════
+    # مفردات الصناعة — وهي **أنفعُ ما يُترجَم**
+    #
+    # قد يُقال: أليست هذه «متنًا» لا «أثاثًا»؟ والجواب لا.
+    # الجداولُ كلُّها مبنيّةٌ على هذه الخمسين كلمة: أسماء
+    # الأجرام والبروج والزوايا والبيوت. فمن قرأها بالإنجليزية
+    # **قرأ الجدول كلَّه**، ومن لم يقرأها لم ينتفع بشيء.
+    # وهي محدودةٌ معدودة، فترجمتُها يقينٌ لا اجتهاد — بخلاف
+    # نصوص القراءة التي يُفسدها المترجم الآليّ.
+    # ══════════════════════════════════════════════════════════
+    "الشمس": ("Sun", "Soleil"),
+    "القمر": ("Moon", "Lune"),
+    "عطارد": ("Mercury", "Mercure"),
+    "الزهرة": ("Venus", "Vénus"),
+    "المريخ": ("Mars", "Mars"),
+    "المشتري": ("Jupiter", "Jupiter"),
+    "زحل": ("Saturn", "Saturne"),
+    "أورانوس": ("Uranus", "Uranus"),
+    "نبتون": ("Neptune", "Neptune"),
+    "بلوتو": ("Pluto", "Pluton"),
+    "خيرون": ("Chiron", "Chiron"),
+    "ليليث": ("Lilith", "Lilith"),
+    "الرأس": ("North Node", "Nœud Nord"),
+    "الذنب": ("South Node", "Nœud Sud"),
+    "الأجرام": ("Bodies", "Astres"),
+
+    "الحمل": ("Aries", "Bélier"),
+    "الثور": ("Taurus", "Taureau"),
+    "الجوزاء": ("Gemini", "Gémeaux"),
+    "السرطان": ("Cancer", "Cancer"),
+    "الأسد": ("Leo", "Lion"),
+    "العذراء": ("Virgo", "Vierge"),
+    "الميزان": ("Libra", "Balance"),
+    "العقرب": ("Scorpio", "Scorpion"),
+    "القوس": ("Sagittarius", "Sagittaire"),
+    "الجدي": ("Capricorn", "Capricorne"),
+    "الدلو": ("Aquarius", "Verseau"),
+    "الحوت": ("Pisces", "Poissons"),
+
+    "الطالع": ("Ascendant", "Ascendant"),
+    "الغارب": ("Descendant", "Descendant"),
+    "وسط السماء": ("Midheaven", "Milieu du Ciel"),
+    "وتد الأرض": ("Imum Coeli", "Fond du Ciel"),
+
+    "اقتران": ("Conjunction", "Conjonction"),
+    "مقابلة": ("Opposition", "Opposition"),
+    "تربيع": ("Square", "Carré"),
+    "تثليث": ("Trine", "Trigone"),
+    "تسديس": ("Sextile", "Sextile"),
+    "إيجابية": ("harmonious", "harmonieux"),
+    "سلبية": ("tense", "tendu"),
+    "مُقبِلة": ("applying", "appliquant"),
+    "مُدبِرة": ("separating", "séparant"),
+    "الوجاج": ("Orb", "Orbe"),
+    "يتمّ": ("exact on", "exact le"),
+    "منزلة القمر": ("Lunar mansion", "Manoir lunaire"),
+    "الأَلْمُطَن": ("Almuten", "Almuten"),
+    "الطائفة": ("Sect", "Secte"),
+
+    # ــ زمن ــ
+    "الأحد": ("Sunday", "Dimanche"),
+    "الاثنين": ("Monday", "Lundi"),
+    "الثلاثاء": ("Tuesday", "Mardi"),
+    "الأربعاء": ("Wednesday", "Mercredi"),
+    "الخميس": ("Thursday", "Jeudi"),
+    "الجمعة": ("Friday", "Vendredi"),
+    "السبت": ("Saturday", "Samedi"),
+    "السنة": ("Year", "Année"),
+    "الشهر": ("Month", "Mois"),
+    "الآن": ("Now", "Maintenant"),
+    "من تاريخ": ("From", "À partir du"),
+
+    # ــ ألفاظ متفرّقة في الواجهة ــ
+    "الكلّ": ("All", "Tout"),
+    "أفضلها": ("Best", "Les meilleurs"),
+    "أنثى": ("Female", "Féminin"),
+    "ذكر": ("Male", "Masculin"),
+    "أين أنت الآن؟": ("Where are you now?", "Où êtes-vous ?"),
+    "مكان مولدك": ("Your birthplace", "Votre lieu de naissance"),
+    "ساعة مولدك": ("Your birth time", "Votre heure de naissance"),
+    "تاريخ السؤال": ("Date of question", "Date de la question"),
+    "الخريطة الهندية": ("Vedic chart", "Thème védique"),
+    "الأعمدة الصينية": ("Chinese pillars", "Piliers chinois"),
+    "عرض النصّ الخام": ("Show raw text", "Afficher le texte brut"),
+    "إخفاء النصّ الخام": ("Hide raw text", "Masquer le texte brut"),
+    "أغلق قائمة التصفّح": ("Close navigation", "Fermer la navigation"),
+    "أقسام الخريطة": ("Chart sections", "Sections du thème"),
+    "أحداث الشهر كلّه": ("The whole month's events",
+                          "Les événements du mois"),
+    "أيّ فترة تعيش الآن": ("Which period you are living",
+                            "La période que vous vivez"),
+    "أفضل الأيام لغرض": ("Best days for a purpose",
+                          "Meilleurs jours selon l'objet"),
+    "(راجع)": ("(retrograde)", "(rétrograde)"),
+    "· البيت": ("· House", "· Maison"),
+    "· يولياني": ("· Julian", "· julien"),
+    "(بالتقويم اليولياني)": ("(Julian calendar)", "(calendrier julien)"),
+
     # ــ ذيل الصفحة ــ
     "alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris":
         ("alfalak.vercel.app · computed with the Swiss Ephemeris",
@@ -204,16 +302,21 @@ def normalize(lang: str | None) -> str:
 
 def coverage() -> dict:
     """
-    **كم بقي؟** — بالرقم لا بالظنّ.
+    حالُ القاموس في نفسه — **لا نسبةُ تغطيته للصفحات**.
 
-    الرقم الكلّي مقيسٌ من المشروع (انظر رأس الملفّ): أثاثُ
-    الواجهة نحو ٣١١ عبارةً مميّزة في الصفحات.
+    وهذا فرقٌ وقعتُ فيه: كتبتُ أوّلًا `"تامّة": True` لأن كل
+    مفتاحٍ له إنجليزيّةٌ وفرنسيّة — **وهي تامّةٌ بالنسبة إلى
+    نفسها**. ثم قِسْتُها من الصفحات فإذا التغطية إحدى عشرة
+    بالمئة. **فقياسُ الشيء بنفسه يُطمئن على خراب.**
+
+    والنسبةُ الصادقة في `tools/i18n_todo.py`، وهو يستخرجها من
+    الصفحات لا من هنا.
     """
-    n = len(UI)
     return {
-        "مفاتيح مترجَمة": n,
+        "مفاتيح مترجَمة": len(UI),
         "لغات": [k for k in LANGS if k != "ar"],
-        "تامّة": all(all(p) for p in UI.values()),
+        "كل مفتاح تامّ اللغتين": all(all(p) for p in UI.values()),
+        "التغطية": "تُقاس بـ tools/i18n_todo.py من الصفحات لا من هنا",
         "ملاحظة": ("نصوص القراءة تبقى عربية عمدًا — والمصطلح "
                    "التراثيّ يُفسَد بالترجمة الآلية."),
     }
