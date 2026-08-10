@@ -31,7 +31,13 @@
 .mapbox svg { display:block; width:100%; height:auto; }
 .grat  { stroke:var(--line); stroke-width:.4; opacity:.55; fill:none; }
 .eqline{ stroke:var(--line); stroke-width:.8; opacity:.9; }
-.city  { fill:var(--muted); opacity:.42; }
+.mark circle { fill:var(--muted); opacity:.75 }
+.mark text { fill:var(--muted); font-size:6.5px; opacity:.85 }
+.gtx { fill:var(--dim); font-size:6px }
+.lbl { font-size:7.5px; font-weight:600; paint-order:stroke;
+       stroke:rgba(10,15,29,.85); stroke-width:2.2px }
+.here-t { fill:var(--gold); font-size:8px; font-weight:700;
+          paint-order:stroke; stroke:rgba(10,15,29,.9); stroke-width:2.4px }
 .here  { fill:var(--gold); }
 .mapleg{ display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:12px; }
 .mapleg button { background:none; border:1px solid var(--line);
@@ -175,47 +181,127 @@ function segs(pts) {
   return out.filter(s => s.length > 1);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   رسمُ الخريطة — **وما كان ينقصها**
+
+   كانت شبكةً وثلاثمئةً وأربعًا وستّين نقطةً مجهولة وأربعين خطًّا
+   بلا اسم. فيخرج **حقلُ نقاطٍ لا خريطة**، والعين لا تهتدي بنقطةٍ
+   لا اسم لها ولا بخطٍّ لا يقول من هو.
+
+   فأُصلحت ثلاث:
+
+   ١. **كلُّ خطٍّ يُسمّي نفسه عند طرفه** — رمزُ الكوكب ورمزُ
+      الوتد (AS/DS/MC/IC)، وهو اصطلاحُ أهل الصناعة. ومن رأى
+      «♄ MC» عرف ما أمامه بلا أن يُحوّم.
+
+   ٢. **الشبكة تُعلَّم**: خطُّ الاستواء والمَداران والدائرتان
+      القطبيّتان بأسمائها — فهي معالمُ السماء لا الأرض، وهي
+      التي تُفسّر انقطاع الخطوط عند القطبين.
+
+   ٣. **المدن معالمُ مكتوبةُ الأسماء**، اثنتان وأربعون موزّعةً
+      على القارّات، لا حقلَ نقاطٍ صامتة.
+
+   **وما زال ينقصها رسمُ السواحل** — ولا نملك بياناتها في هذا
+   البناء، ولا تُجلَب وقتَ التشغيل. فتُقال ناقصةً ولا يُدَّعى
+   غيرُ ذلك.
+   ══════════════════════════════════════════════════════════════ */
+
+/* اصطلاحُ الأوتاد كما يكتبه أهل الصناعة */
+const ANGLE_CODE = { asc: 'AS', dsc: 'DS', mc: 'MC', ic: 'IC' };
+const GLYPH = {
+  'الشمس':'\u2609','القمر':'\u263D','عطارد':'\u263F','الزهرة':'\u2640',
+  'المريخ':'\u2642','المشتري':'\u2643','زحل':'\u2644',
+  'أورانوس':'\u2645','نبتون':'\u2646','بلوتو':'\u2647'
+};
+
+/* خطوطُ العرض المعلومة — وهي **معالمُ سماءٍ لا أرض**:
+   المَدار حدُّ ما تبلغه الشمس، والدائرة القطبية حدُّ الشروق. */
+const PARALLELS = [
+  [66.56, 'الدائرة القطبية الشمالية', true],
+  [23.44, 'مَدار السرطان', true],
+  [0, 'خطّ الاستواء', true],
+  [-23.44, 'مَدار الجدي', true],
+  [-66.56, 'الدائرة القطبية الجنوبية', true],
+];
+
 function drawMap() {
   if (!DATA) return '';
   const on = b => !SHOW || SHOW.includes(b);
   let g = '';
 
-  /* الشبكة: كل ثلاثين درجة */
-  for (let lo = -180; lo <= 180; lo += 30)
+  /* الطول: كل ثلاثين درجة، مع أرقامها أسفلَ الخريطة */
+  for (let lo = -180; lo <= 180; lo += 30) {
     g += `<line class="grat" x1="${px(lo)}" y1="0" x2="${px(lo)}" y2="${H}"/>`;
-  for (let la = -60; la <= 60; la += 30)
-    g += `<line class="${la === 0 ? 'eqline grat' : 'grat'}" x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`;
+    if (lo > -180 && lo < 180)
+      g += `<text class="gtx" x="${px(lo)}" y="${H - 4}" text-anchor="middle"
+        >${Math.abs(lo)}°${lo === 0 ? '' : (lo > 0 ? 'E' : 'W')}</text>`;
+  }
 
-  /* المدن معالمُ يُهتدى بها — ولا حاجة إلى صورةٍ للعالم:
-     مواضع العمران ترسم اليابسة بنفسها. */
-  g += (DATA.cities || []).map(c =>
-    `<circle class="city" cx="${px(c.lon).toFixed(1)}" cy="${py(c.lat).toFixed(1)}" r="1.1"/>`).join('');
+  /* العرض: المعالم بأسمائها، وسائرُها خفيّ */
+  PARALLELS.forEach(([la, name, named]) => {
+    g += `<line class="${la === 0 ? 'eqline' : 'grat'}"
+        x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`;
+    if (named)
+      g += `<text class="gtx" x="4" y="${py(la) - 3}">${name}</text>`;
+  });
+  [45, -45].forEach(la =>
+    g += `<line class="grat" x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`);
 
+  /* المعالم: نقطةٌ واسمٌ — **ولا نقطةَ بلا اسم** */
+  g += (DATA.cities || []).map(c => {
+    const x = px(c.lon), y = py(c.lat);
+    const flip = x > W - 70;            /* قربَ الحافّة يُقلَب الاسم */
+    return `<g class="mark"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.7"/>
+      <text x="${(x + (flip ? -4 : 4)).toFixed(1)}" y="${(y + 3).toFixed(1)}"
+        text-anchor="${flip ? 'end' : 'start'}">${esc(c.n)}</text></g>`;
+  }).join('');
+
+  /* ــ الخطوط، ومعها أسماؤها ــ */
   (DATA.bodies || []).forEach(b => {
     if (!on(b.name)) return;
     const col = MAPC[b.name] || '#9aa7bd';
-    const V = (x, k) => `<line x1="${px(x)}" y1="0" x2="${px(x)}" y2="${H}"
-        stroke="${col}" stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}"
-        opacity=".85"><title>${esc(b.name)} — ${k === 'mc' ? 'وسط السماء' : 'وتد الأرض'}</title></line>`;
-    g += V(b.mc, 'mc') + V(b.ic, 'ic');
+    const gl = GLYPH[b.name] || '';
+
+    /* الرأسيّان: وسط السماء ووتد الأرض */
+    [['mc', b.mc], ['ic', b.ic]].forEach(([k, lon]) => {
+      const x = px(lon);
+      g += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="${col}"
+        stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"/>
+        <text class="lbl" x="${x}" y="11" text-anchor="middle" fill="${col}"
+          >${gl}\uFE0E ${ANGLE_CODE[k]}</text>`;
+    });
+
+    /* المنحنيان: الطالع والغارب — والاسم عند أوّل نقطةٍ مرئية */
     ['asc', 'dsc'].forEach(k => {
-      segs(b[k] || []).forEach(s => {
-        const d = s.map(p => `${px(p[1]).toFixed(1)},${py(p[0]).toFixed(1)}`).join(' ');
+      const parts = segs(b[k] || []);
+      parts.forEach((sgm, i) => {
+        const d = sgm.map(pt => `${px(pt[1]).toFixed(1)},${py(pt[0]).toFixed(1)}`).join(' ');
         g += `<polyline points="${d}" fill="none" stroke="${col}"
-          stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"
-          ><title>${esc(b.name)} — ${k === 'asc' ? 'الطالع' : 'الغارب'}</title></polyline>`;
+          stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"/>`;
+        if (i === 0) {
+          const pt = sgm[Math.floor(sgm.length / 2)];
+          g += `<text class="lbl" x="${(px(pt[1]) + 5).toFixed(1)}"
+            y="${(py(pt[0]) - 4).toFixed(1)}" fill="${col}"
+            >${gl}\uFE0E ${ANGLE_CODE[k]}</text>`;
+        }
       });
     });
   });
 
-  /* المكان المسؤول عنه */
-  if (DATA.where_lat != null)
-    g += `<circle class="here" cx="${px(DATA.where_lon)}" cy="${py(DATA.where_lat)}" r="4"/>
-          <circle cx="${px(DATA.where_lon)}" cy="${py(DATA.where_lat)}" r="8"
-            fill="none" stroke="var(--gold)" stroke-width="1" opacity=".6"/>`;
+  /* المكان المسؤول عنه — أوضحُ ما في اللوحة */
+  if (DATA.where_lat != null) {
+    const x = px(DATA.where_lon), y = py(DATA.where_lat);
+    g += `<circle class="here" cx="${x}" cy="${y}" r="4"/>
+      <circle cx="${x}" cy="${y}" r="9" fill="none"
+        stroke="var(--gold)" stroke-width="1.1" opacity=".7"/>
+      <text class="here-t" x="${x}" y="${y - 13}" text-anchor="middle"
+        >${esc(String(DATA.where).split('—')[0].trim())}</text>`;
+  }
 
   return `<div class="mapbox"><svg viewBox="0 0 ${W} ${H}" role="img"
-      aria-label="خريطة العالم وعليها خطوط كواكب مولدك">${g}</svg></div>`;
+      aria-label="خريطة العالم وعليها خطوط كواكب مولدك">${g}</svg></div>
+    <p class="note" style="margin-top:8px">لا تُرسَم السواحل في هذا البناء —
+      والمعالمُ المكتوبة والشبكةُ تقومان مقامها في تحديد الجهة.</p>`;
 }
 
 const legend = () => `<div class="mapleg" role="group" aria-label="الأجرام">

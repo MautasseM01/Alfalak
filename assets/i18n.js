@@ -200,14 +200,21 @@ function i18nNotice() {
   if (I18N_LANG === 'ar' || !I18N_NOTE) return;
   const main = document.getElementById('main');
   if (!main) return;
-  const p = document.createElement('p');
-  p.id = 'i18nNote';
-  p.className = 'note no-i18n';
-  p.dir = 'ltr';
-  p.style.cssText = 'border-inline-start:3px solid var(--gold);' +
-    'padding-inline-start:12px;margin:14px 0';
-  p.textContent = I18N_NOTE;
-  main.insertBefore(p, main.firstChild);
+  /* **الرسالة أسطرٌ لا سطر.** أوّلُ صياغةٍ وضعتها في `<p>`
+     واحدة بـ`textContent`، فابتُلعت أسطرُها وصارت كتلةً واحدة —
+     **وفيها ما يفعله القارئ الآن**، وهو أنفعُ ما فيها.
+     فتُقسَم على أسطرها، ويُغلَّظ ما بين نجمتين. */
+  const box = document.createElement('div');
+  box.id = 'i18nNote';
+  box.className = 'i18n-note no-i18n';
+  box.dir = 'ltr';
+  box.setAttribute('role', 'note');
+  const esc0 = t => String(t).replace(/[&<>]/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  box.innerHTML = I18N_NOTE.split('\n')
+    .map(line => `<p>${esc0(line).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</p>`)
+    .join('');
+  main.insertBefore(box, main.firstChild);
 }
 
 /* مبدّل اللغة في الشريط — بأسماء اللغات بألسنتها لا بأعلام:

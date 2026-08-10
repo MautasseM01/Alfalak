@@ -49,16 +49,36 @@ LANGS = {
 }
 DEFAULT = "ar"
 
-# ما يُقال لمن اختار لغةً غير العربية
+# ══════════════════════════════════════════════════════════════════
+# الرسالة التحذيرية — **بلغة القارئ، وفيها ما يفعله الآن**
+#
+# أوّل صياغةٍ قالت «النصوص تبقى عربية» ووقفت. وذلك **صدقٌ
+# ناقص**: يعرف القارئ أنه لن يقرأ، ولا يعرف ماذا يصنع.
+#
+# فأُضيف إليها أمران:
+#   · **ما يفعله الآن**: النقر بالزرّ الأيمن → ترجمة المتصفّح.
+#     وهي ترجمةٌ سطحيّة، **ويُقال إنها سطحيّة** لا يُخفى.
+#   · **وما نحن فاعلون**: ترجمةٌ تُراعي المصطلح تُبنى.
+#
+# فمن قرأها عرف حالَه وحيلتَه معًا.
+# ══════════════════════════════════════════════════════════════════
 PARTIAL = {
-    "en": "Readings and interpretations are still in Arabic. The site's "
-          "menus, forms and tables are translated; the astrological texts "
-          "are not — they are traditional Arabic sources, and machine "
-          "translation would damage them.",
-    "fr": "Les lectures et interprétations restent en arabe. Les menus, "
-          "formulaires et tableaux sont traduits ; les textes astrologiques "
-          "ne le sont pas — ce sont des sources arabes traditionnelles, "
-          "qu'une traduction automatique abîmerait.",
+    "en": ("**The readings on this page are still in Arabic.** The menus, "
+           "forms and tables are translated; the astrological "
+           "interpretations are not — they are traditional Arabic sources, "
+           "and a machine would flatten their terminology.\n"
+           "**For a rough reading now:** right-click the page and choose "
+           "your browser's Translate. It will be shallow, but readable.\n"
+           "We are building a proper translation that keeps the "
+           "terminology intact."),
+    "fr": ("**Les lectures de cette page restent en arabe.** Les menus, "
+           "formulaires et tableaux sont traduits ; les interprétations "
+           "astrologiques ne le sont pas — ce sont des sources arabes "
+           "traditionnelles, qu'une machine aplatirait.\n"
+           "**Pour une lecture approximative dès maintenant :** clic droit "
+           "sur la page, puis « Traduire ». Ce sera superficiel, mais "
+           "lisible.\n"
+           "Nous préparons une traduction fidèle qui préserve les termes."),
 }
 
 # ══════════════════════════════════════════════════════════════════
@@ -68,6 +88,57 @@ PARTIAL = {
 # و`coverage()` تقول كم بقي بالرقم لا بالظنّ.
 # ══════════════════════════════════════════════════════════════════
 UI = {
+    # ══════════════════════════════════════════════════════════
+    # بطاقاتُ الرئيسة — **وهي أوّل ما تراه العين، وبقيت عربية**
+    # ══════════════════════════════════════════════════════════
+    "كيف يومي؟": ("How is my day?", "Comment est ma journée ?"),
+    "من أنا؟": ("Who am I?", "Qui suis-je ?"),
+    "متى أفعل هذا؟": ("When should I do this?", "Quand dois-je agir ?"),
+    "هل نتوافق؟": ("Are we compatible?", "Sommes-nous compatibles ?"),
+    "عندي سؤال محيّر": ("I have a puzzling question",
+                        "J'ai une question qui m'embarrasse"),
+    "أريد أن أفهم هذا العلم": ("I want to understand this craft",
+                                "Je veux comprendre cet art"),
+    "حال السماء اليوم، وما يصلح فيه وما يُؤجَّل":
+        ("The sky today — what suits it and what should wait",
+         "Le ciel aujourd'hui — ce qui convient et ce qui attend"),
+    "خريطة مولدك وقراءتها — تحتاج تاريخ ميلادك وساعته ومكانه":
+        ("Your birth chart and its reading — needs your date, time and place",
+         "Votre thème natal et sa lecture — date, heure et lieu requis"),
+    "أفضل يوم وساعة لأمر تنويه، عبر الشهور القادمة":
+        ("The best day and hour for what you intend, across coming months",
+         "Le meilleur jour et heure pour votre projet, dans les mois à venir"),
+    "أحداث الشهر كلّه: الانتقالات والكسوف والرجوع، بثلاثة أساليب في الصياغة":
+        ("The whole month's events: ingresses, eclipses and retrogrades, "
+         "in three styles of wording",
+         "Les événements du mois : entrées de signe, éclipses et rétrogradations, "
+         "en trois styles"),
+    "اثنتا عشرة ساعة نهارًا ومثلها ليلًا، لكلٍّ كوكبها وما تصلح له.":
+        ("Twelve hours by day and twelve by night, each with its planet "
+         "and what it suits.",
+         "Douze heures le jour et douze la nuit, chacune avec sa planète."),
+    "أيّ فترة من عمرك تعيش الآن، ومتى تنتهي، وخريطة سنتك القادمة.":
+        ("Which period of your life you are living, when it ends, and "
+         "your coming year's chart.",
+         "Quelle période de votre vie vous vivez, quand elle finit, et le "
+         "thème de votre année."),
+    "جدول المواقع لأي لحظة، مع الرجوع وطور القمر.":
+        ("A table of positions for any moment, with retrogrades and moon phase.",
+         "Un tableau des positions à tout instant, avec rétrogradations et phase lunaire."),
+    "ابنِ على الفَلَك، أو أدخِل السماء إلى تقويم هاتفك باشتراك واحد.":
+        ("Build on Al-Falak, or bring the sky into your phone's calendar.",
+         "Construisez sur Al-Falak, ou faites entrer le ciel dans votre agenda."),
+    "السماء الآن": ("The sky now", "Le ciel maintenant"),
+    "الهلال المتناقص": ("Waning crescent", "Dernier croissant"),
+    "الهلال المتزايد": ("Waxing crescent", "Premier croissant"),
+    "الأحدب المتزايد": ("Waxing gibbous", "Gibbeuse croissante"),
+    "الأحدب المتناقص": ("Waning gibbous", "Gibbeuse décroissante"),
+    "التربيع الأوّل": ("First quarter", "Premier quartier"),
+    "التربيع الأخير": ("Last quarter", "Dernier quartier"),
+    "البدر": ("Full moon", "Pleine lune"),
+    "المحاق": ("New moon", "Nouvelle lune"),
+    "ليليث الحقيقية": ("True Lilith", "Vraie Lilith"),
+
     # ══════════════════════════════════════════════════════════
     # أبوابُ التصفّح ومبدّل المستوى — **وهي أوّل ما يُرى ولم تُترجَم**
     #

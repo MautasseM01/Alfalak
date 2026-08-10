@@ -905,3 +905,16 @@ g.pl{cursor:pointer}
 .langbox button:hover{color:var(--text);border-color:var(--gold-dim)}
 .langbox button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(217,180,91,.08)}
 @media print{.langbox{display:none}}
+
+/* ── رسالة «هذه الصفحة ليست مترجمة» ───────────────────────────
+   تُرى قبل أن تُقرأ: لون التنبيه وحدٌّ غليظ. وفيها **ما يفعله
+   القارئ الآن** — لا وعدٌ بما سنفعله نحن، فذلك لا ينفعه. */
+.i18n-note{
+  border:1px solid var(--gold-dim);background:rgba(217,180,91,.07);
+  border-inline-start-width:3px;border-radius:12px;
+  padding:14px 18px;margin:16px 0 22px
+}
+.i18n-note p{margin:0 0 7px;color:var(--muted);font-size:.87rem;line-height:1.75}
+.i18n-note p:last-child{margin-bottom:0}
+.i18n-note b{color:var(--text)}
+@media print{.i18n-note{display:none}}
