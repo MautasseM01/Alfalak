@@ -3064,6 +3064,55 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_the_layout_actually_flips_with_the_language():
+    """
+    **قلتُها ولم أقِسها.**
+
+    قلتُ عند بناء طبقة الترجمة إن التنسيق «مبنيٌّ على الخصائص
+    المنطقية فينقلب مع `dir`». ثم قِسْتُه فكان الادّعاء صحيحًا
+    في جملته — ٩٣٪ منطقيّة — **وباطلًا في موضعٍ يمسّ كل صفحة**:
+
+        th, td { text-align: right }
+
+    فكلُّ خليّةٍ في كل جدولٍ في الموقع مصفوفةٌ إلى اليمين. وذلك
+    صحيحٌ بالعربية، **خطأٌ محضٌ بالإنجليزية**.
+
+    > **والأداةُ نفسها كانت صامتة.** أوّلُ صياغةٍ لشرط الاستثناء
+    > تبحث عن اسم الخاصّيّة في القاعدة — والقاعدةُ تحوي
+    > `text-align:right` نفسَه، فكان كل خطأٍ يُعفي نفسَه بنفسه.
+    > **اكتشفتُه بأن أعدتُ الخطأ عمدًا فلم يُصطَد.**
+    > والحارسُ الذي لا يُجرَّب على خطأٍ معلوم لا يُوثَق به.
+    """
+    import os as _os
+    import sys as _sys
+
+    _root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    _sys.path.insert(0, _os.path.join(_root, "tools"))
+    import check_bidi
+
+    bad = check_bidi.scan()
+    assert not bad, "خصائص لا تنقلب مع اللغة: " + "، ".join(
+        f"{f}:{ln} «{got}»" for f, ln, got, _ in bad[:5])
+
+    # ــ **والحارس يُجرَّب على خطأٍ معلوم** ــ
+    # وإلّا فقد يكون صامتًا كما كان، فيُقال «لا خطأ» وفيه الخطأ.
+    css = _os.path.join(_root, "assets", "style.css")
+    orig = open(css, encoding="utf-8").read()
+    try:
+        open(css, "w", encoding="utf-8").write(
+            orig.replace("text-align:start;border-bottom",
+                         "text-align:right;border-bottom", 1))
+        assert check_bidi.scan(), \
+            "الحارس لا يصطاد خطأً زُرِع عمدًا — فهو يُطمئن على خراب"
+    finally:
+        open(css, "w", encoding="utf-8").write(orig)
+
+    # ــ واللغتان الأخريان تُعلنان اتّجاههما ــ
+    from api.index import dispatch
+    assert dispatch("/api/i18n", {"lang": ["en"]})["dir"] == "ltr"
+    assert dispatch("/api/i18n", {"lang": ["ar"]})["dir"] == "rtl"
+
+
 def test_translation_layer_degrades_to_arabic_and_never_to_blank():
     """
     طبقة الترجمة — **والمفتاح هو النصّ العربيّ نفسه**.

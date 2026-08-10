@@ -122,7 +122,8 @@ a.tile .ico{font-size:1.5rem;color:var(--gold);line-height:1}
 a.tile h3{margin:8px 0 4px;font-size:1rem;color:var(--text);font-weight:600}
 a.tile p{margin:0;color:var(--muted);font-size:.82rem;line-height:1.7}
 a.tile.soon{opacity:.5;pointer-events:none}
-a.tile.soon::after{content:"قريبًا";float:left;font-size:.68rem;color:var(--gold-dim);border:1px solid var(--gold-dim);border-radius:var(--r-pill);padding:1px 9px}
+/* الماديّة أوّلًا احتياطًا لمتصفّحٍ قديم، ثم المنطقية تنسخها */
+a.tile.soon::after{content:"قريبًا";float:left;float:inline-end;font-size:.68rem;color:var(--gold-dim);border:1px solid var(--gold-dim);border-radius:var(--r-pill);padding:1px 9px}
 
 /* ── نماذج ── */
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px;align-items:end}
@@ -224,7 +225,7 @@ input::placeholder{color:var(--dim)}
 }
 .sel-opt.on{background:rgba(217,180,91,.12)}
 .sel-opt[aria-selected="true"]{color:var(--gold);font-weight:600}
-.sel-opt[aria-selected="true"]::after{content:"✓";float:left;opacity:.85}
+.sel-opt[aria-selected="true"]::after{content:"✓";float:left;float:inline-end;opacity:.85}
 .sel-opt[aria-disabled="true"]{opacity:.45;cursor:default}
 .sel-grp{
   padding:9px 12px 5px;font-size:.74rem;color:var(--dim);
@@ -269,7 +270,11 @@ input::placeholder{color:var(--dim)}
 
 /* ── الجداول ── */
 table{width:100%;border-collapse:collapse;font-size:.87rem}
-th,td{padding:8px 10px;text-align:right;border-bottom:1px solid rgba(255,255,255,.05)}
+/* **`text-align:right` كان في كل خليّةٍ من كل جدول.** وهو صحيحٌ
+   بالعربية وخطأٌ محضٌ بالإنجليزية: تُصفّ الجداول كلُّها إلى
+   اليمين في نصٍّ يجري إلى اليسار. و`start` تعني «أوّل السطر»
+   أيًّا كانت جهتُه — فتصحّ في اللسانين. */
+th,td{padding:8px 10px;text-align:start;border-bottom:1px solid rgba(255,255,255,.05)}
 th{color:var(--muted);font-weight:500;font-size:.78rem;border-bottom-color:var(--line)}
 td.sym{color:var(--gold);font-size:1.05rem;width:1%}
 td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -283,7 +288,7 @@ tr:last-child td{border-bottom:0}
 .bar{display:grid;grid-template-columns:78px 1fr 48px;align-items:center;gap:10px;font-size:.83rem}
 .bar .track{height:7px;border-radius:var(--r-pill);background:rgba(255,255,255,.06);overflow:hidden}
 .bar .fill{height:100%;border-radius:var(--r-pill);background:var(--gold)}
-.bar .val{color:var(--muted);font-variant-numeric:tabular-nums;text-align:left;font-size:.79rem}
+.bar .val{color:var(--muted);font-variant-numeric:tabular-nums;text-align:end;font-size:.79rem}
 
 /* ── الشرح عند الطلب ── */
 button.q{
