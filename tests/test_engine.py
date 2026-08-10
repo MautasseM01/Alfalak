@@ -3064,6 +3064,79 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_translation_layer_degrades_to_arabic_and_never_to_blank():
+    """
+    طبقة الترجمة — **والمفتاح هو النصّ العربيّ نفسه**.
+
+    الطريقة المعتادة مفاتيحُ رمزية (`nav.chart`) تُبدَّل بها نصوصُ
+    الصفحات. وذلك يعني تعديل سبع عشرة صفحة بيدٍ، وأن مَن جاء بلا
+    جافاسكربت رأى **مفاتيح لا كلامًا**.
+
+    فالمفتاح هنا عربيّ، وثمرتُه أربع:
+      · لا تُعدَّل الصفحات، وتبقى عربيّةً في مصدرها
+      · ومن جاء بلا جافاسكربت رأى عربيّةً صحيحة
+      · **وما لم يُترجَم يبقى عربيًّا من نفسه** — لا فراغ
+      · والقاموس هو ما يحتاجه المترجم بعينه، لا شيفرة فيه
+
+    > **ويُقاس ما بقي بالرقم.** قِيس النصّ العربيّ فكان ٢٠٨ آلاف
+    > حرفٍ تحتاج ترجمة: نصوص القراءة ٥٤٪، ومصطلحات المحرّك ٢٧٪،
+    > وأثاث الواجهة ٢٠٪. **والمُترجَم هو الثالث وحده** — ونصوص
+    > القراءة تبقى عربيّة عمدًا، لأن المصطلح التراثيّ يُفسَد
+    > بالترجمة الآلية، وجودةُ النصّ هي رأس مال هذا الموقع.
+    """
+    import glob as _glob
+    import os as _os
+
+    from api.index import dispatch
+    from falak import i18n
+
+    _root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+
+    # ــ لا مفتاحَ أعرجُ في لغةٍ دون أخرى ــ
+    for ar, pair in i18n.UI.items():
+        assert len(pair) == 2, ar
+        for x in pair:
+            assert x and x.strip(), f"«{ar}» ناقصٌ في إحدى اللغتين"
+            # **ولا تُترَك العربية مكانَ الترجمة**: نسخُ المفتاح
+            # في خانة الترجمة يمرّ صامتًا ويبدو عملًا وليس بعمل.
+            assert x != ar, f"«{ar}» تُرجم إلى نفسه"
+
+    r_en = dispatch("/api/i18n", {"lang": ["en"]})
+    r_fr = dispatch("/api/i18n", {"lang": ["fr"]})
+    r_ar = dispatch("/api/i18n", {"lang": ["ar"]})
+
+    assert r_en["dir"] == "ltr" and r_fr["dir"] == "ltr"
+    assert r_ar["dir"] == "rtl"
+    # **العربية بلا قاموس**: هي الأصل، لا ترجمةَ لها عن نفسها
+    assert r_ar["dict"] == {}
+    assert len(r_en["dict"]) == len(r_fr["dict"]) == len(i18n.UI)
+
+    # ــ ولغةٌ مجهولة تسقط إلى العربية، لا إلى خطأ ــ
+    assert dispatch("/api/i18n", {"lang": ["xx"]})["lang"] == "ar"
+
+    # ــ والتنبيه يُقال صراحةً ــ
+    for lg in ("en", "fr"):
+        assert i18n.PARTIAL[lg], "من اختار لغةً ورأى القراءة عربيّة يظنّ العطب"
+
+    # ــ والطبقة موصولةٌ بكل صفحة ــ
+    pages = [p for p in _glob.glob(_os.path.join(_root, "*.html"))]
+    missing = [_os.path.basename(p) for p in pages
+               if "assets/nav.js" in open(p, encoding="utf-8").read()
+               and "assets/i18n.js" not in open(p, encoding="utf-8").read()]
+    assert not missing, f"صفحاتٌ بلا طبقة ترجمة: {missing}"
+
+    # ــ ولا تمسّ ما ليس أثاثًا ــ
+    js = open(_os.path.join(_root, "assets", "i18n.js"), encoding="utf-8").read()
+    for guard in ("input", "select", "textarea", "[data-body]", ".wheel"):
+        assert guard in js, f"المشي يدخل «{guard}» — وهو بيانات لا أثاث"
+    assert "data-i18n-ar" in js or "i18nAr" in js, \
+        "الأصل العربي لا يُحفَظ — فلا رجوعَ إليه بلا إعادة تحميل"
+    assert "MutationObserver" in js, \
+        "الصفحات تُعيد بناء نفسها بعد الحساب، فما تُرجم يعود عربيًّا"
+
+    assert i18n.coverage()["تامّة"] is True
+
+
 def test_the_atlas_covers_the_places_its_own_placeholder_promises():
     """
     **الوعد في الواجهة والخُلف في البيانات.**

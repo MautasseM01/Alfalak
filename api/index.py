@@ -28,7 +28,8 @@ from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noq
 from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import bulletin_more, figures, hidden, mundane  # noqa: E402
+from falak import bulletin_more, figures, hidden, i18n  # noqa: E402
+from falak import mundane  # noqa: E402
 from falak import plain  # noqa: E402
 from falak import progress, salts  # noqa: E402
 from falak import tables  # noqa: E402
@@ -776,6 +777,24 @@ def route_figures(q):
             "count": len(figures.FIGURES)}
 
 
+def route_i18n(q):
+    """
+    قاموسُ الواجهة بلغةٍ مطلوبة — **والمفتاح هو النصّ العربي**.
+
+    فلا تُعدَّل الصفحات ولا تُوسَم عناصرها، ومن جاء بلا جافاسكربت
+    رأى عربيّةً صحيحة. وما لم يُترجَم يبقى عربيًّا من نفسه.
+    """
+    lang = i18n.normalize(_one(q, "lang"))
+    return {
+        "lang": lang,
+        "dir": i18n.LANGS[lang]["dir"],
+        "langs": i18n.LANGS,
+        "dict": i18n.dict_for(lang),
+        "partial": i18n.PARTIAL.get(lang, ""),
+        "coverage": i18n.coverage(),
+    }
+
+
 def route_options(q):
     """
     **كل قوائم الاختيار في الموقع، من موضع واحد.**
@@ -1055,6 +1074,7 @@ ROUTES = {
     "salts": route_salts,
     "astromap": route_astromap,
     "figures": route_figures,
+    "i18n": route_i18n,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,

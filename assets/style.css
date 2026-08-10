@@ -887,3 +887,16 @@ tr.flash>td{animation:falakFlash 1.4s ease-out}
 /* والجِرم في العجلة يُعلن أنه يُنقَر */
 g.pl{cursor:pointer}
 @media print{tr.flash>td{animation:none}}
+
+/* ── مبدّل اللغة ───────────────────────────────────────────────
+   بأسماء اللغات بألسنتها لا بأعلام: العَلَم يدلّ على بلدٍ لا
+   على لسان، والفرنسية ليست فرنسا وحدها ولا العربية بلدًا. */
+.langbox{display:flex;gap:4px;margin-inline-start:auto;align-self:center}
+.langbox button{
+  background:none;border:1px solid var(--line);border-radius:var(--r-pill);
+  padding:3px 11px;color:var(--muted);font:inherit;font-size:.76rem;cursor:pointer;
+  transition:.15s
+}
+.langbox button:hover{color:var(--text);border-color:var(--gold-dim)}
+.langbox button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(217,180,91,.08)}
+@media print{.langbox{display:none}}
