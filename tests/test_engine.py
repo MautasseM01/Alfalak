@@ -3064,6 +3064,57 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_accuracy_is_proven_by_two_independent_computations():
+    """
+    دقّةُ الجذر — **بتقاطعِ حسابين لا يمرّ أحدهما بالآخر**.
+
+    لا سبيل إلى نداء موقعٍ آخر من داخل اختبار. والحيلة أن
+    يُقاس الشيء الواحد من طريقين:
+
+      · الشمس على ٠° الحمل **بالطول البروجي** ⟹ يجب أن يكون
+        **مَيْلُها صفرًا**، والمَيْل من الإحداثيات الاستوائية.
+      · الشمس على ٠° السرطان ⟹ مَيْلُها = مَيْلُ فلك البروج.
+      · القمر يقابل الشمس ⟹ إضاءته تامّة.
+      · ثمانية أنظمة بيوتٍ تتّفق على الطالع ووسط السماء،
+        فهما لا يتبعان النظام.
+
+    > **وأوّل صياغةٍ لهذا الفحص كانت معطوبة**: قسمتُ قسمةً
+    > ثنائية على دالّة الاستطالة، **فأعطت البدرَ والمحاق في
+    > اللحظة نفسها**. والاستطالة تنقطع عند ٣٦٠→٠، فتقفز من
+    > +١٨٠ إلى −١٨٠ قفزةً لا جذرَ فيها — **فالتقطت القسمةُ
+    > الانقطاعَ وحسبته جذرًا**.
+    >
+    > والقسمة الثنائية تفترض الاتّصال. **ورقمٌ بلا معنى أخطر
+    > من لا رقم**، لأنه يُقرأ نتيجةً. فصار الجذر يُحاصَر
+    > بخطواتٍ صغيرة أوّلًا، فلا يقع الانقطاع داخل الحصار.
+    """
+    import os as _os
+    import sys as _sys
+
+    _root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    _sys.path.insert(0, _os.path.join(_root, "tools"))
+    import verify_accuracy
+
+    rows = verify_accuracy.checks()
+    bad = [f"{w} — {d}" for ok, w, d in rows if not ok]
+    assert not bad, "تقاطعٌ لم يقع: " + "؛ ".join(bad)
+    assert len(rows) >= 7
+
+    # ــ **والفحص يُجرَّب على ما كان يُخفيه** ــ
+    # البدر والمحاق يجب أن يفترقا. وكانا يقعان في اللحظة نفسها.
+    import swisseph as swe
+    elong = (lambda x: (verify_accuracy._lon(x, swe.MOON)
+                        - verify_accuracy._lon(x, swe.SUN)) % 360.0)
+    j0 = swe.julday(2026, 8, 1, 0)
+    new = verify_accuracy.root(elong, 0, j0, 32)
+    full = verify_accuracy.root(elong, 180, j0, 32)
+    assert new and full
+    assert abs(full - new) > 5, \
+        "البدر والمحاق في لحظةٍ واحدة — القسمة تلتقط الانقطاع لا الجذر"
+    # وبينهما نصفُ شهرٍ قمريّ (١٤٫٧٧ يومًا) بحدّ يومٍ واحد
+    assert abs(abs(full - new) - 14.765) < 1.0
+
+
 def test_the_layout_actually_flips_with_the_language():
     """
     **قلتُها ولم أقِسها.**
