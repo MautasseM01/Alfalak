@@ -98,6 +98,30 @@ function i18nWalk(root, dict) {
   return n;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   **الوسمُ قبل الترجمة — وإلّا ضاعت التلميحات كلُّها**
+
+   `hint.js` يَسِم المصطلحات بالبحث عن **نصّها العربي**. وكنّا
+   نترجم أوّلًا (بعد ١٤٠ مللي) ثم يَسِم هو (بعد ١٦٠) — فيجد
+   إنجليزيّةً لا يعرفها، **فلا يَسِم شيئًا**. فكانت كل صفحةٍ
+   تُرسَم بعد تبديل اللغة تخرج **بلا تلميحٍ واحد**.
+
+   وقد قِيس ذلك: صفرُ مصطلحاتٍ موسومة في نتيجةٍ رُسمت بالإنجليزية.
+
+   والحلّ **لا يكون بتأخير رقمٍ عن رقم** — فالتوقيت يتبدّل
+   بتبدّل الجهاز والشبكة، ومن بنى ترتيبًا على مللي ثانية بنى
+   على رمل. بل يُنادى الوسمُ صراحةً قبل الترجمة.
+
+   وعندئذٍ يبقى `<b data-term="الشمس">` غلافًا، ويُترجَم ما
+   بداخله إلى `Sun` — **فالغلاف قائمٌ ومفتاحُه عربيّ**، فيعمل
+   التلميح ويُظهر شرحَه.
+   ══════════════════════════════════════════════════════════ */
+function i18nMarkFirst() {
+  try {
+    if (typeof markTerms === 'function') markTerms(document.body);
+  } catch { /* لا تسقط الترجمة لأجل الوسم */ }
+}
+
 /* الرجوع إلى العربية: يُستعاد المحفوظ، فلا إعادة تحميل */
 function i18nRestore() {
   document.querySelectorAll('[data-i18n-ar]').forEach(p => {
@@ -138,6 +162,7 @@ async function setLang(lang) {
       I18N_VMAX = d.vocab_max || 44;
       if (I18N_VOCAB) i18nVocabRe(I18N_VOCAB);
     }
+    i18nMarkFirst();
     i18nWalk(document.body, I18N_DICT);
     i18nBar();
     i18nNotice();
@@ -217,7 +242,12 @@ function i18nObserve() {
   new MutationObserver(() => {
     if (I18N_LANG === 'ar' || !I18N_DICT || I18N_BUSY) return;
     clearTimeout(t);
-    t = setTimeout(() => i18nWalk(document.body, I18N_DICT), 140);
+    /* **الوسمُ قبل الترجمة هنا أيضًا** — وهذا الموضع هو المهمّ:
+       نتيجةُ الحساب تُرسَم بعد التبديل، فلولاه خرجت بلا تلميح. */
+    t = setTimeout(() => {
+      i18nMarkFirst();
+      i18nWalk(document.body, I18N_DICT);
+    }, 200);
   }).observe(document.body, { childList: true, subtree: true });
 }
 

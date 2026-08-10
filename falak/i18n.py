@@ -236,6 +236,57 @@ UI = {
     "الأَلْمُطَن": ("Almuten", "Almuten"),
     "الطائفة": ("Sect", "Secte"),
 
+    # ــ ألفاظُ الحال — **وهي ما بقي عربيًّا وسط الإنجليزية** ــ
+    # قال صاحب المشروع: «تُرجم المُجمَل وبقيت كلمات، مثل
+    # الكوكب الراجع». وهذه هي: صفاتٌ قصيرة تُلحَق بالمخرجات
+    # فتبقى ظاهرةً وسط النصّ المترجَم، **وهي أشدُّ ما يُرى**.
+    "راجع": ("retrograde", "rétrograde"),
+    "مستقيم": ("direct", "direct"),
+    "الكوكب الراجع": ("Retrograde planet", "Planète rétrograde"),
+    "متراجع": ("retrograde", "rétrograde"),
+    "تحت الشعاع": ("under the beams", "sous les rayons"),
+    "محترق": ("combust", "combuste"),
+    "في قلب الشمس": ("cazimi", "cazimi"),
+    "نهارية": ("diurnal", "diurne"),
+    "ليلية": ("nocturnal", "nocturne"),
+    "الغريب": ("peregrine", "pérégrin"),
+    "بيته": ("domicile", "domicile"),
+    "شرفه": ("exaltation", "exaltation"),
+    "هبوطه": ("fall", "chute"),
+    "وباله": ("detriment", "exil"),
+    "مثلثته": ("triplicity", "triplicité"),
+    "حدّه": ("term", "terme"),
+    "وجهه": ("face", "face"),
+    "ناري": ("Fire", "Feu"),
+    "ترابي": ("Earth", "Terre"),
+    "هوائي": ("Air", "Air"),
+    "مائي": ("Water", "Eau"),
+    "منقلب": ("Cardinal", "Cardinal"),
+    "ثابت": ("Fixed", "Fixe"),
+    "ذو جسدين": ("Mutable", "Mutable"),
+    "نيّر": ("Luminary", "Luminaire"),
+    "سعد": ("Benefic", "Bénéfique"),
+    "نحس": ("Malefic", "Maléfique"),
+    "خلوّ المسار": ("Void of course", "Vide de course"),
+    "العناصر": ("Elements", "Éléments"),
+    "الطبائع": ("Modes", "Modes"),
+    "تامّة": ("exact", "exact"),
+    "الشروق": ("Sunrise", "Lever du soleil"),
+    "الغروب": ("Sunset", "Coucher du soleil"),
+    "الزوال": ("Noon", "Midi"),
+    "طور القمر": ("Moon phase", "Phase lunaire"),
+    "المنزلة": ("Mansion", "Manoir"),
+    "سيّد الخريطة": ("Chart ruler", "Maître du thème"),
+    "سيّد الطالع": ("Ascendant ruler", "Maître de l'ascendant"),
+    "الكرامات": ("Dignities", "Dignités"),
+    "القراءة": ("Reading", "Lecture"),
+    "الأوتاد": ("Angles", "Angles"),
+    "لا شيء": ("None", "Aucun"),
+    "الخريطة": ("Chart", "Thème"),
+    "الوصلات": ("Contacts", "Contacts"),
+    "التراكب": ("Overlays", "Superpositions"),
+    "الميزان الكلّي": ("Overall score", "Score global"),
+
     # ــ زمن ــ
     "الأحد": ("Sunday", "Dimanche"),
     "الاثنين": ("Monday", "Lundi"),
@@ -316,6 +367,15 @@ VOCAB_KEYS = (
     "الطالع", "الغارب", "وسط السماء", "وتد الأرض",
     "اقتران", "مقابلة", "تربيع", "تثليث", "تسديس",
     "مُقبِلة", "مُدبِرة", "إيجابية", "سلبية",
+    # ــ **ألفاظُ الحال: وهي عينُ ما شكا منه صاحب المشروع** ــ
+    # «تُرجم المُجمَل وبقيت كلمات، مثل الكوكب الراجع». وهذه
+    # لا تقع وحدها في خليّة بل **داخل نصّ**: «زحل: 14° 36′
+    # الحمل (راجع)». فلا تنفع فيها مطابقةُ العبارة، وإنما
+    # تُبدَّل داخل النصّ — وهذا بابُ المفردات لا بابُ القاموس.
+    "راجع", "مستقيم", "متراجع", "محترق", "تحت الشعاع",
+    "نهارية", "ليلية", "الغريب", "تامّة",
+    "ناري", "ترابي", "هوائي", "مائي",
+    "منقلب", "ثابت", "ذو جسدين", "نيّر", "سعد", "نحس",
 )
 
 # فوقه يُظنّ النصُّ فقرةً لا خليّة — والفقرة تبقى عربيّة
