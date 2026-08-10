@@ -68,6 +68,47 @@ PARTIAL = {
 # و`coverage()` تقول كم بقي بالرقم لا بالظنّ.
 # ══════════════════════════════════════════════════════════════════
 UI = {
+    # ══════════════════════════════════════════════════════════
+    # أبوابُ التصفّح ومبدّل المستوى — **وهي أوّل ما يُرى ولم تُترجَم**
+    #
+    # ظهرت الصفحة الرئيسة إنجليزيّةً وفيها «يومي» و«خريطتي»
+    # و«قراري» و«أتعلّم» و«لغة الصناعة» عربيّةً وسطَها. وسببُها
+    # أن هذه **تُبنى في `nav.js` و`plain.js`** لا في الوسوم،
+    # فلم يلتقطها الاستخراج ولم أضعها بيدي.
+    # ══════════════════════════════════════════════════════════
+    "يومي": ("Today", "Aujourd'hui"),
+    "خريطتي": ("My chart", "Mon thème"),
+    "قراري": ("My decision", "Ma décision"),
+    "أتعلّم": ("Learn", "J'apprends"),
+    "ما حال السماء الآن، وما يصلح لهذا اليوم":
+        ("The sky right now, and what suits today",
+         "Le ciel maintenant, et ce qui convient aujourd'hui"),
+    "مولدك بثلاث مدارس: عربية وهندية وصينية":
+        ("Your birth in three traditions: Arabic, Vedic, Chinese",
+         "Votre naissance en trois traditions : arabe, védique, chinoise"),
+    "بلغة مبسّطة": ("Plain language", "Langage simple"),
+    "بلغة أهل الصناعة": ("Technical language", "Langage technique"),
+    "مبسّطة": ("Plain", "Simple"),
+    "لغة الصناعة": ("Technical", "Technique"),
+
+    # ــ الصفحة الرئيسة ــ
+    # **والقاعدة التي وضعتُها كانت خطأً**: قصرتُ الترجمة على ما
+    # دون سبعين حرفًا، وسمّيتُ ما طال «شرحًا يبقى عربيًّا». وهذا
+    # صحيحٌ في نصوص القراءة، **باطلٌ في نصّ الصفحة نفسه**: صدرُ
+    # الرئيسة ليس قراءةً فلكية بل كلامُ الموقع عن نفسه.
+    # فالحدُّ الصحيح **بالمصدر لا بالطول**.
+    "ماذا تريد أن تعرف؟": ("What do you want to know?",
+                            "Que voulez-vous savoir ?"),
+    "أدوات فلكية بالعربية، محسوبة لحظيًّا لأيّ يوم وأيّ مكان — بلا اشتراك ولا حساب ولا إعلانات. ولستَ مضطرًّا أن تعرف شيئًا عن الفلك: كل صفحة تبدأ بسطرين يفهمهما من لم يقرأ في هذا قطّ.":
+        ("Arabic astrology tools, computed live for any day and any place — "
+         "no subscription, no account, no ads. And you need not know any "
+         "astrology: every page opens with two lines that a complete "
+         "newcomer can follow.",
+         "Des outils d'astrologie arabe, calculés en direct pour tout jour "
+         "et tout lieu — sans abonnement, sans compte, sans publicité. Et "
+         "nul besoin de connaître l'astrologie : chaque page s'ouvre sur "
+         "deux lignes qu'un débutant comprend."),
+
     # ــ الهوية والتصفّح ــ
     "الفَلَك": ("Al-Falak", "Al-Falak"),
     "أدوات فلكية عربية": ("Arabic astrology tools", "Outils d'astrologie arabe"),
