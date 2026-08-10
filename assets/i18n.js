@@ -34,7 +34,11 @@ function i18nWanted() {
 
 const I18N_SKIP = [
   'script', 'style', 'textarea', 'input', 'select', 'code', 'pre',
-  '.no-i18n', '.hint-pop', '[data-body]', '.wheel',
+  '.no-i18n', '.hint-pop', '.wheel',
+  /* **`[data-body]` رُفع من هذه القائمة.** وضعتُه أوّلًا حمايةً
+     لمخرجات الحساب — فإذا **صفوفُ جدول الأجرام كلُّها تحمله**،
+     فكنتُ أحمي الجدول من الترجمة التي بُنيت له. والحمايةُ
+     الحقيقية هي حدُّ الطول في المفردات لا استثناءُ الصفوف. */
 ].join(',');
 
 /* ــ المشي: نصٌّ بنصّ، وما وُجد في القاموس بُدِّل ــ
@@ -55,7 +59,21 @@ function i18nWalk(root, dict) {
   hits.forEach(node => {
     const raw = node.nodeValue;
     const key = raw.trim().replace(/\s+/g, ' ');
-    const hit = dict[key];
+    let hit = dict[key];
+    /* **المفردات: بابٌ ثانٍ لا غنًى عنه.**
+       خليّةُ الجدول تقول «3° 28′ العذراء»، وهي ليست مفتاحًا
+       ولن تكون — فالدرجة تتبدّل في كل خريطة. فلو اكتفينا
+       بمطابقة العبارة لبقيت الجداول عربيّةً **وإن بلغ القاموس
+       مئةً بالمئة**.
+
+       ولا تُطبَّق إلّا على القصير: خليّةُ الجدول قصيرة وفقرةُ
+       القراءة طويلة، ولو بُدِّلت المفردات داخل الفقرات لخرج
+       خليطٌ لا يُقرأ: «تُحبّ Venus صورةً لا شخصًا».
+       **والخلطُ أسوأ من العربيّة الصافية.** */
+    if (!hit && I18N_VOCAB && key.length <= I18N_VMAX) {
+        const sub = i18nVocab(key);
+        if (sub !== key) hit = sub;
+    }
     if (!hit) return;
     const p = node.parentElement;
     /* الأصل يُحفَظ مرّةً واحدة: أوّلُ ترجمةٍ تُثبّته، وما بعدها
@@ -116,6 +134,9 @@ async function setLang(lang) {
       I18N_DICT = d.dict || {};
       I18N_DICT._lang = I18N_LANG;
       I18N_NOTE = d.partial || '';
+      I18N_VOCAB = d.vocab || null;
+      I18N_VMAX = d.vocab_max || 44;
+      if (I18N_VOCAB) i18nVocabRe(I18N_VOCAB);
     }
     i18nWalk(document.body, I18N_DICT);
     i18nBar();
@@ -124,6 +145,27 @@ async function setLang(lang) {
 }
 
 let I18N_NOTE = '';
+let I18N_VOCAB = null, I18N_VMAX = 44, I18N_VRE = null;
+
+/* النمط يُبنى مرّةً: الأطول أوّلًا كي لا يُلتقَط «القوس» داخل
+   «القوس الشمسي». وحرفا العطف والجرّ يُقبَلان قبل المفردة،
+   كما في `hint.js` — فالعربية تُلصِق «وال» و«بال» بالكلمة. */
+function i18nVocabRe(vocab) {
+  const keys = Object.keys(vocab).sort((a, b) => b.length - a.length)
+    .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  /* **ولا يُلتقَط حرفُ العطف.** كتبتُ أوّلًا `([وفبكل]?)` كما في
+     `hint.js`، ثم أسقطتُه في التبديل — فكانت «والشمس» تصير
+     «Sun» بلا واو. **وابتلاعُ حرفٍ أسوأ من تركِ كلمةٍ عربية.**
+     والمفرداتُ هنا في خلايا جداول لا في جُمَل، فحرفُ العطف
+     نادرٌ فيها أصلًا. */
+  I18N_VRE = new RegExp('(^|[\\s(،؛:·—-])(' + keys.join('|') + ')(?=$|[\\s)،؛:.·—-])', 'g');
+}
+
+function i18nVocab(s) {
+  if (!I18N_VRE) return s;
+  I18N_VRE.lastIndex = 0;
+  return s.replace(I18N_VRE, (m, pre, word) => pre + (I18N_VOCAB[word] || word));
+}
 
 /* **التنبيه يُقال ولا يُخبَّأ.** من اختار الإنجليزية ورأى القراءة
    عربيّةً حسِب الموقع معطوبًا — والصواب أن يُقال له قبل أن يسأل:

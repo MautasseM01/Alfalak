@@ -790,6 +790,10 @@ def route_i18n(q):
         "dir": i18n.LANGS[lang]["dir"],
         "langs": i18n.LANGS,
         "dict": i18n.dict_for(lang),
+        # **المفردات بابٌ ثانٍ**: خليّة «3° 28′ العذراء» ليست
+        # مفتاحًا ولن تكون، فتُبدَّل المفردة داخل النصّ لا بمطابقته.
+        "vocab": i18n.vocab_for(lang),
+        "vocab_max": i18n.VOCAB_MAX,
         "partial": i18n.PARTIAL.get(lang, ""),
         "coverage": i18n.coverage(),
     }
