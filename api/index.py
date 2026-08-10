@@ -29,6 +29,7 @@ from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
 from falak import bulletin_more, figures, hidden, i18n  # noqa: E402
+from falak import origins  # noqa: E402
 from falak import mundane  # noqa: E402
 from falak import plain  # noqa: E402
 from falak import progress, salts  # noqa: E402
@@ -262,6 +263,16 @@ def route_chart(q):
             if _t and _t.get("text"):
                 _a["theme"] = _t.get("theme")
                 _a["meaning"] = _t["text"]
+
+        # ــ **مذهبٌ ثانٍ في أرباب الوجوه** ــ
+        # الوجه محسوبٌ عندنا بالترتيب الكلداني وحده منذ البداية.
+        # وثَمّ مذهبٌ لا يقلّ قِدَمًا جرى عليه أهل الهند وذكره
+        # أبو معشر. فيُلحَق **بجانبه لا بدلًا منه**، ويُقال أيّهما
+        # وافق الآخر — فاتّفاقُهما تسعةٌ من ستّةٍ وثلاثين.
+        for _b in out.get("bodies", []):
+            _f = _safe(lambda: origins.faces_of(_b["lon"]))
+            if _f:
+                _b["face"] = _f
 
         # **ولا نُلحق `lots_deep` بالسهام هنا.** جرّبتُ ذلك ثم
         # قِسْتُه فإذا هو **مطابقٌ مئةً بالمئة** لِما في
@@ -799,6 +810,41 @@ def route_i18n(q):
     }
 
 
+def route_origins(q):
+    """
+    **الأصول** — من أين جاءت البروج والوجوه.
+
+    والباب ثلاثةُ أشياء لا شيءٌ واحد: الديكانات المصرية
+    **تُحسَب** (وهي وجوهُنا نفسها)، وأصلُ البروج البابليّ
+    **تاريخٌ لا حساب**، و«التنجيم السومري» **لا وجود له**.
+
+    والجديد في الحساب: **مذهبٌ ثانٍ في أرباب الوجوه** — وهو
+    مذهب أهل الهند، يُحسَب بقاعدةٍ لا بجدولٍ يُنسَخ فيه الخطأ.
+    """
+    out = {
+        "faces": {s: {"chaldean": chart.dignities.FACES[s]
+                      if hasattr(chart, "dignities") else None}
+                  for s in []},
+        "history": origins.HISTORY,
+        "caveat": origins.CAVEAT,
+        "coverage": origins.coverage(),
+        "indian": origins.indian_faces(),
+    }
+    from falak import dignities as _dg
+    out["chaldean"] = _dg.FACES
+    out["signs"] = _dg.SIGNS
+    out.pop("faces")
+
+    # وجهُ درجةٍ بعينها إن طُلبت
+    lon = _one(q, "lon")
+    if lon is not None:
+        try:
+            out["at"] = origins.faces_of(float(lon) % 360.0)
+        except ValueError:
+            raise ApiError("lon يجب أن يكون رقمًا بالدرجات.")
+    return _apply_level(out, q)
+
+
 def route_options(q):
     """
     **كل قوائم الاختيار في الموقع، من موضع واحد.**
@@ -1079,6 +1125,7 @@ ROUTES = {
     "astromap": route_astromap,
     "figures": route_figures,
     "i18n": route_i18n,
+    "origins": route_origins,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,

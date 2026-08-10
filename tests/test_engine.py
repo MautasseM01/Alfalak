@@ -3064,6 +3064,74 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_origins_computes_what_is_known_and_names_what_is_not():
+    """
+    الأصول — **ثلاثةُ أشياء لا شيءٌ واحد**.
+
+    طُلِب «تنجيم الحضارات القديمة». والجواب الصادق قسمة:
+
+      · **الديكانات المصرية تُحسَب** — وهي **وجوهُنا بعينها**،
+        محسوبةٌ عندنا منذ البداية. فلم أبنِ حسابًا ثانيًا لها.
+      · **أصل البروج بابليّ** — تاريخٌ موثّق لا نظامٌ ثانٍ.
+      · **«التنجيم السومري» لا وجود له.** ما يُباع بهذا الاسم
+        مُختلَق. ولو أدرجناه لكنّا كمن يرسم طالعًا لمن جُهلت
+        ساعةُ مولده — وقد رفضنا ذلك في صفحة المشاهير.
+
+    > **والجديد في الحساب واحد**: مذهبٌ ثانٍ في أرباب الوجوه،
+    > جرى عليه أهل الهند وذكره أبو معشر. **ويُحسَب بقاعدةٍ لا
+    > بجدولٍ يُحفَظ** — فالقاعدة تُراجَع، والجدولُ يُنسَخ فيه
+    > الخطأ ولا يُدرى.
+    """
+    from api.index import dispatch
+    from falak import dignities, origins
+
+    ind = origins.indian_faces()
+    assert len(ind) == 12 and all(len(v) == 3 for v in ind.values())
+
+    # ــ القاعدة تُتحقَّق بذاتها: الوجه الأوّل لصاحب البرج ــ
+    for s in dignities.SIGNS:
+        assert ind[s][0] == dignities.DOMICILE[s], \
+            f"{s}: الوجه الأوّل ليس لصاحب البرج"
+    # والثاني والثالث لصاحبَي البرجين التاليين من المثلّثة
+    for i, s in enumerate(dignities.SIGNS):
+        for k, step in ((1, 4), (2, 8)):
+            nxt = dignities.SIGNS[(i + step) % 12]
+            assert ind[s][k] == dignities.DOMICILE[nxt]
+            # وهما من مثلّثته: العنصر واحد
+            assert dignities.ELEMENT[nxt] == dignities.ELEMENT[s]
+
+    # ــ **ولا يُبنى حسابٌ ثانٍ للكلداني** ــ
+    src = open(origins.__file__, encoding="utf-8").read()
+    assert "_CHALDEAN" not in src and "'المريخ', 'الشمس'" not in src, \
+        "الترتيب الكلداني منسوخٌ هنا — وهو محسوبٌ في `dignities`"
+
+    # ــ والمذهبان يختلفان فعلًا، وإلّا فلا معنى لذكرهما ــ
+    cv = origins.coverage()
+    assert cv["وجوه"] == 36
+    assert 5 <= cv["يتّفق فيها المذهبان"] <= 15, \
+        f"اتّفاقٌ شاذّ ({cv['يتّفق فيها المذهبان']}) — رائحةُ خطأ"
+
+    # ــ ٣٦ وجهًا مرقّمة لا تتكرّر ولا تنقص ــ
+    seen = {origins.faces_of(d + 5.0)["global_index"]
+            for d in range(0, 360, 10)}
+    assert seen == set(range(1, 37))
+
+    # ــ **وما لا يُعرَف يُقال إنه لا يُعرَف** ــ
+    sumer = next(h for h in origins.HISTORY if h["id"] == "sumer")
+    assert "لا أصل له" in sumer["text"] or "مُختلَق" in sumer["text"]
+    assert "نخترع بيانات" in sumer["text"], \
+        "الصفحة تعرض السومريّ ولا تقول إنه مُختلَق"
+
+    # ــ وتصل إلى العين، وتُلحَق بالخريطة ــ
+    r = dispatch("/api/origins", {"lon": ["25"]})
+    assert r["at"]["chaldean"] != r["at"]["indian"]
+    c = dispatch("/api/chart", {"date": ["1990-05-17"], "time": ["08:30"],
+                                "city": ["دمشق"], "system": ["placidus"]})
+    assert all(b.get("face") for b in c["bodies"]), "الوجه لا يصل الخريطة"
+    page = _pages()["origins.html"]
+    assert "origins" in page and "اختلفا" in page
+
+
 def test_accuracy_is_proven_by_two_independent_computations():
     """
     دقّةُ الجذر — **بتقاطعِ حسابين لا يمرّ أحدهما بالآخر**.

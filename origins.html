@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الأصول — من أين جاءت البروج — الفَلَك</title>
+<meta name="description" content="الديكانات المصرية أصلُ ساعات اليوم الأربع والعشرين، والبروج الاثنا عشر بابلية الأصل. تاريخٌ موثّق، وما لا يُعرَف يُقال إنه لا يُعرَف.">
+<link rel="canonical" href="https://alfalak.vercel.app/origins.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/origins.html">
+<meta property="og:title" content="الأصول — من أين جاءت البروج — الفَلَك">
+<meta property="og:description" content="ساعاتُ يومك الأربع والعشرون جاءت من ديكانات مصر، وبروجُك من بابل. تاريخٌ موثّق لا ادّعاء.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="الأصول — من أين جاءت البروج">
+<meta name="twitter:description" content="ديكانات مصر وبروج بابل — تاريخٌ موثّق.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"الأصول — من أين جاءت البروج والوجوه","url":"https://alfalak.vercel.app/origins.html","inLanguage":"ar","isAccessibleForFree":true,"about":"تاريخ التنجيم: الديكانات المصرية والبروج البابلية والنقل العربي"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"الأصول","item":"https://alfalak.vercel.app/origins.html"}]}</script>
+<style>
+.era { border-inline-start:2px solid var(--gold-dim); padding-inline-start:16px;
+       margin-bottom:26px }
+.era h3 { margin:0 0 2px; color:var(--gold); font-size:1.05rem }
+.era .when { color:var(--muted); font-size:.78rem; margin:0 0 10px }
+.era p { line-height:1.95 }
+.era.none { border-inline-start-color:#e08a7d }
+.era.none h3 { color:#e08a7d }
+td.same { color:var(--pos) }
+td.diff { color:var(--gold) }
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/origins.html" class="on">الأصول</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<div class="printhead">
+  <h1>الفَلَك — الأصول</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+
+<main id="main">
+<h2 class="page">الأصول</h2>
+<p class="lede">
+  <em>ساعاتُ يومك الأربع والعشرون جاءت من مصر، وبروجُك من بابل.</em>
+  وهذه الصفحة تاريخٌ موثّق لا حُكم: من أين جاء ما نحسبه في سائر الصفحات،
+  وما لم يصلنا منه شيء — <strong>فيُقال إنه لم يصل</strong>.
+</p>
+
+<div id="out"><div class="card"><div class="card-body">
+  <div class="msg">… أُحمّل</div></div></div></div>
+
+</main>
+<footer>
+  المصادر: أغطية التوابيت المصرية وسقفُ مقبرة سنموت · «مول أبين» و«إينوما آنو إنليل»
+  · «الأربعة» لبطلَميوس · «التفهيم» للبيروني.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/hint.js"></script>
+<script src="/assets/select.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/i18n.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+
+const out = document.getElementById('out');
+markLive(out);
+
+let OCARD = 0;
+const ocard = (title, body, chips) => `<div class="card">
+    <div class="card-top"><h2 class="card-title">${title}</h2>
+      <div class="chips">${chips || ''}</div></div>
+    <div class="card-body" id="ob${++OCARD}">${body}</div></div>`;
+
+/* **`md` تُعرَّف قبل استعمالها** — و`const` في منطقة الموت
+   المؤقّت تُسقط الصفحة كلَّها، وقد وقعتُ فيها من قبل. */
+const md = t => esc(t)
+  .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+  .replace(/\n\n/g, '</p><p>')
+  .replace(/\n/g, '<br>');
+
+(async () => {
+  try {
+    const d = await API('origins', withLevel({}));
+
+    /* ــ التاريخ ــ
+       والفصلُ الذي لا أصل له يُلوَّن بغير لونها: فالقارئ يمسح
+       العناوين ولا يقرأ كلَّ سطر، فليُرَ الفرقُ قبل أن يُقرأ. */
+    const eras = d.history.map(h => `
+      <div class="era${h.id === 'sumer' ? ' none' : ''}">
+        <h3>${esc(h.title)}</h3>
+        <p class="when">${esc(h.when)}</p>
+        <p>${md(h.text)}</p>
+      </div>`).join('');
+
+    /* ــ جدول الوجوه بالمذهبين ــ
+       **والعمود الثالث هو الخبر**: أين اتّفق المذهبان وأين
+       افترقا. وبغيره يكون الجدولُ رقمين متجاورين لا معنى بينهما. */
+    let rows = '';
+    d.signs.forEach(s => {
+      for (let i = 0; i < 3; i++) {
+        const c = d.chaldean[s][i], n = d.indian[s][i], same = c === n;
+        rows += `<tr>
+          <td>${esc(s)}</td>
+          <td class="num">${i * 10}°–${i * 10 + 10}°</td>
+          <td>${esc(c)}</td><td>${esc(n)}</td>
+          <td class="${same ? 'same' : 'diff'}">${same ? 'اتّفقا' : 'اختلفا'}</td>
+        </tr>`;
+      }
+    });
+
+    const cv = d.coverage;
+    out.innerHTML =
+      ocard('من أين جاء هذا كلُّه', eras +
+        `<p class="note">${md(d.caveat)}</p>`,
+        `<span class="chip gold">${d.history.length} فصول</span>`) +
+      ocard('أرباب الوجوه — مذهبان',
+        `<p class="note">الوجه عشرُ درجات، و<b>ستّةٌ وثلاثون وجهًا</b> تدور الفلك.
+          وهي <b>الديكانات المصرية بعينها</b>. ولأربابها مذهبان:
+          <b>الكلداني</b> (وهو الذي تحسب به صفحةُ خريطتك)،
+          و<b>الهندي</b> الذي ذكره أبو معشر: وجهُ البرج لصاحبه،
+          ثم لصاحب الذي يليه من مثلّثته.</p>
+         <p class="note">ولا يتّفقان إلّا في
+           <b>${cv['يتّفق فيها المذهبان']}</b> من ستّةٍ وثلاثين —
+           <b>فذكرُ أحدهما وحده ليس قولًا فصلًا</b>.</p>
+         <table><thead><tr><th>البرج</th><th>الوجه</th>
+           <th>كلداني</th><th>هندي</th><th></th></tr></thead>
+           <tbody>${rows}</tbody></table>`,
+        `<span class="chip">٣٦ وجهًا</span>
+         <span class="chip gold">${cv['يتّفق فيها المذهبان']} يتّفقان</span>`);
+  } catch (e) {
+    out.innerHTML = `<div class="card"><div class="card-body">
+      <div class="msg err">${esc(e.message)}</div></div></div>`;
+  }
+})();
+</script>
+</body>
+</html>
