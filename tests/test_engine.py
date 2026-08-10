@@ -3064,6 +3064,65 @@ def test_learn_page_guides_to_every_page():
     assert not missing, f"صفحات بلا وصف في الدليل: {sorted(missing)}"
 
 
+def test_medical_leads_with_its_caveat_and_shows_its_reasoning():
+    """
+    الملوثيزيا — **تاريخُ فكرةٍ لا طبّ**.
+
+    وهذا بابٌ يمسّ الصحّة، فله شرطان لا يُتساهَل فيهما:
+
+    ١. **التحفّظ أوّلًا لا آخرًا** — في الاستجابة وفي الصفحة
+       معًا. فما يُكتب في الذيل لا يقرؤه أحد. **ويُرسَم قبل
+       الحساب** لا بعده: من فتح الصفحة رآه قبل أن يُدخل
+       مولده، لا بعد أن يقرأ نتيجةً صدّقها.
+
+    ٢. **يُقال صراحةً: الطبيبُ لا الفلك** — ولا يُؤخَّر فحصٌ
+       ولا دواء. وتُذكَر أن نظرية الأخلاط **تجاوزها الطبّ**.
+
+    > **والمِزاج يُحسَب بقاعدةٍ موزونة ويُعرَض معها سببُها.**
+    > فالنسبةُ وحدها رقمٌ يُصدَّق بلا دليل — والسببُ هو ما
+    > يجعل القارئ قادرًا على أن يُخالف.
+    """
+    from api.index import dispatch
+    from falak import medical
+
+    r = dispatch("/api/medical", {"date": ["1990-05-17"], "time": ["08:30"],
+                                  "city": ["دمشق"], "system": ["placidus"]})
+
+    # ــ التحفّظ أوّلُ مفتاحٍ في الاستجابة ــ
+    assert list(r)[0] == "caveat", "التحفّظ ليس أوّل ما يُرسَل"
+    joined = " ".join(r["caveat"])
+    for must in ("لا طبّ", "الطبيبُ لا الفلك", "تجاوزها الطبّ",
+                 "لا تُشخِّص"):
+        assert must in joined, f"ينقص التحفّظ: «{must}»"
+
+    # ــ ولا يُقال «غالب» لما لم يغلب ــ
+    T = r["temperament"]
+    assert T["why"], "نسبةٌ بلا سبب — والرقم يُصدَّق بلا دليل"
+    assert sum(w["weight"] for w in T["why"]) > 0
+    for w in T["why"]:
+        assert w["from"] and w["humor"] in medical.HUMORS
+    if not T["mixed"]:
+        pts = {h: v["points"] for h, v in T["scores"].items()}
+        assert pts[T["top"]] - pts[T["second"]] > 1, \
+            "فارقُ درجةٍ سُمّي غلبة"
+
+    # ــ البدن كلُّه يُعرَض، لا المزدحم وحده ــ
+    assert len(r["body"]) == 12
+    assert all(b["part"] for b in r["body"])
+    # **ولا يُقال «هنا علّة»** — القدماء عدّوه موضع شدّةٍ ونشاط
+    page = _pages()["medical.html"]
+    assert "موضعُ شدّةٍ ونشاطٍ معًا" in page
+
+    # ــ والتحفّظ في الصفحة قبل النموذج لا بعده ــ
+    body = page.split("<main")[1]
+    assert body.index("warnbox") < body.index('id="go"'), \
+        "التحفّظ بعد زرّ الحساب — فيُقرأ بعد النتيجة إن قُرئ"
+    assert 'class="warnbox no-i18n"' in page, \
+        "التحفّظ يُترجَم آليًّا — وهو أخطر ما يُترجَم بالظنّ"
+
+    assert medical.coverage()["أسطر التحفّظ"] >= 4
+
+
 def test_origins_computes_what_is_known_and_names_what_is_not():
     """
     الأصول — **ثلاثةُ أشياء لا شيءٌ واحد**.

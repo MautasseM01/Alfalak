@@ -29,7 +29,7 @@ from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
 from falak import bulletin_more, figures, hidden, i18n  # noqa: E402
-from falak import origins  # noqa: E402
+from falak import medical, origins  # noqa: E402
 from falak import mundane  # noqa: E402
 from falak import plain  # noqa: E402
 from falak import progress, salts  # noqa: E402
@@ -845,6 +845,29 @@ def route_origins(q):
     return _apply_level(out, q)
 
 
+def route_medical(q):
+    """
+    **الملوثيزيا** — تقسيمُ البدن على البروج، تاريخَ فكرةٍ لا طبًّا.
+
+    ولا تُشخِّص ولا تصف دواءً. والتحفّظ **يُرسَل أوّلًا في
+    الاستجابة** لا آخرًا، كي لا تعرضه واجهةٌ في الذيل.
+    """
+    lat, lon, tzname, label = resolve_place(q)
+    when, tzinfo = parse_birth(q, tzname, lon)
+    c = chart.compute(when, lat, lon, _one(q, "system", "whole"),
+                      tzname, minor_aspects=False, tz_info=tzinfo)
+    return _apply_level({
+        "caveat": medical.CAVEAT,
+        "when_local": when.isoformat(timespec="minutes"),
+        "place": _one(q, "city") or label,
+        "temperament": medical.temperament(c),
+        "body": medical.body_map(c),
+        "sixth": medical.sixth(c),
+        "humors": medical.HUMORS,
+        "coverage": medical.coverage(),
+    }, q)
+
+
 def route_options(q):
     """
     **كل قوائم الاختيار في الموقع، من موضع واحد.**
@@ -1126,6 +1149,7 @@ ROUTES = {
     "figures": route_figures,
     "i18n": route_i18n,
     "origins": route_origins,
+    "medical": route_medical,
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,
