@@ -104,6 +104,35 @@ def phrases() -> dict:
     return seen
 
 
+def per_page() -> list[tuple[str, int, int]]:
+    """
+    **التغطية صفحةً صفحة** — وهذا ما يكشف المتروك.
+
+    الرقمُ الكلّي يُخفي أيَّ صفحةٍ بعينها هي الناقصة: كان
+    ٢٦٪ عامّةً، وفي النشرة اليومية ٦٣٪ وفي `api` ٣٠٪. **والزائر
+    لا يزور «الموقع»، إنما يزور صفحة** — فتُقاس كما يراها.
+    """
+    rows = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "*.html"))):
+        t = open(f, encoding="utf-8").read()
+        t = re.sub(r"<!--[\s\S]*?-->", "", t)
+        inline = "\n".join(re.findall(r"<script>([\s\S]*?)</script>", t))
+        t2 = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", "", t)
+        found = set(_literals(inline))
+        for m in re.findall(r">([^<>]+)<", t2):
+            s = " ".join(m.split())
+            if s and AR.search(s):
+                found.add(s)
+        for a in ("placeholder", "title", "aria-label"):
+            for m in re.findall(a + r'="([^"]+)"', t2):
+                s = " ".join(m.split())
+                if s and AR.search(s):
+                    found.add(s)
+        todo = found - set(i18n.UI)
+        rows.append((os.path.basename(f), len(found), len(todo)))
+    return sorted(rows, key=lambda r: -r[2])
+
+
 def report(show: bool = False) -> int:
     all_p = phrases()
     ui = {s: c for s, c in all_p.items() if len(s) <= UI_MAX}
@@ -140,4 +169,9 @@ def report(show: bool = False) -> int:
 
 
 if __name__ == "__main__":
+    if "--pages" in sys.argv:
+        print(f"{'الصفحة':24}{'الكلّ':>6}{'باقٍ':>7}{'تغطية':>8}")
+        for n, a, b in per_page():
+            print(f"  {n:22}{a:>6}{b:>7}{round((a - b) * 100 / max(a, 1)):>7}٪")
+        raise SystemExit(0)
     raise SystemExit(report("--list" in sys.argv))

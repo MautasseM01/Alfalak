@@ -88,6 +88,40 @@ PARTIAL = {
 # و`coverage()` تقول كم بقي بالرقم لا بالظنّ.
 # ══════════════════════════════════════════════════════════════════
 UI = {
+    # ــ صفحة النشرة اليومية ــ
+    # عُوينت وحدها فبقي فيها خمسة عشر. **والمعاينة صفحةً صفحة
+    # هي التي تكشف هذا** — لا الرقمُ الكلّي، فهو يُخفي أيَّ
+    # صفحةٍ بعينها هي المتروكة.
+    "النشرة الفلكية": ("Astrological bulletin", "Bulletin astrologique"),
+    "النشرة الفلكية اليومية — الفَلَك":
+        ("Daily astrological bulletin — Al-Falak",
+         "Bulletin astrologique quotidien — Al-Falak"),
+    "الفَلَك — النشرة اليومية": ("Al-Falak — Daily bulletin",
+                                  "Al-Falak — Bulletin quotidien"),
+    "اختر أي يوم وأي مدينة. تُحسب لحظيًا، وتُنسخ جاهزة للتلغرام أو الواتساب.":
+        ("Pick any day and any city. Computed live, and ready to copy "
+         "into Telegram or WhatsApp.",
+         "Choisissez un jour et une ville. Calculé en direct, prêt à copier "
+         "dans Telegram ou WhatsApp."),
+    "نشرة اليوم": ("Today's bulletin", "Bulletin du jour"),
+    "نشرة الغد": ("Tomorrow's bulletin", "Bulletin de demain"),
+    "اليوم السابق ›": ("Previous day ›", "Jour précédent ›"),
+    "‹ اليوم التالي": ("‹ Next day", "‹ Jour suivant"),
+    "نسخ النصّ للتلغرام أو الواتساب":
+        ("Copy text for Telegram or WhatsApp",
+         "Copier le texte pour Telegram ou WhatsApp"),
+    "الصيغة": ("Wording", "Formulation"),
+    "عدّ المنازل": ("Mansion counting", "Comptage des manoirs"),
+    "المذهب المشهور": ("The common convention", "La convention courante"),
+    "مُزاح منزلة واحدة": ("Shifted by one mansion", "Décalé d'un manoir"),
+    "دمشق": ("Damascus", "Damas"),
+    "دمشق، باريس، القاهرة…": ("Damascus, Paris, Cairo…",
+                              "Damas, Paris, Le Caire…"),
+    "حلب، دمشق…": ("Aleppo, Damascus…", "Alep, Damas…"),
+    "دمشق…": ("Damascus…", "Damas…"),
+    "دمشق، باريس…": ("Damascus, Paris…", "Damas, Paris…"),
+    "حلب…": ("Aleppo…", "Alep…"),
+
     # ══════════════════════════════════════════════════════════
     # بطاقاتُ الرئيسة — **وهي أوّل ما تراه العين، وبقيت عربية**
     # ══════════════════════════════════════════════════════════

@@ -150,7 +150,23 @@ async function setLang(lang) {
     html.lang = I18N_LANG;
     html.dir = I18N_LANG === 'ar' ? 'rtl' : 'ltr';
 
-    if (I18N_LANG === 'ar') { I18N_DICT = null; i18nBar(); return; }
+    if (I18N_LANG === 'ar') {
+      /* **العودةُ إلى العربية كانت تنسى الرسالة.**
+         كان هذا السطر يرجع بعد `i18nBar()` وحدها، فيبقى صندوق
+         «هذه الصفحة ليست مترجمة» **بالإنجليزية فوق صفحةٍ عربية**.
+         وهو أسوأ ما يمكن: القارئ اختار العربية، فيُقال له
+         بالإنجليزية إن الصفحة غير مترجمة.
+
+         **والخروجُ المبكّر بابُ نسيان**: كل ما يُضاف بعده لا
+         يُنفَّذ في هذا الطريق. فيُنظَّف كلُّ ما وُضع أوّلًا. */
+      I18N_DICT = null;
+      I18N_VOCAB = null;
+      I18N_VRE = null;
+      I18N_NOTE = '';
+      i18nBar();
+      i18nNotice();          /* تُزيلها، فهي تحذف ثم تُعيد الرسم */
+      return;
+    }
 
     if (!I18N_DICT || I18N_DICT._lang !== I18N_LANG) {
       const r = await fetch('/api/i18n?lang=' + I18N_LANG);
