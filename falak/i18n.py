@@ -89,6 +89,450 @@ PARTIAL = {
 # ══════════════════════════════════════════════════════════════════
 UI = {
     # ══════════════════════════════════════════════════════════
+    # صفحة الواجهة البرمجية — آخرُ الصفحات وأكثرُها نصًّا
+    #
+    # **وأمثلةُ المسارات لا تُترجَم إلّا في قيمة المدينة**:
+    # `city=دمشق` تصير `city=Damascus`، لأن الأطلس يعرف الاسمين.
+    # أمّا `?date=` و`&time=` فهي أسماءُ معاملاتٍ في الشيفرة،
+    # ومن ترجمها كسر المثال على من ينسخه.
+    # ══════════════════════════════════════════════════════════
+    "الواجهة البرمجية والتقويم — الفَلَك":
+        ("API and calendar — Al-Falak", "API et calendrier — Al-Falak"),
+    "الفَلَك — الواجهة البرمجية": ("Al-Falak — API", "Al-Falak — API"),
+    "الفَلَك — أدوات فلكية عربية ·": ("Al-Falak — Arabic astrology tools ·",
+                                       "Al-Falak — outils d'astrologie arabe ·"),
+    "كل ما في هذا الموقع متاح بواجهة واحدة: خرائط الميلاد بقراءتها، والنشرات، وتقويم الاختيارات، والمسائل، والتوافق، وأرباب الأزمنة. تُرجع JSON بالعربية مباشرة (":
+        ("Everything on this site is available through one API: natal "
+         "charts with their readings, the bulletins, the electional "
+         "calendar, horary, synastry and the time lords. It returns JSON "
+         "in Arabic directly (",
+         "Tout ce site est accessible par une seule API : thèmes natals et "
+         "leurs lectures, bulletins, calendrier électif, horaire, "
+         "synastrie et maîtres du temps. Renvoie du JSON en arabe ("),
+    ")، وتُصدّر تقويمًا يدخل هاتفك.":
+        ("), and exports a calendar that goes straight into your phone.",
+         "), et exporte un calendrier pour votre téléphone."),
+    "البداية في ثلاثة أسطر": ("Getting started in three lines",
+                               "Démarrer en trois lignes"),
+    "لا تحتاج مفتاحًا للتجريب. جرّب هذا الآن:":
+        ("You need no key to try it. Run this now:",
+         "Aucune clé n'est nécessaire pour essayer. Lancez ceci :"),
+    "وكل جواب في المغلَّف نفسه:": ("Every response comes in the same envelope:",
+                                    "Chaque réponse a la même enveloppe :"),
+    "وكل خطأ:": ("And every error:", "Et chaque erreur :"),
+    "المسارات": ("Endpoints", "Points d'accès"),
+    "المسارات القديمة": ("Legacy endpoints", "Points d'accès hérités"),
+    "بلا مغلَّف ولا إصدار — تخدم صفحات الموقع نفسه، وقد تتغيّر. ابنِ على":
+        ("No envelope and no version — they serve the site's own pages and "
+         "may change. Build on",
+         "Sans enveloppe ni version — ils servent les pages du site et "
+         "peuvent changer. Construisez sur"),
+    "وحدها.": ("only.", "uniquement."),
+    "المستويات والمفاتيح": ("Tiers and keys", "Niveaux et clés"),
+    "كيف تعمل المفاتيح هنا — ولماذا:": ("How keys work here — and why:",
+                                          "Comment fonctionnent les clés — et pourquoi :"),
+    "المشروع كلّه دالّة بلا خادم ولا قاعدة بيانات. فالمفتاح":
+        ("The whole project is one serverless function with no database. "
+         "So the key is",
+         "Tout le projet est une fonction sans serveur, sans base de "
+         "données. La clé est donc"),
+    "موقَّع لا مخزَّن": ("signed, not stored", "signée, non stockée"),
+    ": يحمل في نفسه مستواه وتاريخ انتهائه وتوقيعًا يُثبت أننا أصدرناه، فيُتحقَّق منه بالحساب لا بالبحث.":
+        (": it carries its own tier, expiry and a signature proving we "
+         "issued it, so it is verified by computation rather than lookup.",
+         ": elle porte son niveau, son expiration et une signature "
+         "prouvant que nous l'avons émise ; elle se vérifie par calcul."),
+    "وثمن ذلك": ("The cost of this is", "Le prix en est"),
+    "أن ما لا يُخزَّن لا يُلغى فرديًّا. فأقصى عمر للمفتاح سنة، ولا نحفظ نسخة منه عندنا — احفظه أنت عند إصداره.":
+        ("that what is not stored cannot be revoked individually. So a key "
+         "lasts at most a year, and we keep no copy — save it yourself "
+         "when you issue it.",
+         "que ce qui n'est pas stocké ne peut être révoqué "
+         "individuellement. Une clé dure au plus un an, et nous n'en "
+         "gardons aucune copie — conservez-la vous-même."),
+    "وحدّ الاستعمال مُهدّئ لا حارس:": ("The rate limit is a damper, not a guard:",
+                                        "La limite d'usage est un frein, non un garde :"),
+    "العدّاد في ذاكرة النسخة الواحدة، والدالّة بلا خادم تُشغَّل نسخًا متعدّدة، فكلٌّ تعدّ وحدها. يمنع الحلقة المنفلتة من عميل، ولا يمنع هجومًا مقصودًا. قلناها صراحةً فلا يبني عليها أحد ما لا تحتمل.":
+        ("The counter lives in one instance's memory, and a serverless "
+         "function runs as many instances, each counting alone. It stops a "
+         "runaway loop in a client; it does not stop a deliberate attack. "
+         "We say so plainly, so that no one builds on it more than it "
+         "will bear.",
+         "Le compteur vit dans la mémoire d'une instance, et la fonction "
+         "s'exécute en plusieurs instances qui comptent chacune de leur "
+         "côté. Cela arrête une boucle folle, non une attaque délibérée."),
+    "استخرج مفتاحًا مفتوحًا": ("Issue an open key", "Émettre une clé ouverte"),
+    "استخراج مفتاح وصول. لا يُخزَّن عندنا، فاحفظه.":
+        ("Issue an access key. We do not store it — save it.",
+         "Émettre une clé d'accès. Nous ne la stockons pas — conservez-la."),
+    "عمر المفتاح، أقصاه ٣٦٦": ("Key lifetime, at most 366 days",
+                                "Durée de la clé, 366 jours au plus"),
+    "وسم تذكاري لك": ("A label for your own reference",
+                       "Une étiquette pour votre usage"),
+    "تعذّر الإصدار:": ("Could not issue:", "Émission impossible :"),
+    "… أُصدر": ("… issuing", "… émission"),
+    "خطأ:": ("Error:", "Erreur :"),
+    "الاسمان": ("Both names", "Les deux noms"),
+    "مطلوب": ("required", "requis"),
+    "مطلوب أو lat+lon+tz": ("required, or lat+lon+tz",
+                             "requis, ou lat+lon+tz"),
+    "مطلوب أو house": ("required, or house", "requis, ou house"),
+    "المنطقة": ("Zone", "Zone"),
+    "المنطقة الزمنية": ("Time zone", "Fuseau horaire"),
+    "الساعة HH:MM": ("Time HH:MM", "Heure HH:MM"),
+    "تاريخ الميلاد YYYY-MM-DD": ("Birth date YYYY-MM-DD",
+                                  "Date de naissance AAAA-MM-JJ"),
+    "بيانات المولد": ("Birth data", "Données de naissance"),
+    "مولد الأوّل": ("First person's birth", "Naissance du premier"),
+    "مولد الثاني": ("Second person's birth", "Naissance du second"),
+    "ساعته": ("its hour", "son heure"),
+    "غرض بعينه": ("a specific purpose", "un objet précis"),
+    "البيت ١–١٢": ("House 1–12", "Maison 1–12"),
+    "عدد الأيام": ("Number of days", "Nombre de jours"),
+    "عدد الأيام (بحسب مستواك)": ("Number of days (per your tier)",
+                                  "Nombre de jours (selon votre niveau)"),
+    "عدد النتائج": ("Number of results", "Nombre de résultats"),
+    "أدنى درجة تُصدَّر": ("Minimum score to export",
+                          "Score minimal à exporter"),
+    "ما تبحث عنه": ("What you are searching for",
+                     "Ce que vous cherchez"),
+    "سؤالك من القائمة": ("Your question from the list",
+                          "Votre question dans la liste"),
+    "مدينة إقامتك الآن": ("The city you live in now",
+                           "La ville où vous vivez"),
+    "تاريخ مولدك — للترجيح الشخصي": ("Your birth date — for personal weighting",
+                                       "Votre date de naissance — pondération"),
+    "1 لقائمة الأغراض": ("1 for the list of purposes",
+                          "1 pour la liste des objets"),
+    "1 لقائمة الأسئلة": ("1 for the list of questions",
+                          "1 pour la liste des questions"),
+    "0 لإلغاء أيّهما": ("0 to disable either", "0 pour désactiver l'un ou l'autre"),
+    "مع kind=elections": ("with kind=elections", "avec kind=elections"),
+    "مع kind=hours، مفصولة بفواصل": ("with kind=hours, comma-separated",
+                                       "avec kind=hours, séparés par virgules"),
+    "مفتاحًا أساسيًّا": ("a basic key", "une clé basic"),
+    "free أو basic": ("free or basic", "free ou basic"),
+    "plain أو expert": ("plain or expert", "plain ou expert"),
+    "today أو tomorrow": ("today or tomorrow", "today ou tomorrow"),
+    "حال الخادم: عدد المدن وأنظمة البيوت وتوفّر ملفّات خيرون.":
+        ("Server status: number of cities, house systems, and whether the "
+         "Chiron ephemeris files are present.",
+         "État du serveur : nombre de villes, systèmes de maisons, et "
+         "présence des fichiers d'éphémérides de Chiron."),
+    "مواقع الأجرام الأربعة عشر في لحظة تختارها.":
+        ("Positions of the fourteen bodies at a moment you choose.",
+         "Positions des quatorze astres à un instant choisi."),
+    "منازل القمر وخلو المسار": ("Lunar mansions and void of course",
+                                 "Manoirs lunaires et vide de course"),
+    "أحداث السماء: الانتقالات والرجوع والكسوف":
+        ("Sky events: ingresses, retrogrades and eclipses",
+         "Événements du ciel : entrées, rétrogradations et éclipses"),
+    "النشرة الشهرية المصوغة بثلاثة ألسنة: يومي وأدبي وتراثي.":
+        ("The monthly bulletin in three voices: daily, literary and "
+         "traditional.",
+         "Le bulletin mensuel en trois tons : quotidien, littéraire et "
+         "traditionnel."),
+    "تقويم الاختيارات: درجة كل يوم لكل غرض، بأسبابها.":
+        ("The electional calendar: each day's score for each purpose, with "
+         "its reasons.",
+         "Le calendrier électif : le score de chaque jour pour chaque "
+         "objet, avec ses raisons."),
+    "الفردارات والتسيير السنوي والشهري والعودة الشمسية.":
+        ("Firdaria, annual and monthly profection, and the solar return.",
+         "Firdaria, profections annuelle et mensuelle, révolution solaire."),
+    "معجم المصطلحات وتسمياتها المبسّطة.":
+        ("The glossary of terms and their plain-language names.",
+         "Le glossaire des termes et leurs noms simplifiés."),
+    "تصدير iCalendar. يُرجع ملفًّا لا JSON.":
+        ("iCalendar export. Returns a file, not JSON.",
+         "Export iCalendar. Renvoie un fichier, non du JSON."),
+    "التقويم — أن تدخل السماء جدولك":
+        ("The calendar — bringing the sky into your schedule",
+         "Le calendrier — faire entrer le ciel dans votre agenda"),
+    "اشترك بالرابط مرّة في تقويم هاتفك أو حاسوبك، فتظهر منازل القمر وأوقات خلو المسار وأفضل أيامك مع مواعيدك، وتتجدّد وحدها.":
+        ("Subscribe to the link once in your phone's or computer's "
+         "calendar, and the lunar mansions, void-of-course windows and "
+         "your best days appear alongside your appointments, refreshing "
+         "themselves.",
+         "Abonnez-vous une fois au lien dans votre agenda : manoirs "
+         "lunaires, périodes de vide de course et meilleurs jours "
+         "apparaissent avec vos rendez-vous, et se mettent à jour seuls."),
+    "ماذا تريد في تقويمك؟": ("What do you want in your calendar?",
+                              "Que voulez-vous dans votre agenda ?"),
+    "أين أنت": ("Where you are", "Où vous êtes"),
+    "شفّافة": ("Transparent", "Transparent"),
+    "— لا تُظهرك مشغولًا لمن يرى تقويمك.":
+        ("— it will not show you as busy to anyone viewing your calendar.",
+         "— vous n'apparaîtrez pas occupé à qui consulte votre agenda."),
+    "في تقويم آبل: ملفّ ← اشتراك جديد بتقويم. وفي تقويم غوغل: «تقاويم أخرى» ← «من رابط». الأحداث كلّها":
+        ("In Apple Calendar: File → New Calendar Subscription. In Google "
+         "Calendar: \"Other calendars\" → \"From URL\". All events are",
+         "Dans Calendrier Apple : Fichier → Nouvel abonnement. Dans Google "
+         "Agenda : « Autres agendas » → « À partir de l'URL »."),
+    "الرخصة والشروط": ("Licence and terms", "Licence et conditions"),
+    "الحساب كلّه بمكتبة Swiss Ephemeris، وهي مزدوجة الرخصة: AGPL أو تجارية. فمن بنى على هذه الواجهة خدمةً مغلقة المصدر فعليه أن ينظر في رخصتها التجارية من astro.com. نحن نقول هذا لأنه يُنسى كثيرًا، ولا نُفتي فيه — راجع أهل الاختصاص.":
+        ("All computation runs on the Swiss Ephemeris, which is dual "
+         "licensed: AGPL or commercial. If you build a closed-source "
+         "service on this API, you should look into its commercial licence "
+         "from astro.com. We mention this because it is often forgotten; "
+         "we are not giving legal advice — consult a professional.",
+         "Tout le calcul repose sur la Swiss Ephemeris, à double licence : "
+         "AGPL ou commerciale. Si vous bâtissez un service à source fermée "
+         "sur cette API, examinez sa licence commerciale sur astro.com. "
+         "Ceci n'est pas un conseil juridique."),
+    "أمّا نصوص التفسير والقراءة في هذا الموقع فمكتوبة لنا، ولك أن تعرضها مع الإشارة إلى المصدر.":
+        ("The interpretive and reading texts on this site are our own; you "
+         "may display them with attribution.",
+         "Les textes d'interprétation de ce site sont les nôtres ; vous "
+         "pouvez les afficher en citant la source."),
+    "هذا الموقع أداة حسابية وقراءة رمزية، لا أداة تشخيص ولا نصيحة طبية ولا مالية ولا قانونية.":
+        ("This site is a calculating tool and a symbolic reading — not a "
+         "diagnostic instrument, and not medical, financial or legal advice.",
+         "Ce site est un outil de calcul et une lecture symbolique — ni "
+         "diagnostic, ni conseil médical, financier ou juridique."),
+
+    # ══════════════════════════════════════════════════════════
+    # صفحة «تعلّم» — الدروسُ الخمسة ودليلُ الصفحات
+    # ══════════════════════════════════════════════════════════
+    "تعلّم — الفَلَك": ("Learn — Al-Falak", "Apprendre — Al-Falak"),
+    "الفَلَك — تعلّم": ("Al-Falak — Learn", "Al-Falak — Apprendre"),
+    "كل مصطلح تراه في الجداول مشروح هنا. ابحث عنه أو تصفّح الأبواب.":
+        ("Every term you see in the tables is explained here. Search for "
+         "it, or browse the sections.",
+         "Chaque terme des tableaux est expliqué ici. Cherchez-le ou "
+         "parcourez les sections."),
+    "دليل الصفحات — ماذا في كلّ باب؟":
+        ("A guide to the pages — what is in each?",
+         "Guide des pages — que contient chacune ?"),
+    "قبل المصطلحات: هذه خريطةُ الموقع نفسه. كل صفحة وما تُعطيك، في سطر — فتعرف أين تذهب قبل أن تتعلّم.":
+        ("Before the terms: this is a map of the site itself. Each page "
+         "and what it gives you, in one line — so you know where to go "
+         "before you start learning.",
+         "Avant les termes : voici la carte du site lui-même. Chaque page "
+         "et ce qu'elle apporte, en une ligne."),
+    "كيف تُقرأ خريطة": ("How to read a chart", "Comment lire un thème"),
+    "١ — ابدأ بالثلاثة": ("1 — Begin with the three",
+                          "1 — Commencez par les trois"),
+    "٢ — ثم البيوت": ("2 — Then the houses", "2 — Puis les maisons"),
+    "٣ — ثم الكرامات": ("3 — Then the dignities",
+                        "3 — Puis les dignités"),
+    "٤ — ثم الزوايا": ("4 — Then the aspects", "4 — Puis les aspects"),
+    "٥ — وأخيرًا ما يُميّز التراث العربي":
+        ("5 — And finally, what sets the Arabic tradition apart",
+         "5 — Enfin, ce qui distingue la tradition arabe"),
+    "الشمس والقمر والطالع. الشمس جوهر إرادتك، والقمر ما يطمئنّ إليه قلبك، والطالع الباب الذي تدخل منه على الناس. من عرف هذه الثلاثة عرف نصف الخريطة.":
+        ("Sun, Moon and Ascendant. The Sun is the core of your will, the "
+         "Moon is what your heart settles into, and the Ascendant is the "
+         "door through which you meet people. Know these three and you "
+         "know half the chart.",
+         "Soleil, Lune et Ascendant. Le Soleil est le cœur de votre "
+         "volonté, la Lune ce qui apaise votre cœur, l'Ascendant la porte "
+         "par laquelle vous abordez les autres. Qui connaît ces trois "
+         "connaît la moitié du thème."),
+    "ثم انظر في سيّد الطالع — حاكم البرج الطالع — وأين وقع. هو دليلك في الخريطة، وحيث وقع فثمّ مجرى حياتك.":
+        ("Then look at the Ascendant's ruler — the lord of the rising sign "
+         "— and where it fell. It is your guide in the chart, and where it "
+         "lands is where your life runs.",
+         "Regardez ensuite le maître de l'Ascendant et où il se trouve. "
+         "C'est votre guide dans le thème, et là où il tombe coule votre "
+         "vie."),
+    "البرج يقول": ("The sign says", "Le signe dit"),
+    "، والبيت يقول": (", and the house says", ", et la maison dit"),
+    ". المريخ في العقرب يقول إن إرادتك صامتة نافذة؛ ووقوعه في البيت العاشر يقول إن مجراها في العمل والمرتبة.":
+        (". Mars in Scorpio says your will is silent and penetrating; its "
+         "falling in the tenth house says its course runs through work and "
+         "standing.",
+         ". Mars en Scorpion dit que votre volonté est silencieuse et "
+         "pénétrante ; sa chute en dixième maison dit qu'elle passe par le "
+         "travail et le rang."),
+    "ولا تنسَ أن نظام تقسيم البيوت مذهب لا حقيقة. جرّب الخريطة بالبيوت الكاملة ثم بالقبّاني ثم ببلاسيدوس، وانظر أيّها يصف حياتك أصدق وصف.":
+        ("And do not forget that a house system is a school of thought, "
+         "not a fact. Try your chart in whole signs, then Alcabitius, then "
+         "Placidus, and see which describes your life most truly.",
+         "N'oubliez pas qu'un système de maisons est une école, non un "
+         "fait. Essayez signes entiers, puis Alcabitius, puis Placidus, et "
+         "voyez lequel décrit le plus fidèlement votre vie."),
+    "ليس كل كوكب في الخريطة بقوّة واحدة. الكوكب في بيته يتصرّف بحرّية، وفي وباله يتصرّف بضيق. فقبل أن تُحمّل كوكبًا معنى، انظر أله من القوّة ما يُنفّذه به.":
+        ("Not every planet in a chart has the same strength. A planet in "
+         "its own domicile acts freely; in its detriment it acts "
+         "constrained. Before you load a planet with meaning, ask whether "
+         "it has the power to carry it out.",
+         "Toutes les planètes n'ont pas la même force. En domicile, une "
+         "planète agit librement ; en exil, elle agit à l'étroit. Avant de "
+         "charger une planète de sens, demandez si elle a le pouvoir de "
+         "l'accomplir."),
+    "والأَلْمُطَن — أقوى الكواكب مجموعًا — هو الذي يحكم بنية الخريطة كلها.":
+        ("And the almuten — the planet strongest in total — is the one "
+         "that governs the whole structure of the chart.",
+         "Et l'almuten — la planète la plus forte au total — gouverne toute "
+         "la structure du thème."),
+    "الكوكب المنعزل لا يفعل شيئًا. الزوايا هي ما يربط الأجزاء ببعضها، والزاوية الدقيقة أشدّ أثرًا من عشر زوايا واسعة.":
+        ("An isolated planet does nothing. Aspects are what bind the parts "
+         "together, and one tight aspect weighs more than ten wide ones.",
+         "Une planète isolée ne fait rien. Les aspects relient les parties, "
+         "et un aspect serré pèse plus que dix aspects larges."),
+    "وانظر أهي مُقبِلة أم مُدبِرة: المُقبِلة لمّا تتمّ بعد فأثرها آتٍ، والمُدبِرة تمّت وانفكّت فأثرها ماضٍ.":
+        ("And see whether it is applying or separating: an applying aspect "
+         "has not yet perfected, so its effect lies ahead; a separating one "
+         "has perfected and loosened, so its effect is past.",
+         "Voyez s'il est appliquant ou séparant : l'appliquant n'est pas "
+         "encore exact, son effet est à venir ; le séparant s'est achevé, "
+         "son effet est passé."),
+    "المنازل القمرية الثماني والعشرون، والسهام، والنجوم الثابتة بأسمائها. هذه أبواب أهملتها المدرسة الغربية المعاصرة، وهي أصل علم الاختيارات عند العرب: متى تبدأ وما تتجنّب.":
+        ("The twenty-eight lunar mansions, the Arabic lots, and the fixed "
+         "stars by their names. These are chapters the modern Western "
+         "school let go of, and they are the root of the Arabic art of "
+         "elections: when to begin and what to avoid.",
+         "Les vingt-huit manoirs lunaires, les parts arabes et les étoiles "
+         "fixes par leurs noms. Des chapitres délaissés par l'école "
+         "occidentale moderne, et qui fondent l'art arabe des élections."),
+    "معجم المصطلحات": ("Glossary of terms", "Glossaire des termes"),
+    "ابحث في المصطلحات": ("Search the terms", "Rechercher un terme"),
+    "ابحث عن مصطلح: الطالع، الوجاج، الأَلْمُطَن…":
+        ("Search a term: Ascendant, orb, almuten…",
+         "Cherchez un terme : Ascendant, orbe, almuten…"),
+    "… أُحمّل المعجم": ("… loading the glossary", "… chargement du glossaire"),
+    "دليل البيوت الاثني عشر": ("Guide to the twelve houses",
+                                "Guide des douze maisons"),
+    "دليل البروج الاثني عشر": ("Guide to the twelve signs",
+                                "Guide des douze signes"),
+    "دليل الزوايا بين الكواكب": ("Guide to the aspects between planets",
+                                  "Guide des aspects entre planètes"),
+    "اضغط أيّ بيت": ("Click any house", "Cliquez sur une maison"),
+    "اضغط أيّ برج": ("Click any sign", "Cliquez sur un signe"),
+    "لكل زوج من الكواكب «موضوع» يجمعه في كل حال، ثم لكل زاوية بينهما نصّها. وسترى أن الشمس مع عطارد والزهرة لا يقع بينها إلا الاقتران — فذلك ما تسمح به السماء، لا ما اخترناه نحن.":
+        ("Every pair of planets has a theme that holds in all cases, and "
+         "then each aspect between them has its own text. You will notice "
+         "that the Sun with Mercury or Venus can only ever conjoin — that "
+         "is what the sky permits, not something we chose.",
+         "Chaque paire de planètes a un thème constant, puis chaque aspect "
+         "a son propre texte. Vous verrez que le Soleil avec Mercure ou "
+         "Vénus ne peut que se conjoindre — c'est ce que le ciel permet, "
+         "non notre choix."),
+    "تنبيه": ("Note", "Avertissement"),
+    "هذا الموقع أداة حسابية وقراءة رمزية، لا أداة تشخيص ولا نصيحة طبية ولا مالية ولا قانونية. لا تُبنى عليه قرارات مصيرية، ولا يُستغنى به عن أهل الاختصاص.":
+        ("This site is a calculating tool and a symbolic reading — not a "
+         "diagnostic instrument, and not medical, financial or legal "
+         "advice. Do not build life-changing decisions on it, and do not "
+         "let it stand in for a qualified professional.",
+         "Ce site est un outil de calcul et une lecture symbolique — ni un "
+         "instrument de diagnostic, ni un conseil médical, financier ou "
+         "juridique. N'y fondez pas de décisions décisives, et ne "
+         "remplacez pas un professionnel qualifié."),
+    "المجموع": ("Total", "Total"),
+    "كيف": ("how", "comment"),
+    "أين": ("where", "où"),
+
+    # ــ بطاقاتُ دليل الصفحات ــ
+    "بوّابة الموقع: تسألك ماذا تريد بلغتك، لا بلغة الصناعة.":
+        ("The gateway: it asks what you want in your own words, not in the "
+         "jargon of the craft.",
+         "La porte d'entrée : elle demande ce que vous voulez dans vos "
+         "mots, non dans le jargon."),
+    "صورة السماء لحظة مولدك: الطالع والكواكب والبيوت والكرامات والسهام، مع قراءة مكتوبة لكل موضع، و**لسانٌ لما يمرّ عليك الآن** من عبور وربّ سنة.":
+        ("The sky at the moment of your birth: Ascendant, planets, houses, "
+         "dignities and lots, with a written reading for every placement, "
+         "and **a tab for what is passing over you now** — transits and "
+         "the lord of your year.",
+         "Le ciel à l'instant de votre naissance : Ascendant, planètes, "
+         "maisons, dignités et parts, avec une lecture écrite pour chaque "
+         "position, et **un onglet pour ce qui vous traverse** en ce moment."),
+    "حال السماء اليوم: منزلة القمر، وخلوّ المسار، وأوقات الشمس، وما يصلح لهذا اليوم وما لا يصلح.":
+        ("The state of the sky today: the Moon's mansion, void of course, "
+         "the solar hours, and what today suits and what it does not.",
+         "L'état du ciel aujourd'hui : manoir lunaire, vide de course, "
+         "heures solaires, et ce qui convient ou non."),
+    "أحداث الشهر كلّه في تقويم واحد، وما يقع منها على درجات خريطتك أنت.":
+        ("The whole month's events in one calendar, and which of them fall "
+         "on the degrees of your own chart.",
+         "Tous les événements du mois en un calendrier, et lesquels tombent "
+         "sur les degrés de votre thème."),
+    "اثنتا عشرة ساعة نهارًا ومثلها ليلًا، لكلٍّ كوكبٌ وطبع — وتطول صيفًا وتقصر شتاءً.":
+        ("Twelve hours by day and twelve by night, each with its planet "
+         "and nature — lengthening in summer, shortening in winter.",
+         "Douze heures le jour et douze la nuit, chacune avec sa planète — "
+         "plus longues en été, plus courtes en hiver."),
+    "تختار غرضًا فيبحث لك عن أفضل يوم وساعة له في الأشهر القادمة.":
+        ("Choose a purpose and it searches the coming months for the best "
+         "day and hour for it.",
+         "Choisissez un objet : il cherche dans les mois à venir le "
+         "meilleur jour et la meilleure heure."),
+    "تُنجَّم على لحظة سؤالك لا على مولدك. أربع وعشرون مسألة، بحكمٍ مُعلَّل.":
+        ("Cast on the moment of your question, not on your birth. "
+         "Twenty-four question types, each with a reasoned judgement.",
+         "Dressé sur l'instant de votre question, non sur votre naissance. "
+         "Vingt-quatre types de questions, avec un jugement motivé."),
+    "الجيوتِش: البروج من النجوم لا من الفصول، والنكشترا والدشا والفرغا واليوغات.":
+        ("Jyotish: signs measured from the stars rather than the seasons, "
+         "with nakshatras, dashas, vargas and yogas.",
+         "Jyotish : signes mesurés depuis les étoiles et non les saisons, "
+         "avec nakshatras, dashas, vargas et yogas."),
+    "البازي: ثمانية حروف، وسيّد النفس، وميزان العناصر الخمسة، ودورات الحظّ.":
+        ("Bazi: eight characters, the Day Master, the balance of the five "
+         "elements, and the luck cycles.",
+         "Bazi : huit caractères, le Maître du Jour, l'équilibre des cinq "
+         "éléments et les cycles de chance."),
+    "خريطتان معًا: الوصلات والتراكب والتقبّل، وثلاثة موازين من ثلاث مدارس.":
+        ("Two charts together: contacts, house overlays and reception, "
+         "with three scores drawn from three traditions.",
+         "Deux thèmes ensemble : contacts, superpositions et réception, "
+         "avec trois scores issus de trois traditions."),
+    "أيّ فترة تعيش الآن: الفردارية والتسيير والعودة الشمسية.":
+        ("Which period you are living now: firdaria, direction and the "
+         "solar return.",
+         "La période que vous vivez : firdaria, direction et révolution "
+         "solaire."),
+    "أملاح شوسلر الاثنا عشر وربطُها بالبروج عند كيري. **تاريخُ فكرةٍ لا تشخيصٌ ولا دواء.**":
+        ("Schüssler's twelve salts and Carey's linking of them to the "
+         "signs. **The history of an idea — not diagnosis, not treatment.**",
+         "Les douze sels de Schüssler et leur lien aux signes chez Carey. "
+         "**L'histoire d'une idée — ni diagnostic ni traitement.**"),
+    "لكل كوكبٍ أربعة خطوط على وجه الأرض: يكون فيها طالعًا أو غاربًا أو في وسط السماء أو وتد الأرض. **ومَن سكن قريبًا من خطٍّ منها اشتدّ عليه ذلك الكوكب هناك** — والخطّ لا يقول خيرٌ أو شرّ، بل: هذا الكوكب أعلى صوتًا هنا.":
+        ("Every planet has four lines on Earth: where it rises, sets, "
+         "culminates or anti-culminates. **Live near one and that planet "
+         "grows louder for you there** — the line does not say good or "
+         "bad, only: this planet speaks louder here.",
+         "Chaque planète a quatre lignes sur Terre : où elle se lève, se "
+         "couche, culmine ou anticulmine. **Vivre près d'une ligne rend "
+         "cette planète plus forte** — la ligne ne dit ni bien ni mal."),
+    "مواليد أعلامٍ من العرب والعالم. **وما يُعرَض محدود عمدًا**: ساعةُ ميلادهم لا تُعرَف، فلا طالعَ لهم ولا بيوت — وأكثر المواقع تضع ١٢:٠٠ وترسم عجلةً كاملة، والطالع يدور اثنتي عشرة مرّةً في اليوم. فنعرض ما يصحّ بالتاريخ وحده.":
+        ("Birth data of figures from the Arab world and beyond. **What is "
+         "shown is deliberately limited**: their birth times are unknown, "
+         "so no Ascendant and no houses — most sites set the clock to "
+         "12:00 and draw a full wheel, yet the Ascendant turns twelve "
+         "times a day. We show only what the date alone supports.",
+         "Naissances de personnalités arabes et du monde. **Ce qui est "
+         "montré est volontairement limité** : leurs heures de naissance "
+         "sont inconnues, donc ni Ascendant ni maisons."),
+    "**ساعاتُ يومك الأربع والعشرون جاءت من ديكانات مصر، وبروجُك من بابل.** تاريخٌ موثّق: من أين جاء ما نحسبه، وأرباب الوجوه بمذهبين لا يتّفقان إلّا في تسعةٍ من ستّةٍ وثلاثين. **وما لا يُعرَف يُقال إنه لا يُعرَف** — ولا «برج سومريّ» مُختلَق.":
+        ("**Your day's twenty-four hours came from Egypt's decans, and "
+         "your signs from Babylon.** Documented history: where what we "
+         "compute came from, and the rulers of the decans in two schools "
+         "that agree on only nine of thirty-six. **What is not known is "
+         "said to be unknown** — and no invented \"Sumerian sign\".",
+         "**Les vingt-quatre heures viennent des décans d'Égypte, et vos "
+         "signes de Babylone.** Histoire documentée, et les maîtres des "
+         "décans en deux écoles qui ne s'accordent que sur neuf sur "
+         "trente-six. **Ce qu'on ignore est dit ignoré.**"),
+    "البدن على البروج: الحملُ الرأس والحوتُ القدمان، والمِزاج بالأخلاط الأربعة **محسوبًا بمواضع بطلَميوس الخمسة**، ويُرى من أين جاءت كل نقطة. **تاريخُ فكرةٍ لا طبّ — ولا تشخيصٌ ولا دواء، ومن وجد شيئًا فالطبيب.**":
+        ("The body across the signs: Aries the head, Pisces the feet; and "
+         "temperament by the four humours, **computed from Ptolemy's five "
+         "placements**, with every point traced to its source. **The "
+         "history of an idea, not medicine — no diagnosis, no treatment; "
+         "if something troubles you, see a doctor.**",
+         "Le corps réparti sur les signes ; et le tempérament par les "
+         "quatre humeurs, **calculé selon les cinq positions de Ptolémée**. "
+         "**L'histoire d'une idée, non de la médecine — consultez un "
+         "médecin.**"),
+    "جدول مواضع الأجرام في أي لحظة تختارها.":
+        ("A table of body positions for any moment you choose.",
+         "Un tableau des positions pour tout instant choisi."),
+    "لمن أراد أن يبني على الفَلَك، أو يُصدّر تقويمه.":
+        ("For anyone who wants to build on Al-Falak, or export their "
+         "calendar.",
+         "Pour qui veut bâtir sur Al-Falak, ou exporter son calendrier."),
+
+    # ══════════════════════════════════════════════════════════
     # التوافق والمسائل والبازي والجيوتِش
     #
     # **ومصطلحُ كل مدرسة يبقى باسمه**: `Bazi` و`Jyotish` و
