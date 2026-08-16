@@ -89,6 +89,273 @@ PARTIAL = {
 # ══════════════════════════════════════════════════════════════════
 UI = {
     # ══════════════════════════════════════════════════════════
+    # التوافق والمسائل والبازي والجيوتِش
+    #
+    # **ومصطلحُ كل مدرسة يبقى باسمه**: `Bazi` و`Jyotish` و
+    # `Ashtakoota` و`Dasha` — فمن قرأ بالإنجليزية يعرفها بهذه
+    # وحدها، ومن ترجمها إلى «Four Pillars of Destiny» وحدها
+    # قطع القارئ عن مصادره.
+    # ══════════════════════════════════════════════════════════
+    "التوافق بين خريطتين": ("Synastry — two charts compared",
+                             "Synastrie — deux thèmes comparés"),
+    "التوافق بين خريطتين — الفَلَك": ("Synastry — Al-Falak",
+                                       "Synastrie — Al-Falak"),
+    "الفَلَك — التوافق": ("Al-Falak — Synastry", "Al-Falak — Synastrie"),
+    "احسب التوافق": ("Compute synastry", "Calculer la synastrie"),
+    "اعكس الطرفين": ("Swap the two", "Inverser les deux"),
+    "أقوى الوصلات بينكما": ("Your strongest contacts",
+                             "Vos contacts les plus forts"),
+    "الموازين الثلاثة": ("The three scores", "Les trois scores"),
+    "عاطفي": ("Romantic", "Amoureux"),
+    "صداقة": ("Friendship", "Amitié"),
+    "مهني": ("Working", "Professionnel"),
+    "تقبّل": ("Reception", "Réception"),
+    "التقبّل": ("Reception", "Réception"),
+    "تراكب البيوت — أين يقع كلٌّ من حياة الآخر":
+        ("House overlays — where each falls in the other's life",
+         "Superpositions de maisons — où chacun tombe dans la vie de l'autre"),
+    "الخريطة المركّبة": ("The composite chart", "Le thème composite"),
+    "المركّبة": ("Composite", "Composite"),
+    "خريطة دافيسون": ("The Davison chart", "Le thème de Davison"),
+    "دافيسون": ("Davison", "Davison"),
+    "العجلة المزدوجة": ("The bi-wheel", "La double roue"),
+    "٪ من الخرائط": ("% of charts", "% des thèmes"),
+    "إخفاء التفصيل": ("Hide the detail", "Masquer le détail"),
+    "ساعة الميلاد تهمّ هنا أكثر ممّا تهمّ في الخريطة الواحدة: وصلات الطالع ووسط السماء وتراكب البيوت كلّها تتغيّر بتغيّر الساعة. فإن كانت مقدَّرة، اقرأ الوصلات بين الكواكب وحدها ودع الباقي.":
+        ("Birth time matters more here than in a single chart: contacts to "
+         "the Ascendant and Midheaven, and all the house overlays, shift "
+         "with the hour. If your time is only estimated, read the "
+         "planet-to-planet contacts alone and leave the rest.",
+         "L'heure compte davantage ici que pour un thème seul : les "
+         "contacts à l'Ascendant et au Milieu du Ciel, et toutes les "
+         "superpositions, changent avec l'heure. Si elle est estimée, ne "
+         "lisez que les contacts entre planètes."),
+    "تُوضع الخريطتان إحداهما فوق الأخرى، فيُنظر في زوايا كواكب كلٍّ إلى كواكب الآخر، وفي أيّ بيوت كلٍّ وقعت كواكب صاحبه. ومعها ثلاثة موازين — عاطفي وصداقة ومهني — ومع كلّ ميزان تفصيلٌ يُظهر من أين جاءت درجته.":
+        ("The two charts are laid one over the other: each one's planets "
+         "are read against the other's, and each is seen in whose houses "
+         "the other's planets fall. With them come three scores — "
+         "romantic, friendship and working — each with a breakdown showing "
+         "where its points came from.",
+         "Les deux thèmes sont superposés : les planètes de chacun sont "
+         "lues face à celles de l'autre, et l'on voit dans quelles maisons "
+         "elles tombent. S'y ajoutent trois scores — amoureux, amitié et "
+         "professionnel — chacun détaillé."),
+    "الخريطة تصف ميلًا، والعِشرة تصنعها المعاملة.":
+        ("A chart describes an inclination; a relationship is made by how "
+         "people treat each other.",
+         "Un thème décrit un penchant ; une relation se construit par la "
+         "manière dont on se traite."),
+    "الحساب بمكتبة Swiss Ephemeris · الموازين رتبة مئوية مقابل ستّة آلاف زوج عشوائي.":
+        ("Computed with the Swiss Ephemeris · the scores are percentile "
+         "ranks against six thousand random pairs.",
+         "Calculé avec la Swiss Ephemeris · les scores sont des rangs "
+         "centiles face à six mille couples aléatoires."),
+
+    # ــ المسائل ــ
+    "المسائل — الفَلَك": ("Horary — Al-Falak", "Horaire — Al-Falak"),
+    "الفَلَك — المسائل": ("Al-Falak — Horary", "Al-Falak — Horaire"),
+    "خريطة اللحظة": ("The chart of the moment", "Le thème de l'instant"),
+    "اللحظة الآن": ("This very moment", "Cet instant même"),
+    "ساعة السؤال": ("Hour of the question", "Heure de la question"),
+    "سؤالك": ("your question", "votre question"),
+    "احكم في المسألة": ("Judge the question", "Juger la question"),
+    "الاعتبارات": ("Considerations", "Considérations"),
+    "الاعتبارات قبل الحكم": ("Considerations before judgement",
+                              "Considérations avant jugement"),
+    "دليل السائل": ("Significator of the querent",
+                     "Significateur du consultant"),
+    "دليل المسؤول عنه": ("Significator of the quesited",
+                          "Significateur du sujet"),
+    "الدليلان والشاهد": ("The two significators and the witness",
+                          "Les deux significateurs et le témoin"),
+    "القمر — شاهد كل مسألة": ("The Moon — witness to every question",
+                               "La Lune — témoin de chaque question"),
+    "التمام — أيقع الاتّصال قبل خروج الدليل من برجه؟":
+        ("Perfection — does the contact complete before the significator "
+         "leaves its sign?",
+         "Perfection — le contact s'achève-t-il avant que le significateur "
+         "ne quitte son signe ?"),
+    ": أيقع بينهما اتّصال قبل أن يخرج أحدهما من برجه؟":
+        (": does a contact form between them before either leaves its sign?",
+         ": un contact se forme-t-il avant que l'un ne quitte son signe ?"),
+    "يتمّ بواسطة": ("completes by translation", "s'achève par translation"),
+    "يتمّ بعد جهد": ("completes after effort", "s'achève après effort"),
+    "تُردّ المسألة": ("the question is returned unjudged",
+                       "la question est renvoyée sans jugement"),
+    "بيدك أنت": ("in your own hands", "entre vos mains"),
+    "حدود هذا الباب": ("The limits of this craft",
+                        "Les limites de cet art"),
+    "المصادر والحدود": ("Sources and limits", "Sources et limites"),
+    "وقوع السؤال في نفسك": ("when the question took hold of you",
+                             "quand la question s'est imposée à vous"),
+    "الوقت هنا هو لحظة": ("The time here is the moment",
+                           "L'heure ici est l'instant"),
+    "مبنى هذا الباب أن السؤال إذا اضطرم في صدر صاحبه فسأل، كانت السماء في تلك اللحظة صورةً لجوابه. ولا يُحكم فيه بالمزاج: تُنظر":
+        ("This craft rests on the idea that when a question burns in someone "
+         "and they ask it, the sky of that moment mirrors its answer. It is "
+         "not judged by mood: first are examined the",
+         "Cet art repose sur l'idée que lorsqu'une question brûle en "
+         "quelqu'un et qu'il la pose, le ciel de cet instant en reflète la "
+         "réponse. On ne juge pas à l'humeur : on examine d'abord les"),
+    "أوّلًا، فإن كان في الخريطة ما يمنع رُدّت المسألة ولم يُتكلَّف لها جواب. ثم يُنظر في":
+        ("first, and if the chart forbids, the question is returned and no "
+         "answer is forced. Then are examined the",
+         "d'abord, et si le thème l'interdit, la question est renvoyée sans "
+         "réponse forcée. Puis on examine les"),
+    ", لا وقت فتحك للصفحة. وكلّما كان السؤال مصوغًا صياغة دقيقة كان الجواب أوضح — وأكثر الحيرة تنحلّ بصياغة السؤال وحدها.":
+        (", not when you opened this page. The more precisely the question "
+         "is framed, the clearer the answer — and most confusion dissolves "
+         "in the framing alone.",
+         ", non l'heure d'ouverture de cette page. Plus la question est "
+         "précise, plus la réponse est claire."),
+    "، لا وقت فتحك للصفحة. وكلّما كان السؤال مصوغًا صياغة دقيقة كان الجواب أوضح — وأكثر الحيرة تنحلّ بصياغة السؤال وحدها.":
+        (", not when you opened this page. The more precisely the question "
+         "is framed, the clearer the answer — and most confusion dissolves "
+         "in the framing alone.",
+         ", non l'heure d'ouverture de cette page. Plus la question est "
+         "précise, plus la réponse est claire."),
+    "البيوت على ريجومونتانوس، وهو مذهب أهل هذا الباب.":
+        ("Houses by Regiomontanus, the convention of this craft.",
+         "Maisons selon Regiomontanus, la convention de cet art."),
+    "الاعتبارات وقواعد التمام من «التفهيم» للبيروني و«البارع» لابن أبي الرجال.":
+        ("The considerations and rules of perfection come from al-Biruni's "
+         "Tafhim and Ibn Abi al-Rijal's al-Bari'.",
+         "Les considérations et règles de perfection viennent du Tafhim "
+         "d'al-Biruni et du Bari' d'Ibn Abi al-Rijal."),
+
+    # ــ البازي ــ
+    "الأعمدة الأربعة": ("The four pillars", "Les quatre piliers"),
+    "الأعمدة الأربعة — البازي — الفَلَك":
+        ("The four pillars — Bazi — Al-Falak",
+         "Les quatre piliers — Bazi — Al-Falak"),
+    "الفَلَك — الأعمدة الأربعة": ("Al-Falak — Four pillars",
+                                   "Al-Falak — Quatre piliers"),
+    "احسب الأعمدة": ("Compute the pillars", "Calculer les piliers"),
+    "أعمدتك الأربعة": ("Your four pillars", "Vos quatre piliers"),
+    "سيّد النفس": ("Day Master", "Maître du Jour"),
+    "— سيّد النفس": ("— Day Master", "— Maître du Jour"),
+    "ميزان العناصر الخمسة": ("The balance of the five elements",
+                              "L'équilibre des cinq éléments"),
+    "نسبة كل عمود إليك": ("What each pillar is to you",
+                           "Ce que chaque pilier est pour vous"),
+    "دورات الحظّ": ("Luck cycles", "Cycles de chance"),
+    "دورات الحظّ — عشرًا عشرًا": ("Luck cycles — ten years at a time",
+                                   "Cycles de chance — par dix ans"),
+    "— لدورات الحظّ —": ("— for the luck cycles —",
+                          "— pour les cycles de chance —"),
+    "ما ينقصك، وكيف يُطلَب": ("What you lack, and how it is sought",
+                               "Ce qui vous manque, et comment le chercher"),
+    "خشب": ("Wood", "Bois"), "نار": ("Fire", "Feu"),
+    "تراب": ("Earth", "Terre"), "معدن": ("Metal", "Métal"),
+    "ماء": ("Water", "Eau"),
+    "الجنس": ("Sex", "Sexe"),
+    "التوافق الصيني — الفروع والعناصر":
+        ("Chinese compatibility — branches and elements",
+         "Compatibilité chinoise — branches et éléments"),
+    "اتّجاه دورات الحظّ يختلف بالجنس وجذع السنة — وهذه قاعدة منصوصة في كتبهم، لا تمييز منّا. ولذلك يُسأل عنه هنا ولا يُسأل في الصفحات الأخرى.":
+        ("The direction of the luck cycles differs by sex and by the year's "
+         "stem — a rule stated in their own books, not a distinction of "
+         "ours. That is why it is asked here and nowhere else.",
+         "Le sens des cycles de chance dépend du sexe et du tronc de "
+         "l'année — une règle énoncée dans leurs propres livres, non une "
+         "distinction de notre part."),
+    "لا دائرة هنا ولا بروج: أربعة أعمدة للسنة والشهر واليوم والساعة، لكلٍّ حرفان — فثمانية حروف تُقرأ بها حياتك، ومن هنا اسمها «بازي». وحرف يوم مولدك هو":
+        ("No wheel here and no signs: four pillars — year, month, day and "
+         "hour — each of two characters. Eight characters in all, by which "
+         "your life is read; hence the name Bazi (\"eight characters\"). "
+         "The character of your birth day is your",
+         "Ni roue ni signes : quatre piliers — année, mois, jour et heure — "
+         "de deux caractères chacun. Huit caractères en tout, d'où le nom "
+         "Bazi. Le caractère de votre jour de naissance est votre"),
+    ": أنت في هذه الخريطة، وإليه يُقاس كل ما سواه.":
+        (": you in this chart, and everything else is measured against it.",
+         ": vous dans ce thème, et tout le reste s'y mesure."),
+    "الفصول الشمسية محسوبة من طول الشمس بمكتبة Swiss Ephemeris، لا من جداول مستوردة.":
+        ("The solar terms are computed from the Sun's longitude with the "
+         "Swiss Ephemeris, not from imported tables.",
+         "Les termes solaires sont calculés depuis la longitude du Soleil "
+         "avec la Swiss Ephemeris, non depuis des tables importées."),
+    "المصادر: «滴天髓» نُخبة أسرار السماء، و«三命通會».":
+        ("Sources: Di Tian Sui (\"Drops of Heavenly Marrow\") and San Ming "
+         "Tong Hui.",
+         "Sources : Di Tian Sui et San Ming Tong Hui."),
+    "أزن العناصر الخمسة…": ("… weighing the five elements",
+                             "… pesée des cinq éléments"),
+    "أُركّب الأعمدة الأربعة…": ("… assembling the four pillars",
+                                 "… assemblage des quatre piliers"),
+    "أحسب الفصول الشمسية…": ("… computing the solar terms",
+                              "… calcul des termes solaires"),
+
+    # ــ الجيوتِش ــ
+    "الخريطة الهندية — الجيوتِش — الفَلَك":
+        ("Vedic chart — Jyotish — Al-Falak",
+         "Thème védique — Jyotish — Al-Falak"),
+    "الفَلَك — الخريطة الهندية": ("Al-Falak — Vedic chart",
+                                   "Al-Falak — Thème védique"),
+    "احسب الخريطة الهندية": ("Compute the Vedic chart",
+                              "Calculer le thème védique"),
+    "خريطتك بالحساب الهندي": ("Your chart in the Vedic system",
+                               "Votre thème en système védique"),
+    "مذهب القياس (أينامشا)": ("Ayanamsha (the measuring convention)",
+                               "Ayanamsha (convention de mesure)"),
+    "الكواكب التسعة": ("The nine grahas", "Les neuf grahas"),
+    "فترات عمرك — الدشا": ("The periods of your life — Dasha",
+                            "Les périodes de votre vie — Dasha"),
+    "الخرائط المقسَّمة (الفَرغا)": ("The divisional charts (Varga)",
+                                     "Les thèmes divisionnaires (Varga)"),
+    "اليوغات المتحقّقة": ("The yogas present", "Les yogas présents"),
+    "التوافق الهندي — الأشتا كوتا": ("Vedic compatibility — Ashtakoota",
+                                      "Compatibilité védique — Ashtakoota"),
+    "الحسابان جنبًا إلى جنب": ("The two systems side by side",
+                                "Les deux systèmes côte à côte"),
+    "المدارس الثلاث جنبًا إلى جنب": ("The three traditions side by side",
+                                      "Les trois traditions côte à côte"),
+    "وفرقه عن الحساب العربي اليوم": ("and how it differs from the Arabic "
+                                      "reckoning today",
+                                      "et sa différence avec le comput arabe"),
+    "السماء نفسها، مقيسةً من نقطة أخرى. الهنود يقيسون من النجوم الثابتة، والعرب والغربيّون من نقطة اعتدال الربيع — وقد تباعدت النقطتان مع القرون حتى صار بينهما نحو أربع وعشرين درجة. فأكثر أبراجك ستتراجع برجًا، وهذا ليس خطأً.":
+        ("The same sky, measured from a different point. Indian astrology "
+         "measures from the fixed stars; Arabic and Western astrology from "
+         "the spring equinox — and the two points have drifted apart over "
+         "the centuries until some twenty-four degrees now lie between "
+         "them. So most of your signs will step back by one. This is not "
+         "an error.",
+         "Le même ciel, mesuré depuis un autre point. L'Inde mesure depuis "
+         "les étoiles fixes ; le monde arabe et l'Occident depuis "
+         "l'équinoxe de printemps — et les deux points se sont écartés au "
+         "fil des siècles jusqu'à quelque vingt-quatre degrés. La plupart "
+         "de vos signes reculeront d'un cran. Ce n'est pas une erreur."),
+    "المثلّث الأصلي": ("The original trine", "Le trigone d'origine"),
+    "الهبوط": ("Debilitation", "Débilitation"),
+    "الذروة": ("Exaltation", "Exaltation"),
+    "التزاوج": ("Combination", "Combinaison"),
+    "كبرى": ("major", "majeur"),
+    "نادرة": ("rare", "rare"),
+    "موضع": ("position", "position"),
+    "درجة.": ("degrees.", "degrés."),
+    "قراءة المواضع": ("Reading of the positions",
+                       "Lecture des positions"),
+    "(ما بقي منها)": ("(what remains of it)", "(ce qu'il en reste)"),
+    "أُحدّد المنازل…": ("… locating the nakshatras",
+                         "… localisation des nakshatras"),
+    "أحسب المواقع النجمية…": ("… computing sidereal positions",
+                               "… calcul des positions sidérales"),
+    "أحسب فترات العمر…": ("… computing the life periods",
+                           "… calcul des périodes"),
+    "المصادر: بريهات باراشارا هورا شاسترا، وبريهات جاتاكا لڤاراها ميهيرا.":
+        ("Sources: Brihat Parashara Hora Shastra, and Varahamihira's "
+         "Brihat Jataka.",
+         "Sources : Brihat Parashara Hora Shastra, et le Brihat Jataka de "
+         "Varahamihira."),
+    "الحساب بمكتبة Swiss Ephemeris على المنطقة النجمية · أينامشا لاهيري افتراضًا.":
+        ("Computed with the Swiss Ephemeris on the sidereal zodiac · "
+         "Lahiri ayanamsha by default.",
+         "Calculé avec la Swiss Ephemeris sur le zodiaque sidéral · "
+         "ayanamsha Lahiri par défaut."),
+    "— اختر —": ("— choose —", "— choisir —"),
+    "باريس…": ("Paris…", "Paris…"),
+
+    # ══════════════════════════════════════════════════════════
     # سبعُ صفحاتٍ دفعةً — الأصولُ والملوثيزيا والأملاح والمشاهير
     # وخرائط الأرض وأرباب الأزمنة ومواقع الكواكب
     # ══════════════════════════════════════════════════════════
