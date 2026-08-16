@@ -88,6 +88,262 @@ PARTIAL = {
 # و`coverage()` تقول كم بقي بالرقم لا بالظنّ.
 # ══════════════════════════════════════════════════════════════════
 UI = {
+    # ══════════════════════════════════════════════════════════
+    # ساعاتُ الكواكب والاختيارات والنشرة الشهرية
+    #
+    # **وأسماءُ الكتب لا تُترجَم**: «غاية الحكيم» كتابٌ بعينه،
+    # وقد عُرِف في اللاتينية باسم *Picatrix* قرونًا — فيُذكَر
+    # بالاسمين، إذ من قرأ بالإنجليزية يعرفه بذاك لا بهذا.
+    # ══════════════════════════════════════════════════════════
+    "ساعات الكواكب — الفَلَك": ("Planetary hours — Al-Falak",
+                                 "Heures planétaires — Al-Falak"),
+    "الفَلَك — ساعات الكواكب": ("Al-Falak — Planetary hours",
+                                 "Al-Falak — Heures planétaires"),
+    "ليست الساعة هنا ستّين دقيقة. النهار من الشروق إلى الغروب يُقسَم اثنتي عشرة ساعة متساوية، والليل مثله — فتطول ساعات النهار صيفًا وتقصر شتاءً. الدلالات من «غاية الحكيم» للمجريطي و«التفهيم» للبيروني.":
+        ("An hour here is not sixty minutes. Daylight, from sunrise to "
+         "sunset, is divided into twelve equal hours, and the night "
+         "likewise — so day hours lengthen in summer and shorten in winter. "
+         "The meanings come from al-Majriti's Ghayat al-Hakim (the Latin "
+         "Picatrix) and al-Biruni's Tafhim.",
+         "Une heure n'est pas ici soixante minutes. Le jour, du lever au "
+         "coucher, est divisé en douze heures égales, et la nuit de même — "
+         "les heures du jour s'allongent en été. Les significations "
+         "viennent du Ghayat al-Hakim d'al-Majriti (le Picatrix latin) et "
+         "du Tafhim d'al-Biruni."),
+    "النهار": ("Day", "Jour"),
+    "الليل": ("Night", "Nuit"),
+    "طبعها": ("Its nature", "Sa nature"),
+    "تصلح": ("Suits", "Convient à"),
+    "تُتجنّب": ("Avoid", "À éviter"),
+    "وما يُتجنّب": ("and what to avoid", "et ce qu'il faut éviter"),
+    "من غاية الحكيم": ("From Ghayat al-Hakim (Picatrix)",
+                        "Du Ghayat al-Hakim (Picatrix)"),
+    "من التفهيم": ("From al-Biruni's Tafhim", "Du Tafhim d'al-Biruni"),
+    "المصادر": ("Sources", "Sources"),
+    "نسخ الجدول": ("Copy table", "Copier le tableau"),
+    "— كل الساعات —": ("— all hours —", "— toutes les heures —"),
+    "الشروق والغروب محسوبان بمكتبة Swiss Ephemeris لموضعك تحديدًا.":
+        ("Sunrise and sunset are computed with the Swiss Ephemeris for "
+         "your exact location.",
+         "Lever et coucher calculés avec la Swiss Ephemeris pour votre "
+         "position exacte."),
+    "الدلالات من التراث الفلكي العربي، والصياغة معاصرة.":
+        ("The meanings are from the Arabic astrological tradition; the "
+         "wording is modern.",
+         "Les significations viennent de la tradition arabe ; la "
+         "formulation est moderne."),
+    "أحسب مواقع القمر والكواكب…": ("… computing Moon and planet positions",
+                                    "… calcul des positions"),
+
+    # ــ الاختيارات ــ
+    "الاختيارات — متى أفعل؟ — الفَلَك":
+        ("Electional astrology — when should I? — Al-Falak",
+         "Astrologie élective — quand agir ? — Al-Falak"),
+    "الفَلَك — الاختيارات": ("Al-Falak — Electional",
+                              "Al-Falak — Élections"),
+    "تقويم الشهر يُجيب عن «كيف حال هذا اليوم؟». وهذه الصفحة تُجيب عن السؤال المعكوس، وهو الذي يسأله الناس فعلًا:":
+        ("The month's calendar answers \"how is this day?\". This page "
+         "answers the reverse question — the one people actually ask:",
+         "Le calendrier du mois répond à « comment est ce jour ? ». Cette "
+         "page répond à la question inverse, celle qu'on pose vraiment :"),
+    ". تمسح الشهور القادمة، وتُعطي مع كل يوم ساعته — فالقدماء يختارون الساعة كما يختارون اليوم.":
+        (". It scans the coming months and gives, with each day, its hour "
+         "— for the ancients chose the hour as they chose the day.",
+         ". Elle balaie les mois à venir et donne, avec chaque jour, son "
+         "heure — car les anciens choisissaient l'heure comme le jour."),
+    "لأيّ غرض؟": ("For what purpose?", "Dans quel but ?"),
+    "أعطني أفضل يوم": ("Give me the best day", "Donnez-moi le meilleur jour"),
+    "لغرض بعينه": ("for a specific purpose", "pour un objet précis"),
+    "ستّة أشهر": ("Six months", "Six mois"),
+    "من اليوم": ("From today", "À partir d'aujourd'hui"),
+    "رجّح البحث بخريطة مولدي (اختياري)":
+        ("Weight the search by my natal chart (optional)",
+         "Pondérer la recherche par mon thème natal (facultatif)"),
+    "حين تُعطي مولدك، تُرجَّح الأيام التي يُوافقها العابر في خريطتك أنت. والوزن هنا أصغر عمدًا: العبور البطيء يدوم شهورًا، فلو ثقُل وزنه لسوّى بين كلّ أيام الفصل.":
+        ("When you give your birth data, days whose transits suit your own "
+         "chart are favoured. The weight is deliberately small: slow "
+         "transits last for months, so a heavy weight would flatten every "
+         "day of the season into one.",
+         "Si vous donnez votre naissance, les jours dont les transits "
+         "conviennent à votre thème sont favorisés. Le poids est "
+         "volontairement faible : les transits lents durent des mois."),
+    "أختار أفضل ساعة في كل يوم…": ("… choosing the best hour each day",
+                                    "… choix de la meilleure heure"),
+    "أُرتّب النتائج…": ("… ranking the results", "… classement des résultats"),
+    "لا تُبنى على هذا قرارات لا رجعة فيها.":
+        ("Do not base irreversible decisions on this.",
+         "Ne fondez pas sur ceci de décisions irréversibles."),
+    "الأغراض وشروطها من التراث الفلكي العربي · الساعات من «غاية الحكيم» و«التفهيم».":
+        ("Purposes and their conditions from the Arabic tradition · hours "
+         "from Ghayat al-Hakim (Picatrix) and al-Biruni's Tafhim.",
+         "Objets et conditions issus de la tradition arabe · heures du "
+         "Ghayat al-Hakim (Picatrix) et du Tafhim d'al-Biruni."),
+
+    # ــ النشرة الشهرية ــ
+    "النشرة الشهرية — الفَلَك": ("Monthly bulletin — Al-Falak",
+                                  "Bulletin mensuel — Al-Falak"),
+    "الفَلَك — الشهرية": ("Al-Falak — Monthly", "Al-Falak — Mensuel"),
+    "أي شهر بين ١٨٠٠ و٢٤٠٠: انتقالات الكواكب ومحطّات رجوعها، الزوايا التامّة بأوقاتها، التقميرات والكسوف بأشكالها، وتقويم الاختيارات لكل يوم.":
+        ("Any month between 1800 and 2400: planetary ingresses and "
+         "retrograde stations, exact aspects with their times, lunations "
+         "and eclipses with their types, and an electional calendar for "
+         "every day.",
+         "N'importe quel mois entre 1800 et 2400 : entrées de signe et "
+         "stations rétrogrades, aspects exacts avec leurs heures, "
+         "lunaisons et éclipses, et un calendrier électif jour par jour."),
+    "هذا الشهر": ("This month", "Ce mois"),
+    "الشهر السابق ›": ("Previous month ›", "Mois précédent ›"),
+    "‹ الشهر التالي": ("‹ Next month", "‹ Mois suivant"),
+    "السابق ›": ("Previous ›", "Précédent ›"),
+    "‹ التالي": ("‹ Next", "‹ Suivant"),
+    "اللسان": ("Voice", "Ton"),
+    "لسان النشرة اليومية": ("Daily-bulletin voice", "Ton du bulletin quotidien"),
+    "لسان التراث": ("Traditional voice", "Ton traditionnel"),
+    "لسان أدبي": ("Literary voice", "Ton littéraire"),
+    "الرجوع": ("Retrogrades", "Rétrogradations"),
+    "العبور": ("Transits", "Transits"),
+    "+ جوّي الشخصي": ("+ my personal weather", "+ ma météo personnelle"),
+    "− جوّي الشخصي": ("− my personal weather", "− ma météo personnelle"),
+    "احسب جوّي": ("Compute my weather", "Calculer ma météo"),
+    "أدخل ميلادك ليقول لك الشهر أيّ أحداثه تمسّك أنت. البيانات تُرسَل للحساب فقط ولا تُحفَظ على الخادم، وتُخزَّن في متصفّحك وحده.":
+        ("Enter your birth data and the month will tell you which of its "
+         "events touch you. The data is sent for calculation only, is not "
+         "stored on the server, and is kept in your browser alone.",
+         "Saisissez votre naissance et le mois vous dira lesquels de ses "
+         "événements vous concernent. Les données servent au calcul seul, "
+         "ne sont pas conservées sur le serveur, et restent dans votre "
+         "navigateur."),
+    "امسح بياناتي": ("Erase my data", "Effacer mes données"),
+    "تاريخ مولدك": ("Your birth date", "Votre date de naissance"),
+    "تاريخ ميلادك": ("Your birth date", "Votre date de naissance"),
+    "ساعة ميلادك": ("Your birth time", "Votre heure de naissance"),
+    "مكان ميلادك": ("Your birthplace", "Votre lieu de naissance"),
+    "أين؟": ("Where?", "Où ?"),
+    "أمثلة": ("Examples", "Exemples"),
+    "ابحث": ("Search", "Rechercher"),
+    "نسخ النشرة": ("Copy bulletin", "Copier le bulletin"),
+    "أدخل تاريخ ميلادك ومكانه.": ("Enter your birth date and place.",
+                                   "Saisissez votre date et lieu de naissance."),
+    "أجمع أحداث الشهر…": ("… gathering the month's events",
+                           "… collecte des événements"),
+    "أحسب الانتقالات والكسوف…": ("… computing ingresses and eclipses",
+                                  "… calcul des entrées et éclipses"),
+    "أصوغ النشرة…": ("… composing the bulletin", "… rédaction du bulletin"),
+    "المواقع محسوبة بمكتبة Swiss Ephemeris. تقويم الاختيارات على قواعد «غاية الحكيم» و«التفهيم» وكتب الاختيارات العربية.":
+        ("Positions are computed with the Swiss Ephemeris. The electional "
+         "calendar follows Ghayat al-Hakim (Picatrix), al-Biruni's Tafhim, "
+         "and the Arabic books of elections.",
+         "Positions calculées avec la Swiss Ephemeris. Le calendrier "
+         "électif suit le Ghayat al-Hakim (Picatrix), le Tafhim d'al-Biruni "
+         "et les traités arabes d'élections."),
+
+    # ــ الشهور وأيّام الأسبوع ــ
+    "يناير": ("January", "Janvier"), "فبراير": ("February", "Février"),
+    "مارس": ("March", "Mars"), "أبريل": ("April", "Avril"),
+    "مايو": ("May", "Mai"), "يونيو": ("June", "Juin"),
+    "يوليو": ("July", "Juillet"), "أغسطس": ("August", "Août"),
+    "سبتمبر": ("September", "Septembre"), "أكتوبر": ("October", "Octobre"),
+    "نوفمبر": ("November", "Novembre"), "ديسمبر": ("December", "Décembre"),
+    "الإثنين": ("Monday", "Lundi"),
+
+    # ــ الصفحة الرئيسة: ما بقي ــ
+    "الفَلَك — الرئيسة": ("Al-Falak — Home", "Al-Falak — Accueil"),
+    "… أقرأ السماء": ("… reading the sky", "… lecture du ciel"),
+    "تعذّر الاتصال بالخادم:": ("Could not reach the server:",
+                                "Impossible de joindre le serveur :"),
+    "وفيه أيضًا": ("Also here", "Également ici"),
+    "البيوت والبروج والزوايا مشروحة، ومعجم لكل مصطلح":
+        ("Houses, signs and aspects explained, with a glossary for every term",
+         "Maisons, signes et aspects expliqués, avec un glossaire complet"),
+    "جواب من خريطة اللحظة التي وقع فيها سؤالك — وقد لا يكون له جواب":
+        ("An answer from the chart of the moment your question arose — "
+         "and it may have none",
+         "Une réponse tirée du thème de l'instant de votre question — "
+         "qui peut n'en avoir aucune"),
+    "خريطتان معًا: الحبّ والصحبة والشراكة، وما رفع كل درجة":
+        ("Two charts together: love, friendship and partnership, and what "
+         "raised each score",
+         "Deux thèmes ensemble : amour, amitié et association, et ce qui "
+         "fait chaque score"),
+    "أحداث الشهر كلّه: الانتقالات والكسوف والرجوع، بثلاثة أساليب في الصياغة.":
+        ("The whole month's events: ingresses, eclipses and retrogrades, "
+         "in three styles of wording.",
+         "Les événements du mois : entrées de signe, éclipses et "
+         "rétrogradations, en trois styles."),
+
+    # ــ صفحة خريطة الميلاد ــ
+    # **وأنظمةُ البيوت أسماءُ أعلامٍ لا تُترجَم** — بلاسيدوس رجلٌ
+    # وكوخ رجل. فتُنقَل حروفًا كما تُكتب في كتب الصناعة، ويُترجَم
+    # وصفُها وحده.
+    "خريطة الميلاد والطالع": ("Natal chart and Ascendant",
+                               "Thème natal et Ascendant"),
+    "خريطة الميلاد والطالع — الفَلَك": ("Natal chart and Ascendant — Al-Falak",
+                                         "Thème natal et Ascendant — Al-Falak"),
+    "الفَلَك — خريطة الميلاد": ("Al-Falak — Natal chart",
+                                 "Al-Falak — Thème natal"),
+    "دقّة الساعة مهمّة: كل أربع دقائق تُزحزح الطالع درجة كاملة. التوقيت الصيفي التاريخي يُطبَّق تلقائيًّا، وتُنبَّه إن كانت ساعتك ملتبسة. الخرائط تُحفظ في متصفّحك وحده.":
+        ("The hour matters: every four minutes shifts the Ascendant by a "
+         "full degree. Historical daylight saving is applied automatically, "
+         "and you are warned if your time is ambiguous. Charts are saved in "
+         "your browser alone.",
+         "L'heure compte : chaque quatre minutes décale l'Ascendant d'un "
+         "degré entier. L'heure d'été historique est appliquée "
+         "automatiquement, et vous êtes averti si votre heure est ambiguë. "
+         "Les thèmes sont enregistrés dans votre navigateur seul."),
+    "دمشق، معرّة النعمان، أي قرية…":
+        ("Damascus, Maarat al-Numan, any village…",
+         "Damas, Maarat al-Numan, n'importe quel village…"),
+    "البيوت الكاملة": ("Whole sign houses", "Maisons en signes entiers"),
+    "البيوت الكاملة — نظام العرب": ("Whole sign — the Arabic system",
+                                     "Signes entiers — le système arabe"),
+    "القبّاني": ("Alcabitius", "Alcabitius"),
+    "القبّاني — نظام بغداد": ("Alcabitius — the Baghdad system",
+                               "Alcabitius — le système de Bagdad"),
+    "بلاسيدوس": ("Placidus", "Placidus"),
+    "بلاسيدوس — المعاصر": ("Placidus — the modern system",
+                            "Placidus — le système moderne"),
+    "كوخ": ("Koch", "Koch"),
+    "ريجومونتانوس": ("Regiomontanus", "Regiomontanus"),
+    "كامبانوس": ("Campanus", "Campanus"),
+    "بورفيري": ("Porphyry", "Porphyre"),
+    "البيوت المتساوية": ("Equal houses", "Maisons égales"),
+    "العجلة": ("Wheel", "Roue"),
+    "الخلاصة": ("Summary", "Résumé"),
+    "الثلاثة الكبار": ("The big three", "Les trois grands"),
+    "البيوت والأوتاد": ("Houses and angles", "Maisons et angles"),
+    "السهام والأشكال": ("Lots and patterns", "Parts et figures"),
+    "طبقات العجلة": ("Wheel layers", "Couches de la roue"),
+    "درجات الأجرام": ("Body degrees", "Degrés des astres"),
+    "الزوايا الصغرى": ("Minor aspects", "Aspects mineurs"),
+    "مع الزوايا الصغرى": ("With minor aspects", "Avec aspects mineurs"),
+    "الرئيسية فقط": ("Major only", "Majeurs seulement"),
+    "مُقبِلة ومُدبِرة": ("Applying and separating",
+                          "Appliquant et séparant"),
+    "مُقبِلة، أثرها في ما هو آتٍ":
+        ("Applying — its effect lies ahead",
+         "Appliquant — son effet est à venir"),
+    "مُدبِرة، أثرها ماضٍ ينقضي":
+        ("Separating — its effect is passing",
+         "Séparant — son effet s'achève"),
+    "راجع — يبدو سائرًا إلى الوراء، ودلالته المراجعة والإعادة لا التوقّف.":
+        ("Retrograde — it appears to move backwards; it signifies review "
+         "and return, not a halt.",
+         "Rétrograde — il semble reculer ; il signifie révision et retour, "
+         "non un arrêt."),
+    "لا كرامة له هنا": ("No dignity here", "Aucune dignité ici"),
+    "يؤكّد زاويةً ظاهرة بينهما": ("Confirms a visible aspect between them",
+                                   "Confirme un aspect visible entre eux"),
+    "° في اليوم": ("° per day", "° par jour"),
+    "′ في اليوم": ("′ per day", "′ par jour"),
+    "— ملكي": ("— royal", "— royale"),
+    "سهم": ("Lot", "Part"),
+    "المواقع ظاهرية على المنطقة البروجية الاستوائية، بمكتبة Swiss Ephemeris.":
+        ("Positions are apparent, on the tropical zodiac, via the Swiss Ephemeris.",
+         "Positions apparentes, zodiaque tropical, via la Swiss Ephemeris."),
+    "الكرامات والسهام والمنازل من التراث الفلكي العربي.":
+        ("Dignities, lots and mansions from the Arabic astrological tradition.",
+         "Dignités, parts et manoirs issus de la tradition astrologique arabe."),
+
     # ــ صفحة النشرة اليومية ــ
     # عُوينت وحدها فبقي فيها خمسة عشر. **والمعاينة صفحةً صفحة
     # هي التي تكشف هذا** — لا الرقمُ الكلّي، فهو يُخفي أيَّ
