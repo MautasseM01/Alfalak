@@ -89,6 +89,249 @@ PARTIAL = {
 # ══════════════════════════════════════════════════════════════════
 UI = {
     # ══════════════════════════════════════════════════════════
+    # سبعُ صفحاتٍ دفعةً — الأصولُ والملوثيزيا والأملاح والمشاهير
+    # وخرائط الأرض وأرباب الأزمنة ومواقع الكواكب
+    # ══════════════════════════════════════════════════════════
+    "الأصول": ("Origins", "Origines"),
+    "الأصول — من أين جاءت البروج — الفَلَك":
+        ("Origins — where the signs came from — Al-Falak",
+         "Origines — d'où viennent les signes — Al-Falak"),
+    "الفَلَك — الأصول": ("Al-Falak — Origins", "Al-Falak — Origines"),
+    "ساعاتُ يومك الأربع والعشرون جاءت من مصر، وبروجُك من بابل.":
+        ("Your day's twenty-four hours came from Egypt, and your signs "
+         "from Babylon.",
+         "Les vingt-quatre heures de votre journée viennent d'Égypte, et "
+         "vos signes de Babylone."),
+    "وهذه الصفحة تاريخٌ موثّق لا حُكم: من أين جاء ما نحسبه في سائر الصفحات، وما لم يصلنا منه شيء —":
+        ("This page is documented history, not judgement: where what we "
+         "compute elsewhere came from, and what did not reach us —",
+         "Cette page est de l'histoire documentée, non un jugement : d'où "
+         "vient ce que nous calculons ailleurs, et ce qui ne nous est pas "
+         "parvenu —"),
+    "فيُقال إنه لم يصل": ("so we say it did not", "nous le disons franchement"),
+    "من أين جاء هذا كلُّه": ("Where all this came from", "D'où vient tout cela"),
+    "أرباب الوجوه — مذهبان": ("Rulers of the decans — two schools",
+                               "Maîtres des décans — deux écoles"),
+    "اتّفقا": ("agree", "d'accord"),
+    "اختلفا": ("differ", "diffèrent"),
+    "يتّفق فيها المذهبان": ("where the two schools agree",
+                            "où les deux écoles s'accordent"),
+    "المصادر: أغطية التوابيت المصرية وسقفُ مقبرة سنموت · «مول أبين» و«إينوما آنو إنليل» · «الأربعة» لبطلَميوس · «التفهيم» للبيروني.":
+        ("Sources: Egyptian coffin lids and the ceiling of Senenmut's tomb "
+         "· MUL.APIN and Enūma Anu Enlil · Ptolemy's Tetrabiblos · "
+         "al-Biruni's Tafhim.",
+         "Sources : couvercles de sarcophages égyptiens et plafond de la "
+         "tombe de Senenmout · MUL.APIN et Enūma Anu Enlil · le "
+         "Tetrabiblos de Ptolémée · le Tafhim d'al-Biruni."),
+
+    # ــ الملوثيزيا ــ
+    "الملوثيزيا": ("Melothesia", "Mélothésie"),
+    "الملوثيزيا — البدن والبروج": ("Melothesia — the body and the signs",
+                                    "Mélothésie — le corps et les signes"),
+    "الملوثيزيا — البدن والبروج — الفَلَك":
+        ("Melothesia — the body and the signs — Al-Falak",
+         "Mélothésie — le corps et les signes — Al-Falak"),
+    "الفَلَك — الملوثيزيا": ("Al-Falak — Melothesia",
+                              "Al-Falak — Mélothésie"),
+    "alfalak.vercel.app · تاريخُ فكرةٍ لا طبّ":
+        ("alfalak.vercel.app · the history of an idea, not medicine",
+         "alfalak.vercel.app · l'histoire d'une idée, non de la médecine"),
+    "اقرأ هذا أوّلًا": ("Read this first", "Lisez ceci d'abord"),
+    "قسّم القدماء البدن على البروج: الحملُ الرأس، والحوتُ القدمان، وما بينهما بالترتيب. وردّوه إلى":
+        ("The ancients divided the body among the signs: Aries the head, "
+         "Pisces the feet, and the rest in order. They traced it back to",
+         "Les anciens répartissaient le corps entre les signes : le Bélier "
+         "la tête, les Poissons les pieds. Ils le ramenaient à"),
+    "أربعة أخلاط": ("four humours", "quatre humeurs"),
+    "لكلٍّ حرارةٌ ورطوبة. وهذه الصفحة تعرض ذلك":
+        ("each with its heat and moisture. This page presents it",
+         "chacune avec sa chaleur et son humidité. Cette page le présente"),
+    "كما قالوه": ("as they said it", "tel qu'ils l'ont dit"),
+    "— ومنه ما يُحسَب بقاعدة، ومنه ما هو حكايةُ زمن.":
+        ("— some of it computed by rule, some of it the tale of an age.",
+         "— une part calculée par règle, une part récit d'une époque."),
+    "مِزاجُك على مذهبهم": ("Your temperament by their method",
+                            "Votre tempérament selon leur méthode"),
+    "الأخلاط الأربعة": ("The four humours", "Les quatre humeurs"),
+    "البدن على البروج": ("The body across the signs",
+                          "Le corps réparti sur les signes"),
+    "البيت السادس": ("The sixth house", "La sixième maison"),
+    "في البيت": ("in house", "en maison"),
+    "ونظريةُ الأخلاط تجاوزها الطبّ منذ قرنٍ ونصف.":
+        ("Humoral theory was left behind by medicine a century and a half ago.",
+         "La théorie des humeurs a été abandonnée par la médecine il y a un "
+         "siècle et demi."),
+    "المصادر: «الأربعة» لبطلَميوس (المقالة الثالثة) · جالينوس في الأخلاط · ونقلُ أطبّاء العرب عنهما.":
+        ("Sources: Ptolemy's Tetrabiblos (Book III) · Galen on the humours "
+         "· and the Arab physicians who transmitted them.",
+         "Sources : le Tetrabiblos de Ptolémée (livre III) · Galien sur les "
+         "humeurs · et les médecins arabes qui les ont transmis."),
+    "الفَلَك لا يُقدّم استشارة طبّية.":
+        ("Al-Falak does not give medical advice.",
+         "Al-Falak ne donne pas de conseil médical."),
+    "وهذه صفحة تاريخِ فكرة، لا تشخيصٍ ولا دواء.":
+        ("This is the history of an idea — not diagnosis, not treatment.",
+         "Ceci est l'histoire d'une idée — ni diagnostic, ni traitement."),
+
+    # ــ الأملاح ــ
+    "ملح مولدك": ("Your birth salt", "Votre sel de naissance"),
+    "الأملاح الاثنا عشر": ("The twelve salts", "Les douze sels"),
+    "من أين جاءت هذه الفكرة؟": ("Where did this idea come from?",
+                                 "D'où vient cette idée ?"),
+    "فيلهلم شوسلر": ("Wilhelm Schüssler", "Wilhelm Schüssler"),
+    "جورج كيري": ("George W. Carey", "George W. Carey"),
+    "اثنا عشر ملحًا معدنيًّا عند الطبيب الألماني":
+        ("Twelve mineral salts, from the German physician",
+         "Douze sels minéraux, du médecin allemand"),
+    "، ربطها الأمريكي": ("; the American", "; l'Américain"),
+    "بالبروج الاثني عشر بعده بأربعين سنة.":
+        ("linked them to the twelve signs forty years later.",
+         "les a liés aux douze signes quarante ans plus tard."),
+    "أملاح المولد — شوسلر وكيري — الفَلَك":
+        ("Birth salts — Schüssler and Carey — Al-Falak",
+         "Sels de naissance — Schüssler et Carey — Al-Falak"),
+    "الفَلَك — أملاح المولد": ("Al-Falak — Birth salts",
+                                "Al-Falak — Sels de naissance"),
+    "alfalak.vercel.app · شوسلر (١٨٧٣) وكيري (١٩٢٠)":
+        ("alfalak.vercel.app · Schüssler (1873) and Carey (1920)",
+         "alfalak.vercel.app · Schüssler (1873) et Carey (1920)"),
+    "المصدر: W. H. Schüßler «Eine abgekürzte Therapie» (1873)، وG. W. Carey «The Zodiac and the Salts of Salvation» (1920).":
+        ("Sources: W. H. Schüßler, *Eine abgekürzte Therapie* (1873); "
+         "G. W. Carey, *The Zodiac and the Salts of Salvation* (1920).",
+         "Sources : W. H. Schüßler, *Eine abgekürzte Therapie* (1873) ; "
+         "G. W. Carey, *The Zodiac and the Salts of Salvation* (1920)."),
+
+    # ــ المشاهير ــ
+    "خرائط المشاهير — الفَلَك": ("Famous charts — Al-Falak",
+                                  "Thèmes célèbres — Al-Falak"),
+    "الفَلَك — خرائط المشاهير": ("Al-Falak — Famous charts",
+                                  "Al-Falak — Thèmes célèbres"),
+    "مواليد أعلامٍ من العرب والعالم.":
+        ("Birth data of figures from the Arab world and beyond.",
+         "Naissances de personnalités arabes et du monde entier."),
+    "وما نعرضه محدود عمدًا": ("and what we show is deliberately limited",
+                              "et ce que nous montrons est volontairement limité"),
+    ": ساعةُ ميلاد هؤلاء لا تُعرَف، فلا طالعَ لهم هنا ولا بيوت — وأكثر المواقع تضع الساعة ١٢:٠٠ وترسم عجلةً كاملة، والطالع يدور اثنتي عشرة مرّةً في اليوم.":
+        (": their birth times are unknown, so there is no Ascendant here "
+         "and no houses — most sites set the clock to 12:00 and draw a full "
+         "wheel, yet the Ascendant turns twelve times a day.",
+         ": leur heure de naissance est inconnue, donc pas d'Ascendant ici "
+         "ni de maisons — la plupart des sites mettent 12:00 et tracent une "
+         "roue entière, alors que l'Ascendant tourne douze fois par jour."),
+    "ما يصحّ بالتاريخ وحده": ("What the date alone supports",
+                              "Ce que la date seule permet"),
+    "زوايا الكواكب البطيئة": ("Aspects among the slow planets",
+                               "Aspects entre planètes lentes"),
+    "برجُه يصحّ، ودرجتُه لا": ("its sign holds, its degree does not",
+                               "son signe tient, son degré non"),
+    "بدّل برجه في ذلك اليوم": ("changed sign that day",
+                                "a changé de signe ce jour-là"),
+    "شاعر، مصر، عالِم، ابن…": ("poet, Egypt, scientist, Ibn…",
+                               "poète, Égypte, savant, Ibn…"),
+    "درجات التوثيق على اصطلاح لويس رودِن، معرَّبةً. وما قبل ١٥٨٢/١٠/١٥ محسوبٌ بالتقويم اليولياني كما سجّلته المصادر.":
+        ("Accuracy ratings follow Lois Rodden's convention. Dates before "
+         "15 Oct 1582 are computed on the Julian calendar, as the sources "
+         "recorded them.",
+         "Les cotes de fiabilité suivent la convention de Lois Rodden. Les "
+         "dates antérieures au 15 oct. 1582 sont calculées en calendrier "
+         "julien, comme les sources les ont notées."),
+
+    # ــ خرائط الأرض ــ
+    "خرائط الأرض — الفَلَك": ("Astrocartography — Al-Falak",
+                               "Astrocartographie — Al-Falak"),
+    "الفَلَك — خرائط الأرض": ("Al-Falak — Astrocartography",
+                               "Al-Falak — Astrocartographie"),
+    "خطوط كواكبك على الأرض": ("Your planetary lines on Earth",
+                               "Vos lignes planétaires sur Terre"),
+    "خريطة العالم وعليها خطوط كواكب مولدك":
+        ("A world map with your natal planetary lines",
+         "Une carte du monde avec vos lignes planétaires natales"),
+    "مدينةٌ تسأل عنها": ("A city you are asking about",
+                          "Une ville qui vous intéresse"),
+    "اتركه لمكان مولدك": ("leave blank for your birthplace",
+                          "laisser vide pour votre lieu de naissance"),
+    "حدُّ القرب": ("Proximity limit", "Limite de proximité"),
+    "٣ درجات — الأشدّ وحده": ("3° — the strongest only",
+                              "3° — les plus forts seulement"),
+    "٦ درجات — المعتاد": ("6° — the usual", "6° — l'usuel"),
+    "١٠ درجات — الواسع": ("10° — the wide", "10° — le large"),
+    "خطّ الاستواء": ("Equator", "Équateur"),
+    "مَدار السرطان": ("Tropic of Cancer", "Tropique du Cancer"),
+    "مَدار الجدي": ("Tropic of Capricorn", "Tropique du Capricorne"),
+    "الدائرة القطبية الشمالية": ("Arctic Circle", "Cercle arctique"),
+    "الدائرة القطبية الجنوبية": ("Antarctic Circle", "Cercle antarctique"),
+    "أوتادها": ("its angles", "ses angles"),
+    "خريطتك سماءُ لحظةٍ واحدة، مرئيّةً من مكانٍ واحد. ولو وُلدتَ في اللحظة نفسها في مكانٍ آخر لكانت الكواكب هي هي — لكن":
+        ("Your chart is the sky of a single instant, seen from a single "
+         "place. Had you been born at that same instant elsewhere, the "
+         "planets would be identical — but",
+         "Votre thème est le ciel d'un seul instant, vu d'un seul lieu. Né "
+         "au même instant ailleurs, les planètes seraient identiques — mais"),
+    "تختلف: ما كان طالعًا يصير في وسط السماء، وما كان غاربًا يصير طالعًا. فلكل كوكبٍ على وجه الأرض أربعة خطوط.":
+        ("would differ: what was rising becomes culminating, and what was "
+         "setting becomes rising. So every planet has four lines on Earth.",
+         "différeraient : ce qui se levait culmine, ce qui se couchait se "
+         "lève. Chaque planète a donc quatre lignes sur Terre."),
+    "الحساب من المطالع المستقيمة والمَيْل والوقت النجمي بغرينتش. والخريطة إسقاطٌ مستطيل، والمدن من أطلس الموقع نفسه.":
+        ("Computed from right ascension, declination and Greenwich sidereal "
+         "time. The map is an equirectangular projection; the cities come "
+         "from the site's own atlas.",
+         "Calculé à partir de l'ascension droite, de la déclinaison et du "
+         "temps sidéral de Greenwich. Projection équirectangulaire ; villes "
+         "issues de l'atlas du site."),
+
+    # ــ أرباب الأزمنة ومواقع الكواكب ــ
+    "أرباب الأزمنة — الفَلَك": ("Time lords — Al-Falak",
+                                 "Maîtres du temps — Al-Falak"),
+    "الفَلَك — أرباب الأزمنة": ("Al-Falak — Time lords",
+                                 "Al-Falak — Maîtres du temps"),
+    "الفردارات": ("Firdaria", "Firdaria"),
+    "خريطة الميلاد تقول": ("The natal chart tells you", "Le thème natal dit"),
+    "ما أنت": ("what you are", "ce que vous êtes"),
+    "، ولا تقول": (", and does not tell you", ", et ne dit pas"),
+    "متى": ("when", "quand"),
+    ". وأرباب الأزمنة جواب «متى»: تقسيم العمر على الكواكب، فيتولّى كلٌّ منها فترة يصبغها بطبعه. الفردارات فارسية نقلها أبو معشر، والتسيير أقدم منها.":
+        (". The time lords answer \"when\": a life divided among the "
+         "planets, each governing a stretch and colouring it with its own "
+         "nature. Firdaria are Persian, transmitted by Abu Ma'shar; "
+         "direction is older still.",
+         ". Les maîtres du temps répondent à « quand » : une vie répartie "
+         "entre les planètes, chacune gouvernant une période. Les firdaria "
+         "sont persanes, transmises par Abu Ma'shar ; la direction est plus "
+         "ancienne encore."),
+    "مكان إقامتك الآن": ("Where you live now", "Où vous vivez maintenant"),
+    "للعودة الشمسية — اتركه إن لم تنتقل":
+        ("for the solar return — leave blank if you have not moved",
+         "pour la révolution solaire — laisser vide si vous n'avez pas déménagé"),
+    "احسب لتاريخ": ("Compute for date", "Calculer pour la date"),
+    "الفردارات من التراث الفارسي، نقلها أبو معشر البلخي وابن أبي الرجال. والتسيير والعودة الشمسية من أصول صناعة الأحكام.":
+        ("Firdaria come from the Persian tradition, transmitted by Abu "
+         "Ma'shar al-Balkhi and Ibn Abi al-Rijal. Direction and the solar "
+         "return are foundations of the craft.",
+         "Les firdaria viennent de la tradition persane, transmises par Abu "
+         "Ma'shar al-Balkhi et Ibn Abi al-Rijal. La direction et la "
+         "révolution solaire sont des fondements de l'art."),
+    "مواقع الكواكب — الفَلَك": ("Ephemeris — Al-Falak",
+                                 "Éphémérides — Al-Falak"),
+    "الفَلَك — مواقع الكواكب": ("Al-Falak — Ephemeris",
+                                 "Al-Falak — Éphémérides"),
+    "جدول المواقع الظاهرية لأي لحظة، مع الرجوع والسرعة اليومية وطور القمر.":
+        ("A table of apparent positions for any moment, with retrogrades, "
+         "daily motion and the moon phase.",
+         "Un tableau des positions apparentes à tout instant, avec "
+         "rétrogradations, mouvement diurne et phase lunaire."),
+    "التوقيت حسب مدينة": ("Time zone by city", "Fuseau selon la ville"),
+    "بالتوقيت العالمي": ("in UTC", "en UTC"),
+    "محسوبة بمكتبة Swiss Ephemeris — مواقع ظاهرية على المنطقة البروجية الاستوائية.":
+        ("Computed with the Swiss Ephemeris — apparent positions on the "
+         "tropical zodiac.",
+         "Calculé avec la Swiss Ephemeris — positions apparentes, zodiaque "
+         "tropical."),
+    "اعرض": ("Show", "Afficher"),
+    "وفيه:": ("Containing:", "Contient :"),
+    "نسخ النصّ": ("Copy text", "Copier le texte"),
+
+    # ══════════════════════════════════════════════════════════
     # ساعاتُ الكواكب والاختيارات والنشرة الشهرية
     #
     # **وأسماءُ الكتب لا تُترجَم**: «غاية الحكيم» كتابٌ بعينه،
