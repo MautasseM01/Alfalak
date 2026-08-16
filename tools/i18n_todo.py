@@ -47,6 +47,24 @@ AR = re.compile(r"[؀-ۿ]")
 UI_MAX = 400
 
 
+def _is_phrase(s: str) -> bool:
+    """
+    **حرفُ عطفٍ وحده ليس عبارة.**
+
+    الوسومُ تُخرج أحيانًا نصًّا مثل «و» أو «؟» — وهي فواصلُ
+    بين عنصرين لا كلامًا يُترجَم. وكانت تُعَدّ دَينًا، فيبقى
+    المتبقّي واحدًا أبدًا في صفحتين مهما عُمل.
+    """
+    if sum(1 for c in s if c.isalpha()) < 2:
+        return False
+    # **ومثالُ الشيفرة ليس عبارة** — انظر `_literals`. والفحصُ
+    # واحدٌ للوسوم وللجافاسكربت، فما استُثني في أحدهما استُثني
+    # في الآخر: **معياران لشيءٍ واحد يُخرجان رقمين**.
+    if "?" in s and "=" in s:
+        return False
+    return not s.startswith(("curl ", "http"))
+
+
 def _literals(js: str) -> set:
     """
     نصوصٌ عربية داخل الجافاسكربت — **وهي تُرسَم كما يُكتَب**.
@@ -71,6 +89,16 @@ def _literals(js: str) -> set:
         letters = sum(1 for c in s if c.isalpha())
         if letters < max(2, len(s) * 0.5):
             continue
+        # ــ **مثالُ المسار شيفرةٌ لا عبارة** ــ
+        # `bulletin?city=دمشق` فيه عربيّة، لكنه **يُرسَم داخل
+        # `<pre>`** — و`i18n.js` يستثني `code` و`pre` عمدًا، إذ
+        # ترجمةُ `?date=` تكسر المثال على من ينسخه.
+        #
+        # فعدُّه دَينًا **تضخيمٌ لرقمٍ لا سبيل إلى خفضه**:
+        # يبقى المتبقّي تسعةً أبدًا مهما تُرجم. والرقمُ الذي لا
+        # ينزل بعملٍ لا يُقاس به عمل.
+        if not _is_phrase(s):
+            continue
         out.add(s)
     return out
 
@@ -90,12 +118,12 @@ def phrases() -> dict:
         found = set(_literals(inline))
         for m in re.findall(r">([^<>]+)<", t):
             s = " ".join(m.split())
-            if s and AR.search(s):
+            if s and AR.search(s) and _is_phrase(s):
                 found.add(s)
         for a in ("placeholder", "title", "aria-label"):
             for m in re.findall(a + r'="([^"]+)"', t):
                 s = " ".join(m.split())
-                if s and AR.search(s):
+                if s and AR.search(s) and _is_phrase(s):
                     found.add(s)
         for s in found:
             seen[s] = seen.get(s, 0) + 1
@@ -121,12 +149,12 @@ def per_page() -> list[tuple[str, int, int]]:
         found = set(_literals(inline))
         for m in re.findall(r">([^<>]+)<", t2):
             s = " ".join(m.split())
-            if s and AR.search(s):
+            if s and AR.search(s) and _is_phrase(s):
                 found.add(s)
         for a in ("placeholder", "title", "aria-label"):
             for m in re.findall(a + r'="([^"]+)"', t2):
                 s = " ".join(m.split())
-                if s and AR.search(s):
+                if s and AR.search(s) and _is_phrase(s):
                     found.add(s)
         todo = found - set(i18n.UI)
         rows.append((os.path.basename(f), len(found), len(todo)))
