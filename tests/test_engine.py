@@ -3458,9 +3458,14 @@ def test_translation_layer_degrades_to_arabic_and_never_to_blank():
           if len(s) <= i18n_todo.UI_MAX}
     done = sum(1 for s in ui if s in i18n.UI)
     pct = done * 100 / max(len(ui), 1)
-    assert pct >= 20, (
-        f"تغطية الواجهة {pct:.0f}٪ — وقد بلغت ٢٢٪ من قبل، "
-        f"فهذا تراجع لا تقدّم")
+    assert pct >= 100, (
+        f"تغطية الواجهة {pct:.0f}٪ — وقد بلغت المئة، فهذا تراجع")
+
+    # ــ **وكلُّ صفحةٍ على حدة، لا المجموعُ وحده** ــ
+    # الرقمُ الكلّي يُخفي أيَّ صفحةٍ بعينها هي الناقصة. والزائر
+    # لا يزور «الموقع» إنما يزور صفحة — فتُقاس كما يراها.
+    behind = [(n, b) for n, _a, b in i18n_todo.per_page() if b]
+    assert not behind, f"صفحاتٌ ناقصة: {behind[:4]}"
 
 
 def test_the_atlas_covers_the_places_its_own_placeholder_promises():

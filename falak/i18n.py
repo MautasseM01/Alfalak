@@ -89,6 +89,223 @@ PARTIAL = {
 # ══════════════════════════════════════════════════════════════════
 UI = {
     # ══════════════════════════════════════════════════════════
+    # الملفّاتُ المشتركة — **وهي أعمُّ من أيّ صفحة**
+    #
+    # `plain.js` و`wheel.js` و`nav.js` تُرسَم في **كل** صفحة.
+    # فكانت كلُّ صفحةٍ تُقاس ١٠٠٪ وفيها هذه عربيّةً — لأن
+    # القياسَ صفحةً صفحة لا يرى المشترك.
+    #
+    # **ومقياسان لا يتّفقان أحدُهما ناقص**: الصفحاتُ ١٠٠٪
+    # والكلُّ ٨٧٪، والفرقُ هو هذا كلُّه.
+    # ══════════════════════════════════════════════════════════
+    # ــ أسماء البيوت الاثني عشر ــ
+    "الثالث": ("Third", "Troisième"),
+    "الرابع": ("Fourth", "Quatrième"),
+    "الخامس": ("Fifth", "Cinquième"),
+    "السادس": ("Sixth", "Sixième"),
+    "السابع": ("Seventh", "Septième"),
+    "الثامن": ("Eighth", "Huitième"),
+    "التاسع": ("Ninth", "Neuvième"),
+    "العاشر": ("Tenth", "Dixième"),
+    "الحادي عشر": ("Eleventh", "Onzième"),
+    "الثاني عشر": ("Twelfth", "Douzième"),
+
+    # ــ مفرداتُ العجلة والجداول ــ
+    "الجرم": ("Body", "Astre"),
+    "الكوكب": ("Planet", "Planète"),
+    "الموضع": ("Position", "Position"),
+    "المكان": ("Place", "Lieu"),
+    "الوقت": ("Time", "Heure"),
+    "القوّة": ("Strength", "Force"),
+    "الكرامة": ("Dignity", "Dignité"),
+    "الفارق": ("Difference", "Écart"),
+    "مدّته": ("its span", "sa durée"),
+    "نافذته": ("its window", "sa fenêtre"),
+    "تشتدّ": ("tightening", "se resserre"),
+    "تنفكّ": ("loosening", "se relâche"),
+    "يكتمل": ("perfects", "se perfectionne"),
+    "محايدة": ("neutral", "neutre"),
+    "العابر": ("Transiting", "En transit"),
+    "الكوكب المارّ": ("The transiting planet", "La planète en transit"),
+    "الكوكب الحاكم": ("The ruling planet", "La planète maîtresse"),
+    "حاكم اليوم": ("Ruler of the day", "Maître du jour"),
+    "كوكب اليوم": ("Planet of the day", "Planète du jour"),
+    "سرعته اليومية": ("its daily motion", "son mouvement diurne"),
+    "السرعة اليومية": ("Daily motion", "Mouvement diurne"),
+    "الكواكب الراجعة": ("Retrograde planets", "Planètes rétrogrades"),
+    "الكواكب المتراجعة": ("Retrograde planets", "Planètes rétrogrades"),
+    "النقاط المحسوبة": ("Calculated points", "Points calculés"),
+    "الأشكال الهندسية": ("Geometric patterns", "Figures géométriques"),
+    "الزوايا بين الكواكب": ("Aspects between the planets",
+                             "Aspects entre planètes"),
+    "الزوايا بين الأجرام": ("Aspects between the bodies",
+                             "Aspects entre astres"),
+    "الخريطة الفلكية الدائرية": ("The circular chart wheel",
+                                  "La roue du thème"),
+    "العجلة المزدوجة — خريطتان متراكبتان":
+        ("The bi-wheel — two charts overlaid",
+         "La double roue — deux thèmes superposés"),
+    "خلو مسار": ("void of course", "vide de course"),
+    "فراغ قمر": ("Moon void", "Lune vide"),
+    "**وفيها قمرُك أنت.**": ("**And your own Moon is here.**",
+                              "**Et votre Lune s'y trouve.**"),
+    "لا جِرم لك في هذا البرج.": ("You have no body in this sign.",
+                                  "Aucun astre dans ce signe."),
+    "لا زاوية كبرى له مع سواه.": ("It forms no major aspect with anything.",
+                                   "Aucun aspect majeur avec les autres."),
+    "زاوية تامّة تقريبًا — وهذا أشدّ ما تكون.":
+        ("Very nearly exact — and this is as strong as an aspect gets.",
+         "Presque exact — c'est là son maximum de force."),
+    "مُقبِلة: تشتدّ ولمّا تتمّ بعد، فأثرها في ما هو آتٍ.":
+        ("Applying: tightening and not yet perfected, so its effect lies "
+         "ahead.",
+         "Appliquant : se resserre sans être exact, son effet est à venir."),
+    "مُدبِرة: تمّت وانفكّت، فأثرها ماضٍ ينقضي.":
+        ("Separating: perfected and loosening, so its effect is passing.",
+         "Séparant : exact puis se relâche, son effet s'achève."),
+    "راجع — يبدو سائرًا إلى الوراء، ودلالته المراجعة لا التوقّف.":
+        ("Retrograde — it appears to move backwards; it signifies review, "
+         "not a halt.",
+         "Rétrograde — il semble reculer ; il signifie révision, non arrêt."),
+    "وتفصيلُه في جدول السهام أسفلَ الصفحة.":
+        ("Its detail is in the table of lots below.",
+         "Son détail est dans le tableau des parts ci-dessous."),
+    "· صيغته:": ("· formula:", "· formule :"),
+
+    # ــ مستوى اللغة والتصفّح ــ
+    "مستوى اللغة": ("Language level", "Niveau de langue"),
+    "الأجرام والكرامات": ("Bodies and dignities", "Astres et dignités"),
+    "الكواكب وقوّتها": ("The planets and their strength",
+                        "Les planètes et leur force"),
+    "الأوتاد والبيوت": ("Angles and houses", "Angles et maisons"),
+    "النقاط الرئيسية والبيوت": ("The main points and the houses",
+                                 "Les points principaux et les maisons"),
+    "افتح قائمة التصفّح": ("Open navigation", "Ouvrir la navigation"),
+    "طيّ القسم أو فتحه": ("Collapse or expand the section",
+                           "Replier ou déplier la section"),
+    "انسخ رابط هذه النتيجة": ("Copy a link to this result",
+                               "Copier le lien de ce résultat"),
+    "✓ نُسخ": ("✓ Copied", "✓ Copié"),
+    "نُسخ ✓": ("Copied ✓", "Copié ✓"),
+    "العربية": ("Arabic", "Arabe"),
+    "الفَلَك:": ("Al-Falak:", "Al-Falak :"),
+    "ردّ غير مفهوم من الخادم": ("Unreadable response from the server",
+                                 "Réponse illisible du serveur"),
+    "الفَلَك: لا خيارات للمفتاح": ("Al-Falak: no options for this key",
+                                    "Al-Falak : aucune option pour cette clé"),
+    "أطول من المعتاد… ما زلت أعمل.": ("Longer than usual… still working.",
+                                       "Plus long que d'habitude… en cours."),
+    "تمّ الحساب. النتيجة معروضة أسفل النموذج.":
+        ("Done. The result is shown below the form.",
+         "Terminé. Le résultat s'affiche sous le formulaire."),
+
+    # ــ أوصافُ أبواب التصفّح ــ
+    "الطالع والكواكب والقراءة": ("Ascendant, planets and the reading",
+                                  "Ascendant, planètes et lecture"),
+    "منزلة القمر وأوقات اليوم": ("The Moon's mansion and the day's hours",
+                                  "Manoir lunaire et heures du jour"),
+    "لكل ساعة كوكب وطبع": ("Each hour has its planet and nature",
+                            "Chaque heure a sa planète"),
+    "متى أفعل، وهل أفعل": ("When to act, and whether to",
+                            "Quand agir, et faut-il agir"),
+    "جواب من لحظة سؤالك": ("An answer from the moment you asked",
+                            "Une réponse tirée de l'instant de la question"),
+    "خريطتان معًا وثلاثة موازين": ("Two charts together and three scores",
+                                    "Deux thèmes et trois scores"),
+    "جدول المواقع في أي لحظة": ("Positions for any moment",
+                                 "Positions à tout instant"),
+    "أفضل الأيام وأصعبها": ("The best days and the hardest",
+                             "Les meilleurs jours et les plus durs"),
+    "أفضل الأيام وأسوأها": ("The best days and the worst",
+                             "Les meilleurs et les pires jours"),
+    "أفضل يوم وساعة لأمرك": ("The best day and hour for your purpose",
+                              "Le meilleur jour et heure pour votre projet"),
+    "ما يغلب على شخصيتك": ("What predominates in your character",
+                            "Ce qui domine votre caractère"),
+    "ما يخصّك أنت": ("What concerns you personally",
+                     "Ce qui vous concerne"),
+    "جوّك الشخصي": ("Your personal weather", "Votre météo personnelle"),
+    "البيوت والبروج والزوايا والمعجم":
+        ("Houses, signs, aspects and the glossary",
+         "Maisons, signes, aspects et glossaire"),
+    "المعاني والمصطلحات وأدوات المبرمجين":
+        ("Meanings, terms and developer tools",
+         "Sens, termes et outils pour développeurs"),
+    "الجيوتِش: منازل القمر وفترات العمر":
+        ("Jyotish: nakshatras and life periods",
+         "Jyotish : nakshatras et périodes de vie"),
+    "البازي: ثمانية حروف وميزان العناصر":
+        ("Bazi: eight characters and the balance of elements",
+         "Bazi : huit caractères et l'équilibre des éléments"),
+    "شوسلر وكيري — تاريخُ فكرة لا دواء":
+        ("Schüssler and Carey — the history of an idea, not a remedy",
+         "Schüssler et Carey — l'histoire d'une idée, non un remède"),
+    "البدن على البروج — تاريخُ فكرة لا طبّ":
+        ("The body across the signs — history, not medicine",
+         "Le corps sur les signes — histoire, non médecine"),
+    "أين تقع كواكبك على وجه الأرض": ("Where your planets fall on Earth",
+                                      "Où vos planètes tombent sur Terre"),
+    "مواليد الأعلام بما يصحّ بالتاريخ وحده":
+        ("Figures' births, by what the date alone supports",
+         "Naissances de personnalités, selon la date seule"),
+    "من أين جاءت البروج والوجوه — تاريخٌ موثّق":
+        ("Where the signs and decans came from — documented history",
+         "D'où viennent signes et décans — histoire documentée"),
+    "ابنِ على الفَلَك، وصدّر تقويمك":
+        ("Build on Al-Falak, and export your calendar",
+         "Bâtissez sur Al-Falak, exportez votre agenda"),
+
+    # ــ صدورُ الصفحات المشتركة ــ
+    "خريطة الميلاد صورة للسماء لحظة ولادتك: أين كان كل كوكب، وأيّ برج":
+        ("A natal chart is a picture of the sky at the moment of your "
+         "birth: where each planet stood, and which sign",
+         "Le thème natal est une image du ciel à votre naissance : où se "
+         "tenait chaque planète, et quel signe"),
+    "كان صاعدًا في الأفق. منها تُقرأ الطباع والميول.":
+        ("was rising on the horizon. From it are read character and "
+         "inclination.",
+         "se levait à l'horizon. On y lit caractère et penchants."),
+    "الأوتاد الأربعة ليست أجرامًا، بل مواضع تحدّدها لحظةُ الميلاد ومكانُه.":
+        ("The four angles are not bodies but positions fixed by the moment "
+         "and place of birth.",
+         "Les quatre angles ne sont pas des astres mais des positions "
+         "fixées par l'heure et le lieu de naissance."),
+    "وهي أدقّ ما في الخريطة حسّاسيةً للوقت: أربع دقائق تُزحزح الطالع درجة.":
+        ("They are the most time-sensitive part of the chart: four minutes "
+         "shift the Ascendant by a degree.",
+         "C'est la part la plus sensible à l'heure : quatre minutes "
+         "décalent l'Ascendant d'un degré."),
+    "النشرة اليومية تصف حال السماء في يوم بعينه: أين القمر، وما":
+        ("The daily bulletin describes the sky on a given day: where the "
+         "Moon is, and what",
+         "Le bulletin quotidien décrit le ciel d'un jour donné : où est la "
+         "Lune, et ce que"),
+    "النشرة الشهرية تجمع أحداث الشهر كلّه: انتقالات الكواكب، والكسوف،":
+        ("The monthly bulletin gathers the whole month's events: planetary "
+         "ingresses, eclipses,",
+         "Le bulletin mensuel réunit les événements du mois : entrées de "
+         "signe, éclipses,"),
+    "وأفضل أيام الشهر لكل غرض.": ("and the month's best days for each purpose.",
+                                   "et les meilleurs jours pour chaque objet."),
+    "الأوقات المناسبة وما يُفضّل تأجيله.":
+        ("The suitable hours, and what is better postponed.",
+         "Les heures propices, et ce qu'il vaut mieux différer."),
+    "قسّم القدماء النهار اثنتي عشرة ساعة والليل مثلها، ونسبوا كل ساعة":
+        ("The ancients divided daylight into twelve hours and the night "
+         "likewise, and assigned each hour",
+         "Les anciens divisaient le jour en douze heures et la nuit de "
+         "même, attribuant chaque heure"),
+    "إلى كوكب. فلكل ساعة طبع، ولكل عمل ساعة تناسبه.":
+        ("to a planet. Each hour has its nature, and each task its "
+         "fitting hour.",
+         "à une planète. Chaque heure a sa nature, chaque tâche son heure."),
+    "جدول يبيّن موضع كل كوكب في السماء في أي لحظة تختارها.":
+        ("A table showing where each planet stands in the sky at any "
+         "moment you choose.",
+         "Un tableau montrant la position de chaque planète à l'instant "
+         "de votre choix."),
+
+    # ══════════════════════════════════════════════════════════
     # صفحة الواجهة البرمجية — آخرُ الصفحات وأكثرُها نصًّا
     #
     # **وأمثلةُ المسارات لا تُترجَم إلّا في قيمة المدينة**:

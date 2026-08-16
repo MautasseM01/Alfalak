@@ -62,7 +62,17 @@ def _is_phrase(s: str) -> bool:
     # في الآخر: **معياران لشيءٍ واحد يُخرجان رقمين**.
     if "?" in s and "=" in s:
         return False
-    return not s.startswith(("curl ", "http"))
+    if s.startswith(("curl ", "http")):
+        return False
+    # ــ **ومجموعةُ حروفٍ ليست كلمة** ــ
+    # في `hint.js`: `'اأإآ'.includes(ch)` — وهي صور الألف تُسوّى
+    # في المطابقة، و`'يى'` كذلك. حروفٌ عربيّة بلا مسافة **وبلا
+    # حرفٍ مكرَّر**، فهي مجموعةٌ لا لفظ. وأمّا «نار» و«ماء»
+    # فكلماتٌ، وحروفُها لا تنتمي إلى صورة حرفٍ واحد.
+    ALEFS, YAAS = set("اأإآٱ"), set("يىئ")
+    if " " not in s and len(s) <= 5 and (set(s) <= ALEFS or set(s) <= YAAS):
+        return False
+    return True
 
 
 def _literals(js: str) -> set:
