@@ -4035,3 +4035,125 @@ def test_no_shared_name_is_redeclared_in_a_page():
                     clashes.append(f"{name}: «{n}» مُعلَن أيضًا في assets/{shared[n]}")
 
     assert not clashes, "أسماء مُعلَنة مرّتين:\n  " + "\n  ".join(clashes[:8])
+
+
+# ══════════════════════════════════════════════════════════════════
+# الكسوف والخسوف
+# ══════════════════════════════════════════════════════════════════
+def test_eclipse_matches_published_tables():
+    """
+    **الحسابُ يُقابَل بموضعٍ يُعرَف جوابه، لا بمعقوليّة شكله.**
+
+    وهذا ما كشف عيبًا حقيقيًّا وقعتُ فيه: كنتُ أحسب الحال المحلّية
+    عند **الذروة العظمى على الأرض كلِّها** لا عند ذروة البلد. فخرج
+    قدرُ كسوف ٢٠٢٦/٨/١٢ في مدريد **٠٫١٦** — وهو رقمٌ معقولُ الشكل
+    تمامًا، ولا يُكذّبه إلّا أن يُعرَف أنّ مدريد تكاد تراه تامًّا.
+
+    فالمواضع هنا مختارةٌ لأنّ جوابها منشور: الأقصر على خطّ التمام
+    في ٢٠٢٧، ومدريد خارجه بشعرة، ونيويورك عند تسعة أعشار.
+    """
+    from datetime import datetime as _dt
+    from falak import eclipse as ecl
+
+    y0 = _dt(2024, 1, 1, tzinfo=ephem.UTC)
+    y1 = _dt(2025, 1, 1, tzinfo=ephem.UTC)
+    got = {e["date"]: e for e in ecl.between(y0, y1)}
+
+    # ــ ناسا: أربعة كسوفات في ٢٠٢٤ بهذه الصفات ــ
+    assert set(got) == {"2024-03-25", "2024-04-08",
+                        "2024-09-18", "2024-10-02"}, sorted(got)
+
+    tot = got["2024-04-08"]
+    assert tot["kind"] == "كلّي" and tot["type"] == "شمسي"
+    assert tot["utc"][11:16] == "18:17", tot["utc"]   # ناسا ١٨:١٧
+    assert tot["saros"] == 139 and tot["member"] == 30
+    ann = got["2024-10-02"]
+    assert ann["kind"] == "حلقي" and ann["saros"] == 144
+
+    # ــ **والعقدة قريبةٌ في كل كسوف، بلا استثناء** ــ
+    for e in got.values():
+        assert e["node"]["gap_abs"] <= 18.5, (e["date"], e["node"])
+
+    # ــ الرؤية المحلّية: مواضع جوابُها منشور ــ
+    for lat, lon, date, lo, hi in (
+        (25.69, 32.64, "2027-08-02", 1.00, 1.06),   # الأقصر: كلّي
+        (40.42, -3.70, "2026-08-12", 0.98, 1.00),   # مدريد: يكاد
+        (40.71, -74.01, "2024-04-08", 0.88, 0.94),  # نيويورك: ~٩٠٪
+    ):
+        yr = int(date[:4])
+        hit = [e for e in ecl.between(_dt(yr, 1, 1, tzinfo=ephem.UTC),
+                                      _dt(yr + 1, 1, 1, tzinfo=ephem.UTC),
+                                      lat, lon, "شمسي") if e["date"] == date]
+        assert hit, date
+        loc = hit[0]["local"]
+        assert loc["visible"], (date, loc)
+        assert lo <= loc["magnitude"] <= hi, (date, loc["magnitude"])
+
+
+def test_saros_is_searched_not_assumed():
+    """
+    **الدورة تُمتحَن، ولا تُدَّعى.**
+
+    لو اكتفت `saros_chain` بأن تزيد ٦٥٨٥٫٣٢ يومًا وتقول «ها هو»،
+    لصدَقَت في كل حال — **حتى حيث لا كسوف**. فالفحص هنا أن الكسوف
+    المردود موجودٌ فعلًا، وأنّه من السلسلة نفسها، وأنّ عضوه يلي
+    عضوَ الأصل.
+    """
+    from datetime import datetime as _dt
+    from falak import eclipse as ecl
+
+    ch = ecl.saros_chain(_dt(2024, 4, 8, tzinfo=ephem.UTC), False, 2, 2)
+    base = ch["base"]
+    assert base["date"] == "2024-04-08" and base["saros"] == 139
+
+    for link in ch["links"]:
+        e = link["eclipse"]
+        assert e is not None, link
+        # الفارق بين المتوقَّع والواقع ساعاتٌ لا أيّام
+        assert abs(link["drift_hours"]) < 24, link
+        assert link["same_saros"], link
+        assert e["member"] == base["member"] + link["step"], link
+
+    # ونظيرُ ٢٠٢٤ في السلسلة هو كسوف ٢٠٠٦ — وهو المثال المشهور
+    prev = [l for l in ch["links"] if l["step"] == -1][0]
+    assert prev["eclipse"]["date"] == "2006-03-29", prev
+
+
+def test_conjunction_audit_shows_node_is_the_condition():
+    """
+    **الحجّةُ تُعرَض بالعدد لا بالتقرير.**
+
+    يجتمع النيّران ثلاثَ عشرةَ مرّةً في ٢٠٢٤ ويكسفان مرّتين. وشرطُ
+    الفارق أن يكون كلُّ ما كسف قريبًا من العقدة، وكلُّ ما لم يكسف
+    بعيدًا عنها. **فإن انخرم هذا فالتعليل باطل** — ولا يُقبل جدولٌ
+    يقول شيئًا ونصُّ الصفحة يقول غيره.
+    """
+    from falak import eclipse as ecl
+
+    a = ecl.conjunction_audit(2024)
+    assert a["total"] == 13 and a["eclipsed"] == 2, a["total"]
+    for r in a["conjunctions"]:
+        if r["eclipse"]:
+            assert r["gap"] <= a["limit_possible"], r
+        else:
+            assert r["gap"] > a["limit_certain"], r
+
+
+def test_eclipse_rulings_are_attributed_not_asserted():
+    """
+    **يُقال «قالوا»، ولا يُقال «سيقع».**
+
+    أحكامُ الكسوف تراثٌ يُنقَل. فالشرط أن يكون مع كل حكمٍ تحفّظُه
+    ومصدرُه، وألّا يخلو النصّ منهما — وإلّا صار الموقعُ يُفتي بغيب.
+    """
+    from datetime import datetime as _dt
+    from falak import eclipse as ecl
+
+    e = ecl.between(_dt(2024, 4, 1, tzinfo=ephem.UTC),
+                    _dt(2024, 4, 30, tzinfo=ephem.UTC))[0]
+    r = ecl.rulings(e)
+    assert "تراث" in r["caveat"] and "رصد" in r["caveat"]
+    assert "بطلَميوس" in r["sources"]
+    assert r["node"] in ("الرأس", "الذنب")
+    for v in r.values():
+        assert "سيحدث" not in str(v) and "ستقع" not in str(v), v

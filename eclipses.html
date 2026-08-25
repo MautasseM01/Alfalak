@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الكسوف والخسوف — الفَلَك</title>
+<meta name="description" content="كسوفات الشمس وخسوفات القمر لأيّ سنة ومكان: العقدة وسلسلة ساروس والمقدار والرؤية من مدينتك، محسوبةً بمكتبة Swiss Ephemeris.">
+<link rel="canonical" href="https://alfalak.vercel.app/eclipses.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/eclipses.html">
+<meta property="og:title" content="الكسوف والخسوف — الفَلَك">
+<meta property="og:description" content="العقدة وساروس والمقدار والرؤية من مدينتك، ولماذا لا يقع كسوفٌ في كل شهر.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="الكسوف والخسوف — الفَلَك">
+<meta name="twitter:description" content="العقدة وساروس والمقدار والرؤية من مدينتك، ولماذا لا يقع كسوفٌ في كل شهر.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.ecl{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:11px}
+.ec{padding:13px 15px;border-radius:12px;background:rgba(255,255,255,.025);
+  border:1px solid var(--line);border-inline-start:3px solid var(--neu);transition:.15s}
+.ec:hover{border-color:var(--gold-dim)}
+.ec.sol{border-inline-start-color:var(--gold)}
+.ec.lun{border-inline-start-color:var(--neu)}
+.ec.seen{background:rgba(217,180,91,.06)}
+.ec .t1{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px}
+.ec .ttl{font-size:.98rem;color:var(--gold);font-weight:600}
+.ec .dt{font-variant-numeric:tabular-nums;font-size:.84rem;color:var(--text)}
+.ec .rowline{font-size:.81rem;color:var(--muted);margin:3px 0;line-height:1.75}
+.ec .rowline b{color:var(--text);font-weight:600}
+.ec .tag{font-size:.71rem;border:1px solid var(--gold-dim);border-radius:999px;
+  padding:1px 9px;color:var(--gold);white-space:nowrap}
+.ec .tag.no{border-color:var(--line);color:var(--muted)}
+/* شريطُ المقدار: يُرى الفرقُ بين ٠٫٧ و٠٫٩٩ بالعين لا بالقراءة */
+.mag{height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:6px}
+.mag i{display:block;height:100%;background:var(--gold)}
+.audit td.hit{color:var(--gold);font-weight:600}
+.audit td.near{color:var(--pos)}
+.saros .step{display:flex;gap:10px;align-items:baseline;padding:9px 0;
+  border-bottom:1px dashed var(--line);font-size:.85rem;flex-wrap:wrap}
+.saros .step:last-child{border-bottom:0}
+.saros .n{font-variant-numeric:tabular-nums;color:var(--gold);min-width:2.4rem}
+.saros .ok{color:var(--pos);font-size:.79rem}
+.saros .bad{color:var(--neg);font-size:.79rem}
+.heritage{font-size:.85rem;line-height:1.9}
+.heritage .q{padding-inline-start:12px;border-inline-start:2px solid var(--gold-dim);
+  color:var(--muted);margin:10px 0}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"الكسوف والخسوف","url":"https://alfalak.vercel.app/eclipses.html","description":"كسوفات الشمس وخسوفات القمر بالعقدة وسلسلة ساروس والرؤية المحلّية.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"الكسوف والخسوف","item":"https://alfalak.vercel.app/eclipses.html"}]}</script>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/eclipses.html" class="on">الكسوف والخسوف</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/elections.html">الاختيارات</a>
+    <a href="/horary.html">المسائل</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/bazi.html">الصيني</a>
+    <a href="/jyotish.html">الهندي</a>
+    <a href="/synastry.html">التوافق</a>
+    <a href="/timelords.html">أرباب الأزمنة</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/api.html">الواجهة البرمجية</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<div class="printhead">
+  <h1>الفَلَك — الكسوف والخسوف</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
+<h2 class="page">الكسوف والخسوف</h2>
+<p class="lede">
+  يجتمع النيّران اثنتي عشرة مرّةً في السنة ولا يكسفان إلّا مرّتين أو ثلاثًا.
+  والفارقُ هو العقدة: حيث يقطع مسير القمر دائرةَ البروج. وهذه الصفحة تحسب
+  الكسوفات لأيّ مدّة ومكان، وتعرض عليك القاعدة لتمتحنها بنفسك.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="from">من سنة</label>
+        <input type="number" id="from" min="1900" max="2100" step="1"></div>
+      <div class="field"><label for="to">إلى سنة</label>
+        <input type="number" id="to" min="1900" max="2100" step="1"></div>
+      <div class="field"><label for="city">المدينة</label>
+        <input type="text" id="city" placeholder="دمشق، القاهرة…" autocomplete="off"></div>
+      <div class="field"><label for="kinds">النوع</label>
+        <select id="kinds">
+          <option value="both">الكسوف والخسوف</option>
+          <option value="شمسي">كسوف الشمس</option>
+          <option value="قمري">خسوف القمر</option>
+        </select></div>
+      <div class="field"><label for="birth">تاريخ مولدك (اختياري)</label>
+        <input type="date" id="birth"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="go">اعرض الكسوفات</button>
+      <button class="btn ghost" id="seen">ما يُرى من مدينتي فقط</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs" id="tabs" role="tablist">
+  <button role="tab" data-pane="list" aria-selected="true">الجدول</button>
+  <button role="tab" data-pane="why" aria-selected="false">لماذا لا يكسف كل شهر؟</button>
+  <button role="tab" data-pane="saros" aria-selected="false">دورة ساروس</button>
+  <button role="tab" data-pane="hist" aria-selected="false">الجوزهر والتنّين</button>
+</div>
+
+<div id="out"></div>
+
+</main>
+<footer>
+  المواقع والأوقات محسوبة بمكتبة Swiss Ephemeris، وأرقام سلاسل ساروس منها لا من صيغة عندنا.<br>
+  والأحكام في آخر كل بطاقة منقولةٌ عن كتب القوم، لا نتيجةَ رصد.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/hint.js"></script>
+<script src="/assets/select.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/i18n.js"></script>
+<script src="/assets/plain.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+pageIntro('eclipses');
+const $ = id => document.getElementById(id);
+const out = $('out');
+markLive(out);
+
+let PANE = 'list', DATA = null, ONLY_SEEN = false;
+
+cityInput($('city'), () => load());
+
+document.querySelectorAll('#tabs button').forEach(b => {
+  b.onclick = () => {
+    PANE = b.dataset.pane;
+    document.querySelectorAll('#tabs button').forEach(x =>
+      x.setAttribute('aria-selected', x.dataset.pane === PANE ? 'true' : 'false'));
+    load();
+  };
+});
+
+$('seen').onclick = () => {
+  ONLY_SEEN = !ONLY_SEEN;
+  $('seen').textContent = ONLY_SEEN ? 'اعرض الكل' : 'ما يُرى من مدينتي فقط';
+  if (DATA) render();
+};
+
+function esc2(t){ return String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function pct(x){ return x == null ? '—' : Math.round(x * 1000) / 10 + '٪'; }
+
+async function load() {
+  const q = {
+    from: $('from').value, to: $('to').value,
+    city: $('city').value.trim(), kinds: $('kinds').value,
+  };
+  if ($('birth').value) q.birth = $('birth').value;
+  store.set('ecl', q);
+
+  if (PANE === 'why') {
+    out.innerHTML = '<div class="card"><div class="msg">… أعدّ اجتماعات النيّرين</div></div>';
+    try { renderWhy(await API('eclipses', { mode: 'audit', year: q.from })); }
+    catch (e) { fail(e); }
+    return;
+  }
+  if (PANE === 'hist') { renderHist(); return; }
+
+  out.innerHTML = '<div class="card"><div class="msg">… أحسب الكسوفات</div></div>';
+  try {
+    DATA = await API('eclipses', q);
+    if (PANE === 'saros') renderSarosPick(); else render();
+  } catch (e) { fail(e); }
+}
+
+function fail(e) {
+  out.innerHTML = `<div class="card"><div class="msg err">${esc2(e.message)}</div></div>`;
+}
+
+/* ــ الجدول ــ */
+function render() {
+  const list = (DATA.eclipses || []).filter(e =>
+    !ONLY_SEEN || (e.local && e.local.visible));
+  if (!list.length) {
+    out.innerHTML = '<div class="card"><div class="msg">لا كسوف في هذه المدّة بهذا الشرط.</div></div>';
+    return;
+  }
+  out.innerHTML = `<div class="card"><div class="card-top">
+      <h2 class="card-title">${list.length} كسوفًا وخسوفًا بين ${DATA.from} و${DATA.to}</h2></div>
+    <div class="card-body"><div class="ecl">${list.map(card).join('')}</div></div></div>`;
+}
+
+function card(e) {
+  const L = e.local, seen = L && L.visible;
+  const sym = e.type === 'شمسي' ? '☉' : '☾';
+  const mag = e.magnitude || 0;
+  return `<div class="ec ${e.type === 'شمسي' ? 'sol' : 'lun'} ${seen ? 'seen' : ''}">
+    <div class="t1">
+      <span class="ttl">${sym} ${e.type === 'شمسي' ? 'كسوف' : 'خسوف'} ${esc2(e.kind)}</span>
+      <span class="dt">${e.date}</span>
+    </div>
+    <div class="rowline"><b>الموضع:</b> ${esc2(e.position)} · الساعة ${e.utc.slice(11,16)} عالميًّا</div>
+    <div class="rowline"><b>العقدة:</b> ${esc2(e.node.near)} في ${esc2(e.node.near_sign)}
+      — على بُعد ${e.node.gap_abs}° من الشمس</div>
+    <div class="rowline"><b>ساروس:</b> سلسلة ${e.saros ?? '—'}، العضو ${e.member ?? '—'}
+      ${e.saros ? `<button class="btn ghost sm" data-saros="${e.date}" data-t="${e.type}">تتبّع السلسلة</button>` : ''}</div>
+    <div class="rowline"><b>المقدار:</b> ${pct(mag)}${e.obscuration ? ` من القرص، و${pct(e.obscuration)} من مساحته` : ''}</div>
+    <div class="mag"><i style="width:${Math.min(100, mag * 100)}%"></i></div>
+    ${L ? `<div class="rowline" style="margin-top:7px">
+      ${seen ? `<span class="tag">يُرى من ${esc2(DATA.place || 'مدينتك')}: ${esc2(L.kind)} بمقدار ${pct(L.magnitude)}، وارتفاع الجرم ${L.altitude}°</span>`
+             : `<span class="tag no">${esc2(L.why || 'لا يُرى من مدينتك')}</span>`}</div>` : ''}
+    ${e.personal ? `<div class="rowline"><b>من خريطتك:</b> ${esc2(e.personal.text)}</div>` : ''}
+    ${e.ruling ? `<div class="rowline" style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)">
+      <b>قال القدماء:</b> ${esc2(e.ruling.general)} ${esc2(e.ruling.node_note)}</div>` : ''}
+  </div>`;
+}
+
+/* ــ لماذا لا يكسف كل شهر؟ ــ */
+function renderWhy(a) {
+  const rows = a.conjunctions.map(r => `<tr>
+    <td>${r.date}</td><td>${esc2(r.sign)}</td><td>${esc2(r.node)}</td>
+    <td class="${r.gap <= a.limit_possible ? 'near' : ''}">${r.gap.toFixed(2)}°</td>
+    <td class="${r.eclipse ? 'hit' : ''}">${r.eclipse ? esc2(r.eclipse) : '—'}</td></tr>`).join('');
+  out.innerHTML = `<div class="card"><div class="card-top">
+      <h2 class="card-title">اجتماعات النيّرين في سنة ${a.year}</h2></div>
+    <div class="card-body">
+      <p style="font-size:.87rem;line-height:1.9;color:var(--muted)">
+        اجتمع النيّران <b>${a.total}</b> مرّة، وكسف منها <b>${a.eclipsed}</b> فقط.
+        وانظر عمود البُعد عن العقدة: الكسوف ممكنٌ دون ${a.limit_possible}°،
+        ومتحتّمٌ دون ${a.limit_certain}°. فالاجتماع شرطٌ لا يكفي، والعقدة هي الفارق.
+      </p>
+      <div class="tblwrap"><table class="audit">
+        <thead><tr><th>تاريخ الاجتماع</th><th>البرج</th><th>أقرب عقدة</th>
+          <th>البُعد عنها</th><th>أكسف؟</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+    </div></div>`;
+}
+
+/* ــ ساروس: اختر كسوفًا ثم امتحن القاعدة ــ */
+function renderSarosPick() {
+  const list = DATA.eclipses || [];
+  if (!list.length) { out.innerHTML = '<div class="card"><div class="msg">لا كسوف في هذه المدّة.</div></div>'; return; }
+  out.innerHTML = `<div class="card"><div class="card-top">
+      <h2 class="card-title">دورة ساروس — امتحنها بنفسك</h2></div>
+    <div class="card-body">
+      <p style="font-size:.87rem;line-height:1.9;color:var(--muted)">
+        تعود العقدة إلى موضعها من الشمس بعد <b>١٨ سنة و١١ يومًا و٨ ساعات</b>،
+        فيتكرّر الكسوف بصفته. ولا نكتفي بأن نزيد هذا العدد ونقول «ها هو»:
+        نزيده ثم <b>نبحث عن كسوفٍ حقيقيّ هناك</b>، ونعرض الفارق بين المتوقَّع والواقع.
+      </p>
+      <div class="row" style="flex-wrap:wrap;gap:7px">
+        ${list.map(e => `<button class="btn ghost sm" data-saros="${e.date}" data-t="${e.type}">
+          ${e.date} · ${esc2(e.kind)}</button>`).join('')}
+      </div>
+      <div id="sout" style="margin-top:14px"></div>
+    </div></div>`;
+}
+
+async function showSaros(date, type) {
+  const box = document.getElementById('sout') || out;
+  box.innerHTML = '<div class="msg">… أتتبّع السلسلة</div>';
+  try {
+    const s = await API('eclipses', { mode: 'saros', date, type,
+      city: $('city').value.trim(), back: 3, fwd: 3 });
+    const b = s.base;
+    box.innerHTML = `<div class="saros">
+      <p style="font-size:.87rem"><b>الأصل:</b> ${b.date} — ${esc2(b.kind)} في
+        ${esc2(b.position)}، سلسلة ${b.saros} العضو ${b.member}.</p>
+      ${s.links.map(l => {
+        if (!l.eclipse) return `<div class="step"><span class="n">${l.step > 0 ? '+' : ''}${l.step}</span>
+          <span>المتوقَّع ${l.expected_date}</span><span class="bad">${esc2(l.note)}</span></div>`;
+        const f = l.eclipse;
+        return `<div class="step">
+          <span class="n">${l.step > 0 ? '+' : ''}${l.step}</span>
+          <span>المتوقَّع <b>${l.expected_date}</b></span>
+          <span>الواقع <b>${f.date}</b> — ${esc2(f.kind)}، العضو ${f.member}</span>
+          <span class="${Math.abs(l.drift_hours) < 24 ? 'ok' : 'bad'}">
+            الفارق ${l.drift_hours} ساعة${l.same_saros ? ' · السلسلة نفسها ✓' : ' · سلسلة أخرى'}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } catch (e) { box.innerHTML = `<div class="msg err">${esc2(e.message)}</div>`; }
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-saros]');
+  if (!b) return;
+  if (PANE !== 'saros') {
+    PANE = 'saros';
+    document.querySelectorAll('#tabs button').forEach(x =>
+      x.setAttribute('aria-selected', x.dataset.pane === 'saros' ? 'true' : 'false'));
+    renderSarosPick();
+  }
+  showSaros(b.dataset.saros, b.dataset.t);
+});
+
+/* ــ التراث ــ */
+function renderHist() {
+  out.innerHTML = `<div class="card"><div class="card-top">
+      <h2 class="card-title">الجوزهر والتنّين — العقدتان في كتب القوم</h2></div>
+    <div class="card-body heritage">
+      <p>ما نسمّيه اليوم «العقدة» سمّاه أصحاب الأزياج <b>الجوزهر</b>، وهي فارسيّة
+      معناها «موضع القمر». وقُسِم عقدتين: <b>الرأس</b> شمالًا و<b>الذنب</b> جنوبًا —
+      ومن هنا اسمُ التنّين، إذ صُوّرت العقدتان رأسَ حيّةٍ وذنبَها والنيّران بينهما.</p>
+
+      <p>وكان في تعليل الكسوف عندهم <b>مذهبان</b>:</p>
+      <p class="q">أنّ التنّين جِرمٌ خفيّ لا يُرى، له رأسٌ وذنب، وأنّه إذا وافى
+      النيّرَ ابتلعه فكسف. وهو أقدمُ المذهبين وأشهرُهما في العامّة، وعليه بُنيت
+      أسماءُ العقدتين التي ما زلنا نستعملها إلى اليوم.</p>
+      <p class="q">وأنّ الكسوف حجابٌ لا ابتلاع: القمر يحول بين الأرض والشمس فيكسفها،
+      وظلُّ الأرض يقع على القمر فيخسفه. وهذا ما قرّره البيروني في «التفهيم» وابن
+      الهيثم وأصحابُ الأرصاد، وردّوا به على المذهب الأوّل.</p>
+
+      <p>ونحن نحسب في هذه الصفحة على <b>المذهب الثاني</b>، لأنّه الذي يُخرِج
+      الأرقام التي تُقابَل بالرصد: قدر الكسوف، ووقت الذروة بالدقيقة، وأين يُرى
+      كلّيًّا على الأرض. وقد قُوبلت مخرجاتُنا بجداول ناسا فطابقتها.</p>
+
+      <p>وأمّا الأوّل فنذكره لأنّه <b>تاريخُ فكرة</b>، ولأنّ أثره باقٍ في
+      اصطلاحنا: مَن قال «الرأس والذنب» فقد تكلّم بلسان التنّين وإن لم يقصده.
+      <b>وما يُحسَب يُحسَب، وما لا فتاريخ.</b></p>
+
+      <p style="margin-top:14px;color:var(--muted)">
+        وتفصيلُ أصل العقدتين في الأزياج العربية والفارسية والهندية في
+        <a href="/origins.html">صفحة الحضارات</a>.</p>
+    </div></div>`;
+}
+
+const s0 = store.get('ecl', {});
+const yNow = new Date().getFullYear();
+$('city').value = s0.city || 'دمشق';
+$('from').value = s0.from || yNow;
+$('to').value = s0.to || (yNow + 2);
+if (s0.kinds) $('kinds').value = s0.kinds;
+$('go').onclick = load;
+$('kinds').onchange = load;
+$('from').onchange = load;
+$('to').onchange = load;
+$('birth').onchange = load;
+$('city').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
+});
+load();
+</script>
+</body>
+</html>

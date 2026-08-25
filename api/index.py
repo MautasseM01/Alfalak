@@ -28,7 +28,8 @@ from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noq
 from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import bulletin_more, figures, glossary_i18n, hidden, i18n  # noqa: E402
+from falak import bulletin_more, eclipse, figures  # noqa: E402
+from falak import glossary_i18n, hidden, i18n  # noqa: E402
 from falak import medical, origins  # noqa: E402
 from falak import mundane  # noqa: E402
 from falak import plain  # noqa: E402
@@ -940,6 +941,87 @@ def route_glossary(q):
             "default_level": plain.DEFAULT_LEVEL}
 
 
+def route_eclipses(q):
+    """
+    الكسوف والخسوف: جدولُ مدّة، وسلسلةُ ساروس، وتدقيقُ الاجتماعات.
+
+    ثلاثةُ أوضاع في مسارٍ واحد:
+      · `mode=list`   — كلُّ كسوفٍ بين سنتين، ورؤيتُه من مدينة.
+      · `mode=saros`  — نظائرُ كسوفٍ في سلسلته، **بالبحث لا بالجمع**.
+      · `mode=audit`  — كلُّ اجتماعٍ للنيّرين في سنة، وأيُّها كسف.
+
+    والوضع الثالث هو الحجّة: يُرى فيه أنّ الاجتماع شرطٌ لا يكفي،
+    وأنّ القريب من العقدة وحده هو الذي يكسف.
+    """
+    mode = (_one(q, "mode") or "list").lower()
+
+    lat = lon = None
+    label = None
+    if _one(q, "city") or _one(q, "lat"):
+        lat, lon, tzname, label = resolve_place(q)
+
+    if mode == "audit":
+        year = int(_one(q, "year") or datetime.now(ephem.UTC).year)
+        year = max(1900, min(2100, year))
+        return eclipse.conjunction_audit(year)
+
+    if mode == "saros":
+        ds = _one(q, "date")
+        when = (datetime.fromisoformat(ds) if ds
+                else datetime.now(ephem.UTC)).replace(tzinfo=ephem.UTC)
+        lunar = (_one(q, "type") or "شمسي") == "قمري"
+        back = max(1, min(6, int(_one(q, "back") or 2)))
+        fwd = max(1, min(6, int(_one(q, "fwd") or 2)))
+        out = eclipse.saros_chain(when, lunar, back, fwd, lat, lon)
+        out["place"] = label
+        return out
+
+    y0 = int(_one(q, "from") or datetime.now(ephem.UTC).year)
+    y1 = int(_one(q, "to") or (y0 + 2))
+    y0, y1 = max(1900, min(2100, y0)), max(1900, min(2100, y1))
+    if y1 < y0:
+        y0, y1 = y1, y0
+    # **والمدّة محدودة**: كلُّ سنةٍ نداءان للمكتبة، ولا حدَّ لها
+    # في الطلب. فمن سأل ألفَ سنةٍ أوقف الدالّة بلا خادم.
+    y1 = min(y1, y0 + 40)
+    kinds = _one(q, "kinds") or "both"
+    items = eclipse.between(
+        datetime(y0, 1, 1, tzinfo=ephem.UTC),
+        datetime(y1 + 1, 1, 1, tzinfo=ephem.UTC), lat, lon, kinds)
+
+    # **والأحكام تُلحَق بكلّ كسوف** — إذ حُسب الشيء ولم يُوصَل إلى
+    # العين مرارًا في هذا المشروع. فما يُحسَب يُعرَض معه ما يُقال
+    # فيه، **موسومًا أنّه منقول**.
+    for it in items:
+        it["ruling"] = eclipse.rulings(it)
+
+    out = {"from": y0, "to": y1, "place": label,
+           "count": len(items), "eclipses": items,
+           "nearest": eclipse.nearest(datetime.now(ephem.UTC), lat, lon)}
+
+    # ــ ووصلُه بخريطة الزائر إن أعطى مولده ــ
+    bd = _one(q, "birth")
+    if bd and lat is not None:
+        # **ويُبنى بالطريق الذي تُبنى به الخريطة نفسها.**
+        # أوّلُ صياغةٍ لي نادت `chart.compute` بوقتٍ بلا منطقة،
+        # فرمت، **و`except Exception` ابتلع الرمي** فبدا العمل
+        # تامًّا والحقلُ فارغ. وهو عينُ العيب الذي اقتُلع من طبقة
+        # الترجمة في هذه الجلسة: **سقوطٌ صامتٌ لا أثر له.**
+        # فليُستعمَل `parse_birth` كما في `route_chart`، ولا
+        # يُبتلَع خطأٌ إلّا وله رسالةٌ تُقرأ.
+        when, tzinfo = parse_birth(
+            {**q, "date": [bd], "time": q.get("btime", ["12:00"])},
+            tzname, lon)
+        nat = chart.compute(when, lat, lon, "whole", tzname, tz_info=tzinfo)
+        cusps = [h["lon"] for h in nat["houses"]["cusps"]]
+        for it in items:
+            it["personal"] = eclipse.personal(it, cusps)
+        out["birth"] = bd
+    elif bd:
+        out["birth_error"] = "لحساب موضع الكسوف من خريطتك، أعطِ المدينة أيضًا."
+    return out
+
+
 def route_hours(q):
     """ساعات الكواكب: الاثنتا عشرة نهارًا ومثلها ليلًا."""
     lat, lon, tzname, label = resolve_place(q)
@@ -1181,6 +1263,7 @@ ROUTES = {
     "glossary": route_glossary,
     "depth": route_depth,
     "hours": route_hours,
+    "eclipses": route_eclipses,
     "month": route_month,
     "elections": route_elections,
     "monthly": route_monthly,

@@ -167,6 +167,123 @@ UI = {
     "… أنظر في خريطة اللحظة": ("… examining the chart of the moment",
                               "… examen du thème de l'instant"),
 
+    # ══════════════════════════════════════════════════════════
+    # صفحةُ الكسوف والخسوف
+    # ══════════════════════════════════════════════════════════
+    "الكسوف والخسوف": ("Eclipses", "Éclipses"),
+    "الكسوف والخسوف — الفَلَك": ("Eclipses — Al-Falak",
+                                "Éclipses — Al-Falak"),
+    "الفَلَك — الكسوف والخسوف": ("Al-Falak — Eclipses",
+                                "Al-Falak — Éclipses"),
+    "متى الكسوف؟": ("When is the eclipse?", "Quand l'éclipse ?"),
+    "كسوفات الشمس وخسوفات القمر، وهل تُرى من مدينتك — ولماذا لا "
+    "يكسف كل شهر": (
+        "Solar and lunar eclipses, whether they are visible from your "
+        "city — and why there is not one every month",
+        "Éclipses de Soleil et de Lune, visibles ou non depuis votre "
+        "ville — et pourquoi il n'y en a pas chaque mois"),
+    "لأيّ سنة ومكان: العقدة وسلسلة ساروس والمقدار، وهل يُرى من "
+    "مدينتك — ولماذا لا يكسف كل شهر.": (
+        "For any year and place: the node, the Saros series, the "
+        "magnitude, and whether it is visible from your city — and why "
+        "there is not one every month.",
+        "Pour toute année et tout lieu : le nœud, la série de Saros, la "
+        "grandeur, et la visibilité depuis votre ville — et pourquoi il "
+        "n'y en a pas chaque mois."),
+    "يجتمع النيّران اثنتي عشرة مرّةً في السنة ولا يكسفان إلّا مرّتين "
+    "أو ثلاثًا. والفارقُ هو العقدة: حيث يقطع مسير القمر دائرةَ "
+    "البروج. وهذه الصفحة تحسب الكسوفات لأيّ مدّة ومكان، وتعرض عليك "
+    "القاعدة لتمتحنها بنفسك.": (
+        "The two luminaries meet twelve times a year, yet eclipse only "
+        "twice or thrice. The difference is the node: where the Moon's "
+        "path crosses the ecliptic. This page computes eclipses for any "
+        "period and place, and lays the rule before you to test yourself.",
+        "Les deux luminaires se rejoignent douze fois par an et ne "
+        "s'éclipsent que deux ou trois fois. La différence tient au "
+        "nœud : là où la route de la Lune coupe l'écliptique. Cette page "
+        "calcule les éclipses pour toute période et tout lieu, et vous "
+        "soumet la règle pour que vous l'éprouviez vous-même."),
+    "يجتمع النيّران اثنتي عشرة مرّةً في السنة ولا يكسفان إلّا مرّتين": (
+        "The two luminaries meet twelve times a year, yet eclipse only "
+        "twice",
+        "Les deux luminaires se rejoignent douze fois par an et ne "
+        "s'éclipsent que deux"),
+    "أو ثلاثًا. والفارقُ هو العقدة، وهذه الصفحة تحسبها وتعرض القاعدة": (
+        "or thrice. The difference is the node; this page computes it "
+        "and lays out the rule",
+        "ou trois fois. La différence tient au nœud ; cette page le "
+        "calcule et expose la règle"),
+    "لتمتحنها بنفسك.": ("for you to test yourself.",
+                       "pour que vous l'éprouviez vous-même."),
+    # **ونصُّ «ما هذه الصفحة؟» كما يُرسَم لا كما يُكتَب.**
+    # هو في `plain.js` ثلاثةُ نصوصٍ موصولة بـ`+`، فيراها المُستخرَج
+    # ثلاثًا وتراها الصفحةُ واحدة. والمفتاحُ ما تراه الصفحة.
+    "يجتمع النيّران اثنتي عشرة مرّةً في السنة ولا يكسفان إلّا مرّتين "
+    "أو ثلاثًا. والفارقُ هو العقدة، وهذه الصفحة تحسبها وتعرض القاعدة "
+    "لتمتحنها بنفسك.": (
+        "The two luminaries meet twelve times a year, yet eclipse only "
+        "twice or thrice. The difference is the node; this page computes "
+        "it and lays out the rule for you to test yourself.",
+        "Les deux luminaires se rejoignent douze fois par an et ne "
+        "s'éclipsent que deux ou trois fois. La différence tient au "
+        "nœud ; cette page le calcule et expose la règle pour que vous "
+        "l'éprouviez vous-même."),
+    "من سنة": ("From year", "De l'année"),
+    "إلى سنة": ("To year", "À l'année"),
+    "دمشق، القاهرة…": ("Damascus, Cairo…", "Damas, Le Caire…"),
+    "تاريخ مولدك (اختياري)": ("Your birth date (optional)",
+                             "Votre date de naissance (facultatif)"),
+    "اعرض الكسوفات": ("Show eclipses", "Afficher les éclipses"),
+    "ما يُرى من مدينتي فقط": ("Only what is visible from my city",
+                             "Seulement ce qui est visible de ma ville"),
+    "اعرض الكل": ("Show all", "Tout afficher"),
+    "لماذا لا يكسف كل شهر؟": ("Why not every month?",
+                             "Pourquoi pas chaque mois ?"),
+    "دورة ساروس": ("The Saros cycle", "Le cycle de Saros"),
+    "الجوزهر والتنّين": ("Al-Jawzahr and the Dragon",
+                        "Al-Jawzahr et le Dragon"),
+    "كسوف الشمس": ("Solar eclipses", "Éclipses de Soleil"),
+    "خسوف القمر": ("Lunar eclipses", "Éclipses de Lune"),
+    "خسوف": ("Lunar eclipse", "Éclipse de Lune"),
+    "كسوف": ("Solar eclipse", "Éclipse de Soleil"),
+    "الجدول": ("The table", "Le tableau"),
+    "شمسي": ("solar", "solaire"),
+    "مدينتك": ("your city", "votre ville"),
+    "لا يُرى من مدينتك": ("Not visible from your city",
+                         "Non visible depuis votre ville"),
+    "لا كسوف في هذه المدّة.": ("No eclipse in this period.",
+                              "Aucune éclipse dans cette période."),
+    "… أحسب الكسوفات": ("… computing eclipses", "… calcul des éclipses"),
+    "… أتتبّع السلسلة": ("… tracing the series", "… suivi de la série"),
+    "· السلسلة نفسها ✓": ("· same series ✓", "· même série ✓"),
+    "· سلسلة أخرى": ("· another series", "· autre série"),
+    "العقدة وساروس، وهل يُرى من مدينتك": (
+        "The node and Saros, and whether it is visible from your city",
+        "Le nœud et Saros, et la visibilité depuis votre ville"),
+    "المواقع والأوقات محسوبة بمكتبة Swiss Ephemeris، وأرقام سلاسل "
+    "ساروس منها لا من صيغة عندنا.": (
+        "Positions and times are computed with the Swiss Ephemeris "
+        "library, and the Saros series numbers come from it, not from a "
+        "formula of ours.",
+        "Positions et horaires sont calculés avec la bibliothèque Swiss "
+        "Ephemeris, et les numéros de série de Saros en proviennent, non "
+        "d'une formule de notre cru."),
+    "والأحكام في آخر كل بطاقة منقولةٌ عن كتب القوم، لا نتيجةَ رصد.": (
+        "The judgements at the foot of each card are transmitted from "
+        "the old books; they are not the result of observation.",
+        "Les jugements au bas de chaque fiche sont transmis des livres "
+        "anciens ; ils ne résultent pas de l'observation."),
+    "المصادر: أغطية التوابيت المصرية وسقفُ مقبرة سنموت · «مول أبين» "
+    "و«إينوما آنو إنليل» · «الأربعة» لبطلَميوس · «التفهيم» للبيروني "
+    "· «المناظر» لابن الهيثم.": (
+        "Sources: Egyptian coffin lids and the ceiling of Senenmut's "
+        "tomb · MUL.APIN and Enūma Anu Enlil · Ptolemy's Tetrabiblos · "
+        "al-Bīrūnī's al-Tafhīm · Ibn al-Haytham's Book of Optics.",
+        "Sources : couvercles de sarcophages égyptiens et plafond de la "
+        "tombe de Senenmout · MUL.APIN et Enūma Anu Enlil · la "
+        "Tétrabible de Ptolémée · al-Tafhīm d'al-Bīrūnī · le Traité "
+        "d'optique d'Ibn al-Haytham."),
+
     # مفردةٌ تُلصَق بعدد — انظر `VOCAB_KEYS`
     "مصطلحًا": ("terms", "termes"),
     # ورسالةُ العطل يتبدّل ذيلُها بنصّ الخادم، فتُعامَل مفردةً
