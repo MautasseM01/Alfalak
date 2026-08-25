@@ -94,7 +94,16 @@ def _literals(js: str) -> set:
         # **الأداة كانت تعدّ شظايا التعبيرات النمطية عبارات**:
         # `[اأإآ]` و`[وفبكل]?` و`plain أو expert`. فقياسُ الدَّيْن
         # يتضخّم بما ليس منه، والرقم المتضخّم لا يُوثَق به.
-        if any(c in s for c in "${}<>[]\\/|"):
+        # **والوسمُ يُنزَع، ولا يُطرَح النصُّ لأجله.**
+        # كان كلُّ نصٍّ فيه `<` أو `>` يُطرَح — فطُرح معه شريطُ
+        # التلميح، إذ يُبنى بـ`innerHTML`. **فلم يُعرَض للترجمة
+        # قطّ**، وبقي عربيًّا في كلّ صفحة، وهو ٦٨ من ١٧١ باقية.
+        # والقياسُ لا يراه، إذ هو يعدّ ما كُتب لا ما لم يُكتَب.
+        if "<" in s or ">" in s:
+            s = " ".join(re.sub(r"<[^>]*>", "", s).split())
+            if not s or not AR.search(s):
+                continue
+        if any(c in s for c in "${}[]\\/|"):
             continue
         letters = sum(1 for c in s if c.isalpha())
         if letters < max(2, len(s) * 0.5):
@@ -171,13 +180,44 @@ def per_page() -> list[tuple[str, int, int]]:
     return sorted(rows, key=lambda r: -r[2])
 
 
+def coverage() -> tuple[int, int, list[str]]:
+    """
+    (المُغطّى، الكلّ، الباقي) — **مصدرٌ واحد للرقم**.
+
+    كان الاختبار يحسب النسبة بصيغته والأداةُ بصيغتها، فاختلفا:
+    الأداة ١٠٠٪ والاختبار ٩٩٫٧. **وحاسبان لشيءٍ واحد يُخرجان
+    رقمين، وأحدُهما يكذب حتمًا.** فليُحسب في موضعٍ واحد.
+    """
+    all_p = phrases()
+    ui = {s: c for s, c in all_p.items() if len(s) <= UI_MAX}
+    done = {s for s in ui if s in i18n.UI}
+    keys = set(i18n.UI)
+    frag = {s for s in set(ui) - done
+            if any(s in k for k in keys if len(k) > len(s))}
+    todo = sorted(set(ui) - done - frag)
+    return len(done) + len(frag), len(ui), todo
+
+
 def report(show: bool = False) -> int:
     all_p = phrases()
     ui = {s: c for s, c in all_p.items() if len(s) <= UI_MAX}
     done = {s for s in ui if s in i18n.UI}
-    todo = sorted(set(ui) - done, key=lambda s: (-ui[s], s))
+    # ══════════════════════════════════════════════════════════════
+    # **وشظيّةُ عبارةٍ مترجَمة ليست دَينًا.**
+    #
+    # شريطُ التلميح يُبنى من نصّين متتاليين في `hint.js`، فيراهما
+    # الاستخراجُ اثنين ويرى الصفحةُ واحدًا. **والمترجَم هو ما تراه
+    # الصفحة** — وقد تُرجم كاملًا وطُوبق كاملًا (مقياسُ الصفحة صفر).
+    #
+    # فعدُّهما دَينًا **رقمٌ لا ينزل بعمل**: لو تُرجما لما تغيّر في
+    # الصفحة حرف. ولا يُقاس بعملٍ رقمٌ لا يستجيب له.
+    # ══════════════════════════════════════════════════════════════
+    keys = set(i18n.UI)
+    frag = {s for s in set(ui) - done
+            if any(s in k for k in keys if len(k) > len(s))}
+    todo = sorted(set(ui) - done - frag, key=lambda s: (-ui[s], s))
 
-    pct = round(len(done) * 100 / max(len(ui), 1))
+    pct = round((len(done) + len(frag)) * 100 / max(len(ui), 1))
     print(f"عباراتُ الواجهة في الصفحات : {len(ui)}")
     print(f"المُترجَم منها             : {len(done)}  ({pct}٪)")
     print(f"المتبقّي                   : {len(todo)}")

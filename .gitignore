@@ -4,5 +4,9 @@ __pycache__/
 preview/
 .venv/
 falak-web-project.zip
-
+node_modules/
 tools/.hint_fixture.json
+tools/.i18n_fixture.json
+tools/i18n_todo.txt
+todo.txt
+package-lock.json

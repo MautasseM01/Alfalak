@@ -28,7 +28,7 @@ from falak import atlas, bulletin, chart, config, elections, ephem, hours  # noq
 from falak import apikeys, astromap, depth, gist, horary, ics  # noqa: E402
 from falak import interpret  # noqa: E402
 from falak import bazi, bazi_match, jyotish, jyotish_match, monthly  # noqa: E402
-from falak import bulletin_more, figures, hidden, i18n  # noqa: E402
+from falak import bulletin_more, figures, glossary_i18n, hidden, i18n  # noqa: E402
 from falak import medical, origins  # noqa: E402
 from falak import mundane  # noqa: E402
 from falak import plain  # noqa: E402
@@ -926,8 +926,16 @@ def route_options(q):
 
 
 def route_glossary(q):
-    """معجم المصطلحات — لشروح «عند الطلب» في الواجهة."""
-    return {"terms": interpret.GLOSSARY, "ui": plain.UI_LABELS,
+    """
+    معجم المصطلحات — لشروح «عند الطلب» في الواجهة.
+
+    **ويُردّ بلسان الصفحة.** كان يردّ العربيّة دائمًا، فتظهر
+    التلميحاتُ عربيّةً فوق نصٍّ إنجليزيّ — وهو أوّلُ ما شُكي منه.
+    وما لم يُترجَم يُسقَط ولا يُردّ عربيًّا (انظر `glossary_i18n`).
+    """
+    lang = (_one(q, "lang") or "ar").lower()
+    terms = glossary_i18n.terms_for(lang, interpret.GLOSSARY)
+    return {"terms": terms, "ui": plain.UI_LABELS,
             "intros": plain.INTROS, "levels": plain.LEVELS,
             "default_level": plain.DEFAULT_LEVEL}
 

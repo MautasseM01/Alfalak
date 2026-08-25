@@ -24,10 +24,27 @@
 let HINT_TERMS = null;
 let HINT_PENDING = null;
 
+/* يُنادى عند تبدّل اللسان: يُنسى المخزون فيُطلَب معجمُ اللسان
+   الجديد. ووسومُ المصطلحات القديمة تُنزَع، وإلّا بقي `data-term`
+   عربيًّا على كلمةٍ إنجليزية فلا يجد له شرحًا. */
+function hintForget() {
+  HINT_TERMS = null;
+  HINT_PENDING = null;
+  document.querySelectorAll('b.hint-term').forEach(b => {
+    b.replaceWith(document.createTextNode(b.textContent));
+  });
+}
+
 function hintTerms() {
   if (HINT_TERMS) return Promise.resolve(HINT_TERMS);
   if (HINT_PENDING) return HINT_PENDING;
-  HINT_PENDING = fetch('/api/glossary')
+  /* **المعجم يُطلَب بلسان الصفحة.**
+     كان يُطلَب بلا لسان فيُردّ عربيًّا دائمًا — فتظهر التلميحات
+     عربيّةً فوق كلماتٍ إنجليزية. واللسانُ يُقرأ من `<html lang>`
+     لا من متغيّرٍ في `i18n.js`، **فلا يتعلّق ملفٌّ بملفّ**، ويصحّ
+     ولو لم يُحمَّل الآخر. */
+  const _lang = document.documentElement.lang || 'ar';
+  HINT_PENDING = fetch('/api/glossary?lang=' + encodeURIComponent(_lang))
     .then(r => r.json())
     .then(r => (HINT_TERMS = r.terms || {}))
     .catch(() => (HINT_TERMS = {}));
@@ -468,6 +485,15 @@ function hintFirstTip() {
     setTimeout(() => bar.remove(), 220);
   };
   bar.querySelector('.hint-tip-x').addEventListener('click', done);
+  /* **ويُترجَم قبل أن يُعرَض.**
+     الشريط يُدرَج بعد وصول المعجم، أي **بعد أن تكون الترجمة قد
+     مشت**. فكان يظهر عربيًّا في صفحةٍ إنجليزية حتى يلحقه
+     المُراقب — إن لحقه. والاعتمادُ على سبقٍ زمنيّ بناءٌ على رمل. */
+  try {
+    if (typeof i18nWalk === 'function' && typeof I18N_DICT !== 'undefined') {
+      i18nWalk(bar, I18N_DICT);
+    }
+  } catch { }
   document.body.appendChild(bar);            /* يطفو، فلا يُزحزح سطرًا */
   requestAnimationFrame(() => bar.classList.add('in'));
   setTimeout(done, 14000);                   /* ولا يبقى معلّقًا أبدًا */

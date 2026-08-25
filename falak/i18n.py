@@ -98,6 +98,409 @@ UI = {
     # **ومقياسان لا يتّفقان أحدُهما ناقص**: الصفحاتُ ١٠٠٪
     # والكلُّ ٨٧٪، والفرقُ هو هذا كلُّه.
     # ══════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════
+    # **ما لم يعرضه الاستخراج أصلًا** — وهذا عيبٌ ثالث كُشف
+    # بالقياس من الصفحة.
+    #
+    # `i18n_todo.py` يطرح كلَّ نصٍّ فيه `<` أو `>`، منعًا لعدّ
+    # شظايا التعبيرات النمطية. **وشريطُ التلميح يُبنى بـ
+    # `innerHTML` وفيه وسوم** — فلم يُعرَض عليّ للترجمة قطّ.
+    #
+    # فبقي في كلّ صفحةٍ من الموقع، **وهو ٦٨ من ١٧١** الباقية:
+    # ثلاثُ عُقَدٍ × ١٧ صفحة، وزرُّ «فهمت» × ١٧.
+    #
+    # ولم يكن نقصًا في القاموس ولا في المشي، بل في **ما عُرض**.
+    # ومقياسٌ يعدّ ما كُتب لا يرى ما لم يُكتَب.
+    # ══════════════════════════════════════════════════════════
+    "الكلمات ذات الخطّ المنقّط مشروحة — مرّر المؤشّر عليها، "
+    "وكذلك كل عنصر في العجلة.": (
+        "Dotted-underlined words have explanations — hover over them, "
+        "as well as any element in the wheel.",
+        "Les mots soulignés en pointillé sont expliqués — survolez-les, "
+        "ainsi que chaque élément de la roue."),
+    "فهمت": ("Got it", "J'ai compris"),
+    "فهمت، أخفِ هذا": ("Got it, hide this", "J'ai compris, masquer"),
+    "ما هذه الصفحة؟": ("What is this page?", "Qu'est-ce que cette page ?"),
+    "مرّر المؤشّر عليها": ("hover over them", "survolez-les"),
+    # ══════════════════════════════════════════════════════════
+    # **ما لا يبلغه المحاكي** — رسائلُ الانتظار والفراغ.
+    #
+    # مقياسُ الصفحة (`i18n_seen.js`) بلغ صفرًا وهذه عربيّة، لأنّها
+    # **لا تُرسَم إلّا بعد حساب**، والمحاكي بلا خادم. فأمسكها
+    # المقياسُ المصدريّ وحده.
+    #
+    # **فهما متكاملان لا متكرّران**: أحدهما يرى ما رُسم، والآخر
+    # يرى ما كُتب. ومن أسقط أحدَهما لأنّ الآخر بلغ التمام أسقط
+    # نصفَ ما يُرى.
+    # ══════════════════════════════════════════════════════════
+    "أدخل مدينة.": ("Enter a city.", "Saisissez une ville."),
+    "أنت هنا الآن ·": ("You are here now ·", "Vous êtes ici ·"),
+    "— أنت هنا": ("— you are here", "— vous êtes ici"),
+    "المحفوظة:": ("Saved:", "Enregistrés :"),
+    "بلا معطيات.": ("No data.", "Aucune donnée."),
+    "ساعة": ("hour", "heure"),
+    "مُرجَّح بمولدك": ("weighted by your birth chart",
+                     "pondéré par votre thème natal"),
+    "نزّل العجلة صورة": ("Download the wheel as an image",
+                        "Télécharger la roue en image"),
+    "لا أشكال زاوية في هذه اللحظة.": (
+        "No aspect patterns at this moment.",
+        "Aucune figure d'aspects à cet instant."),
+    "لا زاوية كبرى تُقبِل في هذه المدّة.": (
+        "No major aspect is applying in this period.",
+        "Aucun aspect majeur ne s'applique dans cette période."),
+    "لا مصطلح بهذا الاسم.": ("No term by that name.",
+                            "Aucun terme de ce nom."),
+    "لا يُكمّل أحدكما نقص الآخر مباشرة.": (
+        "Neither of you directly completes the other's lack.",
+        "Aucun de vous ne comble directement le manque de l'autre."),
+    "لم يُنظر في التمام لأن المسألة رُدّت.": (
+        "Perfection was not examined because the question was returned.",
+        "La perfection n'a pas été examinée : la question a été renvoyée."),
+    "… أحسب الخريطة": ("… computing the chart", "… calcul du thème"),
+    "… أحسب مواقع الأفلاك": ("… computing planetary positions",
+                            "… calcul des positions planétaires"),
+    "… أحسب الشروق والغروب": ("… computing sunrise and sunset",
+                              "… calcul du lever et du coucher"),
+    "… أحسب أرباب الأزمنة": ("… computing the time lords",
+                             "… calcul des maîtres du temps"),
+    "… أنظر في خريطة اللحظة": ("… examining the chart of the moment",
+                              "… examen du thème de l'instant"),
+
+    # مفردةٌ تُلصَق بعدد — انظر `VOCAB_KEYS`
+    "مصطلحًا": ("terms", "termes"),
+    # ورسالةُ العطل يتبدّل ذيلُها بنصّ الخادم، فتُعامَل مفردةً
+    "تعذّر الاتصال بالخادم": ("Could not reach the server",
+                              "Connexion au serveur impossible"),
+
+    # ══════════════════════════════════════════════════════════
+    # **صدور الصفحات وذيولها** — كلامُ الموقع عن نفسه.
+    # وهذه أُخذت من `tools/i18n_seen.js --keys`، أي **من الصفحة
+    # المرسومة** لا من استخراج المصدر. فما هنا يُطابَق قطعًا.
+    # ══════════════════════════════════════════════════════════
+    "خريطة الميلاد صورة للسماء لحظة ولادتك: أين كان كل كوكب، "
+    "وأيّ برج كان صاعدًا في": (
+        "The natal chart is a picture of the sky at the moment you were "
+        "born: where each planet stood, and which sign was rising on",
+        "Le thème natal est une image du ciel à l'instant de votre "
+        "naissance : où se tenait chaque planète, et quel signe se levait à"),
+    ". منها تُقرأ الطباع والميول.": (
+        ". From it character and inclination are read.",
+        ". On y lit le caractère et les inclinations."),
+    "والسهام والمنازل من التراث الفلكي العربي.": (
+        "and the lots and mansions from the Arabic astrological tradition.",
+        "et les parts et les manoirs de la tradition astrologique arabe."),
+    "والاختيارات من تراث الأنواء العربي.": (
+        "and the elections from the Arabic anwāʾ tradition.",
+        "et les élections de la tradition arabe des anwāʾ."),
+
+    # **والنصُّ الكامل كما هو في `plain.js`** — لا شقُّه.
+    # كان مفتاحي شظيّةً تنتهي عند «أين»، لأنّ `hint.js` يَسِم
+    # «القمر» فيشقّ العُقدة. وبعد أن صار التطابق على العنصر
+    # كلِّه صار المطلوب الجملةَ تامّة.
+    "النشرة اليومية تصف حال السماء في يوم بعينه: أين القمر، وما "
+    "الأوقات المناسبة وما يُفضّل تأجيله.": (
+        "The daily bulletin describes the state of the sky on a given "
+        "day: where the Moon is, which hours suit, and what is better "
+        "postponed.",
+        "Le bulletin quotidien décrit l'état du ciel un jour donné : où "
+        "est la Lune, quelles heures conviennent, et ce qu'il vaut mieux "
+        "différer."),
+    "خريطة الميلاد صورة للسماء لحظة ولادتك: أين كان كل كوكب، وأيّ برج "
+    "كان صاعدًا في الأفق. منها تُقرأ الطباع والميول.": (
+        "The natal chart is a picture of the sky at the moment you were "
+        "born: where each planet stood, and which sign was rising on the "
+        "horizon. From it character and inclination are read.",
+        "Le thème natal est une image du ciel à l'instant de votre "
+        "naissance : où se tenait chaque planète, et quel signe se levait "
+        "à l'horizon. On y lit le caractère et les inclinations."),
+    "النشرة اليومية تصف حال السماء في يوم بعينه: أين": (
+        "The daily bulletin describes the state of the sky on a given day: "
+        "where",
+        "Le bulletin quotidien décrit l'état du ciel un jour donné : où"),
+    "، وما الأوقات المناسبة وما يُفضّل تأجيله.": (
+        ", which hours suit, and what is better postponed.",
+        ", quelles heures conviennent, et ce qu'il vaut mieux différer."),
+    "النشرة الشهرية تجمع أحداث الشهر كلّه: انتقالات الكواكب، والكسوف، "
+    "وأفضل أيام الشهر لكل غرض.": (
+        "The monthly bulletin gathers the whole month's events: planetary "
+        "ingresses, eclipses, and the month's best days for each purpose.",
+        "Le bulletin mensuel rassemble les événements du mois : ingrès "
+        "planétaires, éclipses, et les meilleurs jours pour chaque fin."),
+
+    "خريطتك سماءُ لحظةٍ واحدة، مرئيّةً من مكانٍ واحد. ولو وُلدتَ في "
+    "اللحظة نفسها في مكانٍ آخر لكانت الكواكب هي هي — لكن أوتادها "
+    "تختلف: ما كان طالعًا يصير في وسط السماء، وما كان غاربًا يصير "
+    "طالعًا. فلكل كوكبٍ على وجه الأرض أربعة خطوط.": (
+        "Your chart is the sky of a single moment, seen from a single "
+        "place. Had you been born at the same moment elsewhere, the "
+        "planets would be the same — but the angles would differ: what "
+        "was rising becomes culminating, and what was setting becomes "
+        "rising. So every planet has four lines across the Earth.",
+        "Votre thème est le ciel d'un seul instant, vu d'un seul lieu. "
+        "Né au même instant ailleurs, vous auriez les mêmes planètes — "
+        "mais d'autres angles : ce qui se levait culmine, ce qui se "
+        "couchait se lève. Chaque planète trace ainsi quatre lignes sur "
+        "la Terre."),
+
+    "خريطة الميلاد تقول ما أنت، ولا تقول متى. وأرباب الأزمنة جواب "
+    "«متى»: تقسيم العمر على الكواكب، فيتولّى كلٌّ منها فترة يصبغها "
+    "بطبعه. الفردارات فارسية نقلها أبو معشر، والتسيير أقدم منها.": (
+        "The natal chart says what you are; it does not say when. The "
+        "time lords answer \"when\": the lifetime is divided among the "
+        "planets, each governing a span it colours with its own nature. "
+        "The firdaria are Persian, transmitted by Abū Maʿshar; direction "
+        "is older still.",
+        "Le thème natal dit ce que vous êtes, non pas quand. Les maîtres "
+        "du temps répondent au « quand » : la vie est partagée entre les "
+        "planètes, chacune gouvernant une période qu'elle teinte de sa "
+        "nature. Les firdaria sont persans, transmis par Abū Maʿshar ; "
+        "la direction est plus ancienne encore."),
+
+    "تقويم الشهر يُجيب عن «كيف حال هذا اليوم؟». وهذه الصفحة تُجيب عن "
+    "السؤال المعكوس، وهو الذي يسأله الناس فعلًا: أعطني أفضل يوم. "
+    "تمسح الشهور القادمة، وتُعطي مع كل يوم ساعته — فالقدماء يختارون "
+    "الساعة كما يختارون اليوم.": (
+        "The monthly calendar answers \"how is this day?\". This page "
+        "answers the reverse — the question people actually ask: give me "
+        "the best day. It scans the coming months and gives each day its "
+        "hour, for the ancients elected the hour as they elected the day.",
+        "Le calendrier mensuel répond à « comment est ce jour ? ». Cette "
+        "page répond à l'inverse, la question réellement posée : donnez-"
+        "moi le meilleur jour. Elle balaie les mois à venir et donne à "
+        "chaque jour son heure — les anciens élisaient l'heure autant que "
+        "le jour."),
+
+    "مبنى هذا الباب أن السؤال إذا اضطرم في صدر صاحبه فسأل، كانت "
+    "السماء في تلك اللحظة صورةً لجوابه. ولا يُحكم فيه بالمزاج: تُنظر "
+    "الاعتبارات أوّلًا، فإن كان في الخريطة ما يمنع رُدّت المسألة ولم "
+    "يُتكلَّف لها جواب. ثم يُنظر في دليل السائل ودليل المسؤول عنه: "
+    "أيقع بينهما اتّصال قبل أن يخرج أحدهما من برجه؟": (
+        "This art rests on the premise that when a question burns in its "
+        "asker and he asks, the sky at that moment is an image of its "
+        "answer. It is not judged by whim: the considerations are "
+        "examined first, and if the chart forbids, the question is "
+        "returned and no answer is forced. Then the significators of "
+        "querent and quesited are examined: does an aspect perfect "
+        "between them before either leaves its sign?",
+        "Cet art repose sur ce principe : quand une question brûle celui "
+        "qui la pose, le ciel de cet instant est l'image de sa réponse. "
+        "On n'y juge pas au gré : les considérations viennent d'abord, "
+        "et si le thème l'interdit, la question est renvoyée sans "
+        "réponse forcée. Puis on examine les significateurs du "
+        "consultant et du sujet : un aspect se perfectionne-t-il entre "
+        "eux avant que l'un quitte son signe ?"),
+    "الوقت هنا هو لحظة وقوع السؤال في نفسك، لا وقت فتحك للصفحة. "
+    "وكلّما كان السؤال مصوغًا صياغة دقيقة كان الجواب أوضح — وأكثر "
+    "الحيرة تنحلّ بصياغة السؤال وحدها.": (
+        "The time here is the moment the question arose in you, not the "
+        "moment you opened this page. The more precisely the question is "
+        "framed, the clearer the answer — and most perplexity dissolves "
+        "in the framing alone.",
+        "L'heure est ici celle où la question a surgi en vous, non celle "
+        "où vous avez ouvert la page. Mieux la question est formulée, "
+        "plus la réponse est claire — et la plupart des perplexités se "
+        "dénouent dans la seule formulation."),
+    "من «التفهيم» للبيروني و«البارع» لابن أبي الرجال.": (
+        "from al-Bīrūnī's al-Tafhīm and Ibn Abī al-Rijāl's al-Bāriʿ.",
+        "d'après al-Tafhīm d'al-Bīrūnī et al-Bāriʿ d'Ibn Abī al-Rijāl."),
+    "على ريجومونتانوس، وهو مذهب أهل هذا الباب.": (
+        "on Regiomontanus, the method of this art's practitioners.",
+        "sur Regiomontanus, méthode des praticiens de cet art."),
+    "الاعتبارات وقواعد": ("The considerations and the rules of",
+                          "Les considérations et les règles de"),
+
+    "قسّم القدماء النهار اثنتي عشرة ساعة والليل مثلها، ونسبوا كل "
+    "ساعة إلى كوكب. فلكل ساعة طبع، ولكل عمل ساعة تناسبه.": (
+        "The ancients divided the day into twelve hours and the night "
+        "likewise, assigning each hour to a planet. Every hour has its "
+        "nature, and every undertaking its fitting hour.",
+        "Les anciens divisaient le jour en douze heures et la nuit de "
+        "même, attribuant chaque heure à une planète. Chaque heure a sa "
+        "nature, et chaque entreprise son heure propre."),
+
+    "قسّم القدماء البدن على البروج: الحملُ الرأس، والحوتُ القدمان، "
+    "وما بينهما بالترتيب. وردّوه إلى أربعة أخلاط لكلٍّ حرارةٌ ورطوبة. "
+    "وهذه الصفحة تعرض ذلك كما قالوه — ومنه ما يُحسَب بقاعدة، ومنه ما "
+    "هو حكايةُ زمن.": (
+        "The ancients divided the body among the signs: Aries the head, "
+        "Pisces the feet, and the rest in order. They referred it to four "
+        "humours, each with its heat and moisture. This page presents "
+        "that as they stated it — some of it computed by rule, some of "
+        "it the record of an age.",
+        "Les anciens répartissaient le corps entre les signes : le "
+        "Bélier la tête, les Poissons les pieds, et le reste dans "
+        "l'ordre. Ils le ramenaient à quatre humeurs, chacune avec sa "
+        "chaleur et son humidité. Cette page l'expose tel qu'ils l'ont "
+        "dit — pour partie calculé par règle, pour partie témoignage "
+        "d'une époque."),
+    "المصادر: «الأربعة» لبطلَميوس (المقالة الثالثة) · جالينوس في "
+    "الأخلاط · ونقلُ أطبّاء العرب عنهما. ونظريةُ الأخلاط تجاوزها "
+    "الطبّ منذ قرنٍ ونصف.": (
+        "Sources: Ptolemy's Tetrabiblos (Book III) · Galen on the "
+        "humours · and the Arab physicians' transmission of both. "
+        "Humoral theory was left behind by medicine a century and a half "
+        "ago.",
+        "Sources : la Tétrabible de Ptolémée (livre III) · Galien sur "
+        "les humeurs · et leur transmission par les médecins arabes. La "
+        "théorie humorale a été abandonnée par la médecine il y a un "
+        "siècle et demi."),
+
+    "اثنا عشر ملحًا معدنيًّا عند الطبيب الألماني فيلهلم شوسلر، ربطها "
+    "الأمريكي جورج كيري بالبروج الاثني عشر بعده بأربعين سنة. وهذه "
+    "صفحة تاريخِ فكرة، لا تشخيصٍ ولا دواء.": (
+        "Twelve mineral salts, from the German physician Wilhelm "
+        "Schüßler; the American George W. Carey linked them to the "
+        "twelve signs forty years later. This is the history of an idea "
+        "— not diagnosis, not treatment.",
+        "Douze sels minéraux, du médecin allemand Wilhelm Schüßler ; "
+        "l'Américain George W. Carey les a rattachés aux douze signes "
+        "quarante ans plus tard. Ceci est l'histoire d'une idée — ni "
+        "diagnostic, ni traitement."),
+
+    "ساعاتُ يومك الأربع والعشرون جاءت من مصر، وبروجُك من بابل. وهذه "
+    "الصفحة تاريخٌ موثّق لا حُكم: من أين جاء ما نحسبه في سائر "
+    "الصفحات، وما لم يصلنا منه شيء — فيُقال إنه لم يصل.": (
+        "Your day's twenty-four hours came from Egypt, and your signs "
+        "from Babylon. This page is documented history, not judgement: "
+        "where what we compute on the other pages came from, and what "
+        "did not reach us — of which we say it did not.",
+        "Les vingt-quatre heures de votre journée viennent d'Égypte, et "
+        "vos signes de Babylone. Cette page est une histoire documentée, "
+        "non un jugement : d'où vient ce que nous calculons ailleurs, et "
+        "ce qui ne nous est pas parvenu — dont nous disons qu'il ne l'est "
+        "pas."),
+
+    "مواليد أعلامٍ من العرب والعالم. وما نعرضه محدود عمدًا: ساعةُ "
+    "ميلاد هؤلاء لا تُعرَف، فلا طالعَ لهم هنا ولا بيوت — وأكثر "
+    "المواقع تضع الساعة ١٢:٠٠ وترسم عجلةً كاملة، والطالع يدور اثنتي "
+    "عشرة مرّةً في اليوم.": (
+        "Birth data of figures from the Arab world and beyond. What we "
+        "show is deliberately limited: their birth hours are unknown, so "
+        "there is no Ascendant here and no houses — while most sites set "
+        "the hour to 12:00 and draw a full wheel, though the Ascendant "
+        "turns twelve times a day.",
+        "Naissances de figures du monde arabe et d'ailleurs. Ce que nous "
+        "montrons est délibérément limité : leur heure de naissance est "
+        "inconnue, donc ni Ascendant ni maisons ici — alors que la "
+        "plupart des sites fixent 12:00 et tracent une roue complète, "
+        "quand l'Ascendant tourne douze fois par jour."),
+
+    "كل ما في هذا الموقع متاح بواجهة واحدة: خرائط الميلاد بقراءتها، "
+    "والنشرات، وتقويم الاختيارات، والمسائل، والتوافق، وأرباب الأزمنة. "
+    "تُرجع JSON بالعربية مباشرة ()، وتُصدّر تقويمًا يدخل هاتفك.": (
+        "Everything on this site is available through one interface: "
+        "natal charts with their readings, the bulletins, the electional "
+        "calendar, horary questions, synastry, and the time lords. It "
+        "returns JSON in Arabic directly (), and exports a calendar that "
+        "goes straight into your phone.",
+        "Tout ce site est accessible par une seule interface : thèmes "
+        "natals et leurs lectures, bulletins, calendrier électionnel, "
+        "questions horaires, synastrie et maîtres du temps. Renvoie du "
+        "JSON en arabe directement (), et exporte un calendrier qui "
+        "entre dans votre téléphone."),
+    "في تقويم آبل: ملفّ ← اشتراك جديد بتقويم. وفي تقويم غوغل: "
+    "«تقاويم أخرى» ← «من رابط». الأحداث كلّها شفّافة — لا تُظهرك "
+    "مشغولًا لمن يرى تقويمك.": (
+        "In Apple Calendar: File → New Calendar Subscription. In Google "
+        "Calendar: \"Other calendars\" → \"From URL\". All events are "
+        "transparent — they will not show you as busy to anyone viewing "
+        "your calendar.",
+        "Dans Calendrier Apple : Fichier → Nouvel abonnement à un "
+        "calendrier. Dans Google Agenda : « Autres agendas » → « À "
+        "partir de l'URL ». Tous les événements sont transparents — ils "
+        "ne vous affichent pas comme occupé."),
+    "وحدّ الاستعمال مُهدّئ لا حارس: العدّاد في ذاكرة النسخة الواحدة، "
+    "والدالّة بلا خادم تُشغَّل نسخًا متعدّدة، فكلٌّ تعدّ وحدها. يمنع "
+    "الحلقة المنفلتة من عميل، ولا يمنع هجومًا مقصودًا. قلناها صراحةً "
+    "فلا يبني عليها أحد ما لا تحتمل.": (
+        "The rate limit is a damper, not a guard: the counter lives in "
+        "one instance's memory, and a serverless function runs as many "
+        "instances, each counting alone. It stops a runaway loop in a "
+        "client; it does not stop a deliberate attack. We say so plainly "
+        "so no one builds on it what it cannot bear.",
+        "La limite d'usage est un amortisseur, non une garde : le "
+        "compteur vit dans la mémoire d'une instance, et une fonction "
+        "sans serveur s'exécute en plusieurs instances comptant chacune "
+        "seule. Elle arrête la boucle emballée d'un client ; elle "
+        "n'arrête pas une attaque délibérée. Nous le disons clairement, "
+        "pour que nul n'y appuie ce qu'elle ne peut porter."),
+    "Swiss Ephemeris. الحساب كلّه بمكتبة Swiss Ephemeris، وهي مزدوجة "
+    "الرخصة: AGPL أو تجارية. فمن بنى على هذه الواجهة خدمةً مغلقة "
+    "المصدر فعليه أن ينظر في رخصتها التجارية من astro.com. نحن نقول "
+    "هذا لأنه يُنسى كثيرًا، ولا نُفتي فيه — راجع أهل الاختصاص.": (
+        "Swiss Ephemeris. All computation uses the Swiss Ephemeris "
+        "library, which is dual-licensed: AGPL or commercial. Anyone "
+        "building a closed-source service on this API should look into "
+        "its commercial licence at astro.com. We say this because it is "
+        "often forgotten; we are not giving legal advice — consult a "
+        "specialist.",
+        "Swiss Ephemeris. Tout le calcul passe par la bibliothèque Swiss "
+        "Ephemeris, à double licence : AGPL ou commerciale. Qui bâtit "
+        "sur cette API un service à source fermée doit examiner sa "
+        "licence commerciale sur astro.com. Nous le signalons car on "
+        "l'oublie souvent ; ce n'est pas un avis juridique — consultez "
+        "un spécialiste."),
+
+    "البرج يقول كيف، والبيت يقول أين. المريخ في العقرب يقول إن "
+    "إرادتك صامتة نافذة؛ ووقوعه في البيت العاشر يقول إن مجراها في "
+    "العمل والمرتبة.": (
+        "The sign says how, the house says where. Mars in Scorpio says "
+        "your will is silent and penetrating; its fall in the tenth "
+        "house says its course runs through work and standing.",
+        "Le signe dit comment, la maison dit où. Mars en Scorpion dit "
+        "que votre volonté est silencieuse et pénétrante ; sa chute en "
+        "dixième maison dit qu'elle passe par le travail et le rang."),
+
+    # ── وصدرُ صفحة الواجهة يشقّه `<code>` ──────────────────────
+    # وهو ابنٌ لا يُبتلَع نصُّه (وإلّا مُحي المثال على من ينسخه)،
+    # فالفقرةُ حاوية لا جملة. **فيُترجَم شقّاها، لا مجموعُهما.**
+    "كل ما في هذا الموقع متاح بواجهة واحدة: خرائط الميلاد بقراءتها، "
+    "والنشرات، وتقويم الاختيارات، والمسائل،": (
+        "Everything on this site is available through one interface: natal "
+        "charts with their readings, the bulletins, the electional "
+        "calendar, horary questions,",
+        "Tout ce site est accessible par une seule interface : thèmes "
+        "natals et leurs lectures, bulletins, calendrier électionnel, "
+        "questions horaires,"),
+    "، وأرباب الأزمنة. تُرجع JSON بالعربية مباشرة (": (
+        ", and the time lords. It returns JSON in Arabic directly (",
+        ", et maîtres du temps. Renvoie du JSON en arabe directement ("),
+    ")، وتُصدّر تقويمًا يدخل هاتفك.": (
+        "), and exports a calendar that goes straight into your phone.",
+        "), et exporte un calendrier qui entre dans votre téléphone."),
+
+    "بمكتبة Swiss Ephemeris، لا من جداول مستوردة.": (
+        "with the Swiss Ephemeris library, not from imported tables.",
+        "avec la bibliothèque Swiss Ephemeris, non d'après des tables "
+        "importées."),
+    "تعذّر الاتصال بالخادم: offline": (
+        "Could not reach the server: offline",
+        "Connexion au serveur impossible : hors ligne"),
+
+    # ــ شظايا مؤكَّدة داخل الجُمَل ــ
+    "الأفق": ("the horizon", "l'horizon"),
+    "الاقتران": ("conjunction", "la conjonction"),
+    "التمام": ("perfection", "la perfection"),
+    "التوقيت الصيفي": ("Daylight saving time", "L'heure d'été"),
+    "الفصول الشمسية": ("The solar terms", "Les termes solaires"),
+    "المطالع": ("right ascensions", "les ascensions droites"),
+    "خلو المسار": ("void of course", "vide de course"),
+    "محسوبة من طول": ("computed from the longitude of",
+                     "calculés d'après la longitude de"),
+    "بالبيوت الكاملة": ("with whole signs", "en signes entiers"),
+    "بالقبّاني": ("with Alcabitius", "en Alcabitius"),
+    "والقمر": ("and the Moon", "et la Lune"),
+    "والزهرة": ("and Venus", "et Vénus"),
+    "والطالع": ("and the Ascendant", "et l'Ascendant"),
+    "والزاوية": ("and the aspect", "et l'aspect"),
+    "والأَلْمُطَن": ("and the almuten", "et l'almuten"),
+    "والنجوم الثابتة": ("and the fixed stars", "et les étoiles fixes"),
+    "والتسيير": ("and direction", "et la direction"),
+    "والتوافق": ("and synastry", "et la synastrie"),
+    "والعودة الشمسية": ("and the solar return", "et la révolution solaire"),
+
+
     # ــ أسماء البيوت الاثني عشر ــ
     "الثالث": ("Third", "Troisième"),
     "الرابع": ("Fourth", "Quatrième"),
@@ -1930,6 +2333,10 @@ UI = {
 # الصافية**، ونصوصُ القراءة قُرِّر أن تبقى عربيّة.
 # ══════════════════════════════════════════════════════════════════
 VOCAB_KEYS = (
+    # **وكلمةٌ تُلصَق بعددٍ متغيّر لا تكون مفتاحًا.**
+    # «١٢٦ مصطلحًا» يتبدّل عددُه بتبدّل المعجم، فلا عبارةَ ثابتة
+    # تُطابَق. والمفرداتُ هي البابُ الموضوع لهذا بعينه.
+    "مصطلحًا", "تعذّر الاتصال بالخادم",
     # الأجرام
     "الشمس", "القمر", "عطارد", "الزهرة", "المريخ", "المشتري", "زحل",
     "أورانوس", "نبتون", "بلوتو", "خيرون", "ليليث", "الرأس", "الذنب",
