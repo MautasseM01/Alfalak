@@ -227,7 +227,14 @@ async function checkPage(file) {
      **وليس في الموقع عيب**: المتصفّح يضمّها في نطاقٍ واحد.
      فتُوصَل كما توصَل هناك. */
   const parts = [];
-  for (const f of ['app.js', 'hint.js', 'select.js', 'nav.js', 'i18n.js', 'plain.js']) {
+  /* **وكلُّ ما تُحمّله الصفحة يُحمَّل هنا.** نُسي `timelab.js` فسقط
+     نصُّ `sky.html` الداخلي بـ«TimeLab is not defined»، فلم يُقَس ما
+     يرسمه — **والقياسُ الذي لا يُشغّل ما يُشغّله الزائر يقيس نصفَ
+     الصفحة**. والقائمةُ تُقرأ من الوسوم لا تُكتَب بيدٍ ثانية. */
+  const wanted = [...html.matchAll(/<script src="\/assets\/([^"]+)"/g)]
+    .map(m => m[1]);
+  for (const f of (wanted.length ? wanted
+    : ['app.js', 'hint.js', 'select.js', 'nav.js', 'i18n.js', 'plain.js'])) {
     const fp = path.join(ROOT, 'assets', f);
     if (fs.existsSync(fp)) parts.push(fs.readFileSync(fp, 'utf8'));
   }

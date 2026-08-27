@@ -112,7 +112,7 @@ p.lede{color:var(--muted);margin:0 0 26px;font-size:.92rem}
   .fold-caret{display:none}
 }
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:14px}
 a.tile{
   display:block;text-decoration:none;color:inherit;padding:18px 20px;border-radius:var(--r-lg);
   background:rgba(255,255,255,.028);border:1px solid var(--line);transition:.16s
@@ -126,7 +126,7 @@ a.tile.soon{opacity:.5;pointer-events:none}
 a.tile.soon::after{content:"قريبًا";float:left;float:inline-end;font-size:.68rem;color:var(--gold-dim);border:1px solid var(--gold-dim);border-radius:var(--r-pill);padding:1px 9px}
 
 /* ── نماذج ── */
-.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px;align-items:end}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:13px;align-items:end}
 .field{display:flex;flex-direction:column;gap:6px;position:relative}
 .field label{font-size:.78rem;color:var(--muted)}
 input,select,button{font:inherit;font-size:.9rem}
@@ -150,7 +150,12 @@ input::placeholder{color:var(--dim)}
 /* قاعدة التداخل: القطر الداخلي أصغر من الخارجي بدرجة — وإلّا بدا
    الزرّ خارجًا من غلافه. والسُّلَّم يجعل «بدرجة» معنًى محدَّدًا. */
 .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:4px;gap:4px}
-.seg button{background:transparent;border:0;color:var(--muted);font-size:.84rem;padding:7px 15px;border-radius:var(--r-sm);cursor:pointer;transition:.15s}
+/* **ونصُّ الزرّ المقسَّم لا يُكسَر سطرين.** رُئي على عرض ٣٦٠:
+   «لغة الصناعة» تنكسر داخل الزرّ فيرتفع أحدُ شقَّي المفتاح على
+   الآخر — فيبدو المفتاحُ معوجًّا، **وهو أوّلُ ما تراه العين في
+   أعلى كل صفحة**. والزرُّ المقسَّم صفٌّ من خيارات، وكسرُ نصّه
+   يُفسد صفَّه. فإن ضاق المكان فليضق الخطُّ لا فليُكسَر السطر. */
+.seg button{background:transparent;border:0;color:var(--muted);font-size:.84rem;padding:7px 15px;border-radius:var(--r-sm);cursor:pointer;transition:.15s;white-space:nowrap}
 .seg button:hover{color:var(--text)}
 .seg button[aria-pressed="true"]{background:var(--gold);color:#15100a;font-weight:600}
 
@@ -478,7 +483,7 @@ tr[aria-expanded="true"] td.caret{color:var(--gold);transform:rotate(180deg)}
    **والـHTML يعرف العربية والالتفاف يقينًا** — فلا تخمين.
    ══════════════════════════════════════════════════════════════ */
 .winf{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(185px,100%),1fr));
   gap:var(--s3);margin-top:var(--s4)
 }
 .winf-c{
@@ -604,8 +609,22 @@ footer{text-align:center;color:var(--dim);font-size:.76rem;margin-top:34px;line-
 /* ── مفتاح اللغة ── */
 .seg.levelsw{padding:3px;gap:3px;margin-inline-start:auto}
 .seg.levelsw button{font-size:.76rem;padding:5px 11px}
+/* **و`width:100%` أُزيلت من هنا.** كانت تُعطي المفتاحَ عرضَ
+   السطر كلِّه، فيدفع مبدّلَ اللغة خارج الشاشة — انظر التعليق
+   عند `@media(max-width:860px)`. والتوسيطُ يكفي، والاتّساعُ
+   يأتي من `flex:1 1 auto` هناك. */
+/* ــ الشريطُ يضيق على الهاتف، ولا يأخذ ثلاثة سطور ــ
+   قِيس قبلَه: ارتفاع الشريط ١٧٣ بكسلًا على عرض ٣٦٠ — أي ربعُ
+   الشاشة قبل أن يبدأ المحتوى. **والزينةُ لا تُقدَّم على المتن.** */
 @media(max-width:700px){
-  .seg.levelsw{margin-inline-start:0;width:100%;justify-content:center}
+  .topbar{gap:8px;padding:11px 0 10px;margin-bottom:18px}
+  .brand h1{font-size:1.25rem}
+  .brand small{display:none}          /* «أدوات فلكية عربية» — يعرفها من وصل */
+  .seg.levelsw{margin-inline-start:0;justify-content:center;flex:0 1 auto;
+    padding:2px;gap:2px}
+  .seg.levelsw button{font-size:.72rem;padding:5px 9px}
+  .langbox{gap:3px}
+  .langbox button{font-size:.74rem;padding:4px 10px;min-width:34px}
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -663,11 +682,43 @@ nav.doors .home.cur{background:var(--gold);color:#15100a;font-weight:600}
 .topbar.open .burger span:nth-child(2){opacity:0}
 .topbar.open .burger span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
+/* ══════════════════════════════════════════════════════════════
+   **الشريط على الهاتف — وكان يدفع الصفحة كلَّها خارج الشاشة**
+
+   قِيس على عرض ٣٩٠: عرضُ المستند **٥٢٤**، أي **١٤٨ بكسلًا تخرج**
+   عن الشاشة، في كل صفحةٍ فيها مفتاحُ المستوى. فتُسحَب الصفحةُ
+   جانبًا، وتُقتَطع أطرافُ النصّ، ويبدو التصميمُ مكسورًا — وهو
+   مكسورٌ فعلًا.
+
+   والسببُ اجتماعُ ثلاثة:
+
+     ١. `.topbar{flex-wrap:nowrap}` هنا — **يمنع الالتفاف**،
+        فيُحشر ما لا يسع في سطرٍ واحد.
+     ٢. `.seg.levelsw{width:100%}` عند ٧٠٠ — عرضٌ كاملٌ **في سطرٍ
+        لا يلتفّ**، فيدفع ما بعده.
+     ٣. `.langbox` بلا قاعدةٍ للهاتف أصلًا، فيخرج إلى اليسار
+        (قِيس: `left: −134`).
+
+   **وكلُّ واحدةٍ منها صحيحةٌ وحدها**، والعطبُ من اجتماعها. ولذلك
+   لم يظهر في المراجعة: من نظر في قاعدةٍ قاعدةً لم يرَ شيئًا.
+
+   والإصلاح أن يلتفّ الشريط: **الشعارُ والزرّ في سطر، والمفاتيح
+   في سطرٍ تحته** — ولا يُفرَض عرضٌ كامل على ما يُشارك سطرَه غيرُه.
+   ══════════════════════════════════════════════════════════════ */
 @media(max-width:860px){
-  .topbar{flex-wrap:nowrap;align-items:center}
-  .burger{display:flex}
+  .topbar{flex-wrap:wrap;align-items:center}
+  /* الشعار يقبل الانكماش: بلا هذا يفرض عرضه الأدنى على السطر */
+  .brand{flex:1 1 auto;min-width:0}
+  .burger{display:flex;order:2}
+  /* المفاتيح سطرٌ ثانٍ تُقاسمه، ولا يستأثر به أحدهما */
+  .seg.levelsw{order:3;flex:1 1 auto;margin-inline-start:0;width:auto}
+  .langbox{order:3;flex:0 0 auto;margin-inline-start:0}
+  /* **والقائمةُ آخرُ السطور.** كتبتُ `order:4` سطرًا مستقلًّا
+     أوّلًا، فألغته قاعدةُ `nav.doors` أدناه إذ فيها `order:3`
+     وهي بعده — **والمتأخّرُ يغلب عند تساوي القوّة**. فالترتيبُ
+     يُكتب حيث تُكتب القاعدة، لا في سطرٍ يسبقها. */
   nav.doors{
-    display:none;order:3;width:100%;flex-direction:column;align-items:stretch;gap:2px;
+    display:none;order:4;width:100%;flex-direction:column;align-items:stretch;gap:2px;
     margin-top:12px;padding-top:12px;border-top:1px solid var(--line)
   }
   .topbar.open nav.doors{display:flex}
@@ -747,7 +798,7 @@ nav.doors .home.cur{background:var(--gold);color:#15100a;font-weight:600}
    الزائر لا يعرف أنه يريد «التزاوج»، بل يعرف أنه يريد أن يعرف
    هل يتوافق مع فلان. فالبطاقات تسأل بلغته، والمصطلح يأتي بعد.
    ══════════════════════════════════════════════════════════════ */
-.ask{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:13px}
+.ask{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(255px,100%),1fr));gap:13px}
 .ask .qcard{
   display:block;text-decoration:none;color:inherit;padding:20px 22px;border-radius:var(--r-lg);
   background:linear-gradient(180deg,rgba(24,34,60,.85),rgba(16,23,42,.85));
@@ -905,6 +956,12 @@ g.pl{cursor:pointer}
 .langbox button:hover{color:var(--text);border-color:var(--gold-dim)}
 .langbox button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(217,180,91,.08)}
 @media print{.langbox{display:none}}
+/* الاسمُ التامّ على السعة، والمختصَر على الهاتف — انظر `i18nBar` */
+.langbox .lg-short{display:none}
+@media(max-width:700px){
+  .langbox .lg-full{display:none}
+  .langbox .lg-short{display:inline}
+}
 
 /* ── رسالة «هذه الصفحة ليست مترجمة» ───────────────────────────
    تُرى قبل أن تُقرأ: لون التنبيه وحدٌّ غليظ. وفيها **ما يفعله

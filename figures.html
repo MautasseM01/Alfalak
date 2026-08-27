@@ -23,7 +23,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"خرائط المشاهير","item":"https://alfalak.vercel.app/figures.html"}]}</script>
 <style>
 .figs { display:grid; gap:10px;
-        grid-template-columns:repeat(auto-fill,minmax(238px,1fr)); }
+        grid-template-columns:repeat(auto-fill,minmax(min(238px,100%),1fr)); }
 .fig { text-align:start; background:rgba(255,255,255,.02);
        border:1px solid var(--line); border-radius:13px; padding:12px 14px;
        color:inherit; font:inherit; cursor:pointer; }
@@ -58,6 +58,7 @@ tr.unsure td { color:var(--muted); }
     <a href="/chart.html">خريطة الميلاد</a>
     <a href="/figures.html" class="on">خرائط المشاهير</a>
     <a href="/astromap.html">خرائط الأرض</a>
+    <a href="/verify.html">أين تُضبَط المعلومة؟</a>
     <a href="/learn.html">تعلّم</a>
   </nav>
 </div>

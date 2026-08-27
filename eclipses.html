@@ -23,7 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
 <style>
-.ecl{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:11px}
+.ecl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr));gap:11px}
 .ec{padding:13px 15px;border-radius:12px;background:rgba(255,255,255,.025);
   border:1px solid var(--line);border-inline-start:3px solid var(--neu);transition:.15s}
 .ec:hover{border-color:var(--gold-dim)}
@@ -49,6 +49,12 @@
 .saros .n{font-variant-numeric:tabular-nums;color:var(--gold);min-width:2.4rem}
 .saros .ok{color:var(--pos);font-size:.79rem}
 .saros .bad{color:var(--neg);font-size:.79rem}
+.saros .lon{color:var(--muted);font-size:.78rem}
+.third{margin-top:16px;padding-top:13px;border-top:1px dashed var(--line)}
+.third h4{margin:0 0 8px;font-size:.92rem;color:var(--gold);font-weight:600}
+.third p{margin:0 0 8px;font-size:.85rem;line-height:1.85;color:var(--muted)}
+.third .meas{color:var(--text);padding-inline-start:12px;
+  border-inline-start:2px solid var(--gold-dim)}
 .heritage{font-size:.85rem;line-height:1.9}
 .heritage .q{padding-inline-start:12px;border-inline-start:2px solid var(--gold-dim);
   color:var(--muted);margin:10px 0}
@@ -74,6 +80,7 @@
     <a href="/">الرئيسة</a>
     <a href="/bulletin.html">النشرة اليومية</a>
     <a href="/monthly.html">الشهرية</a>
+    <a href="/sky.html">مختبر السماء</a>
     <a href="/eclipses.html" class="on">الكسوف والخسوف</a>
     <a href="/hours.html">ساعات الكواكب</a>
     <a href="/elections.html">الاختيارات</a>
@@ -85,6 +92,7 @@
     <a href="/timelords.html">أرباب الأزمنة</a>
     <a href="/ephemeris.html">مواقع الكواكب</a>
     <a href="/api.html">الواجهة البرمجية</a>
+    <a href="/verify.html">أين تُضبَط المعلومة؟</a>
     <a href="/learn.html">تعلّم</a>
   </nav>
 </div>
@@ -290,10 +298,11 @@ async function showSaros(date, type) {
   try {
     const s = await API('eclipses', { mode: 'saros', date, type,
       city: $('city').value.trim(), back: 3, fwd: 3 });
-    const b = s.base;
+    const b = s.base, T = s.third || {};
     box.innerHTML = `<div class="saros">
       <p style="font-size:.87rem"><b>الأصل:</b> ${b.date} — ${esc2(b.kind)} في
-        ${esc2(b.position)}، سلسلة ${b.saros} العضو ${b.member}.</p>
+        ${esc2(b.position)}، سلسلة ${b.saros} العضو ${b.member}${
+        b.greatest ? ` · ذروته عند خط الطول ${b.greatest.lon}°` : ''}.</p>
       ${s.links.map(l => {
         if (!l.eclipse) return `<div class="step"><span class="n">${l.step > 0 ? '+' : ''}${l.step}</span>
           <span>المتوقَّع ${l.expected_date}</span><span class="bad">${esc2(l.note)}</span></div>`;
@@ -304,8 +313,21 @@ async function showSaros(date, type) {
           <span>الواقع <b>${f.date}</b> — ${esc2(f.kind)}، العضو ${f.member}</span>
           <span class="${Math.abs(l.drift_hours) < 24 ? 'ok' : 'bad'}">
             الفارق ${l.drift_hours} ساعة${l.same_saros ? ' · السلسلة نفسها ✓' : ' · سلسلة أخرى'}</span>
+          ${l.greatest ? `<span class="lon">خط الطول ${l.greatest.lon}°${
+            l.shift_deg != null ? ` · إزاحة ${l.shift_deg}° عن السابق` : ''}</span>` : ''}
         </div>`;
       }).join('')}
+
+      ${T.text ? `<div class="third">
+        <h4>الثلث — ولماذا لا يعود إلى المكان نفسه</h4>
+        <p>${esc2(T.text)}</p>
+        <p>${esc2(T.exeligmos_text)}</p>
+        ${T.exeligmos_residual != null ? `<p class="meas">
+          <b>والقياس:</b> بعد ثلاث دوراتٍ عاد هذا الكسوف إلى خط طولٍ يبعد
+          <b>${Math.abs(T.exeligmos_residual)}°</b> عن أصله — لا صفرًا تمامًا،
+          فالكسر ليس ثلثًا دقيقًا. وانظر عمود الإزاحة أعلاه: كلُّ دورةٍ نحو
+          ١٢٠° غربًا، وثلاثٌ منها دورةٌ كاملة.</p>` : ''}
+      </div>` : ''}
     </div>`;
   } catch (e) { box.innerHTML = `<div class="msg err">${esc2(e.message)}</div>`; }
 }

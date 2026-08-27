@@ -107,6 +107,10 @@
     <div class="row" style="margin-top:14px">
       <button class="btn" id="go">ارسم</button>
       <button class="btn ghost" id="save">حفظ ميلادي</button>
+      <div class="seg" id="projSeg" role="group" aria-label="الإسقاط">
+        <button data-proj="equi" aria-pressed="true">مستطيل</button>
+        <button data-proj="polar" aria-pressed="false">منظر القطب</button>
+      </div>
     </div>
   </div>
 </div>
@@ -115,8 +119,9 @@
 
 </main>
 <footer>
-  الحساب من المطالع المستقيمة والمَيْل والوقت النجمي بغرينتش.
-  والخريطة إسقاطٌ مستطيل، والمدن من أطلس الموقع نفسه.
+  الحساب من المطالع المستقيمة والمَيْل والوقت النجمي بغرينتش، والمدن من أطلس الموقع نفسه.<br>
+  والخريطة <b>إسقاط</b>: مستطيلٌ أو سَمْتيٌّ مركزه القطب. وكلُّ إسقاطٍ يحفظ شيئًا ويُفسد شيئًا،
+  فليس أحدهما شكلَ الأرض — وتفصيلُ ذلك في <a href="/verify.html">أين تُضبَط المعلومة؟</a>
 </footer>
 </div>
 
@@ -159,9 +164,51 @@ const MAPC = {
 const DASH = { asc:'', dsc:'5 4', mc:'', ic:'1.5 3.5' };
 const WID  = { asc:1.1, dsc:1.1, mc:1.7, ic:1.1 };
 
-const W = 720, H = 360;
-const px = lon => (lon + 180) / 360 * W;
-const py = lat => (90 - lat) / 180 * H;
+/* ══════════════════════════════════════════════════════════════
+   **إسقاطان، وكلاهما إسقاط — لا شكلٌ للأرض**
+
+   الخريطة المسطّحة لا توجد. فكلُّ رسمٍ لكرةٍ على ورقةٍ **إسقاط**،
+   وكلُّ إسقاطٍ يحفظ شيئًا ويُفسد شيئًا. ولا يُنجى من ذلك أحد.
+
+   · **المستطيل** (Plate carrée): يحفظ خطوطَ الطول والعرض
+     مستقيمةً متعامدة، **ويمطّ المسافات كلّما بعُدتَ عن الاستواء**.
+     غرينلاند فيه بحجم إفريقيا، وهي أصغرُ منها أربعةَ عشرَ ضعفًا.
+
+   · **السَّمْتيّ متساوي المسافات** مركزه القطب: وهو إسقاطٌ معروف
+     مستعمَل — عليه **شعارُ الأمم المتحدة** وخرائطُ الطيران
+     واللاسلكي. وفيه: **المركزُ شمال، والمحيطُ جنوب، والشرقُ عكسَ
+     عقارب الساعة** — وهذا كلُّه صحيحٌ **كخاصّيّةِ إسقاط**.
+
+     **ويحفظ المسافات من مركزه وحده.** فمن قاس عليه بُعدَ نقطتين
+     جنوبيّتين إحداهما عن الأخرى أخطأ أضعافًا — وهذا موضعٌ يُضبَط
+     بالقياس، انظر صفحة «أين تُضبَط المعلومة؟».
+
+   فالتبديل بينهما هنا **تبديلُ منظر لا تبديلُ عالَم**. والخطوط
+   المرسومة عليهما واحدة، لأنّها محسوبةٌ من المطالع والميل لا من
+   شكل الورقة.
+   ══════════════════════════════════════════════════════════════ */
+let PROJ = store.get('mapProj', 'equi');
+
+const EQ = { W: 720, H: 360 };
+const PO = { W: 380, H: 380, cx: 190, cy: 190, r: 178 };
+
+const isPolar = () => PROJ === 'polar';
+const W = () => (isPolar() ? PO.W : EQ.W);
+const H = () => (isPolar() ? PO.H : EQ.H);
+
+/* الإسقاط: من (عرض، طول) إلى نقطةٍ على اللوحة */
+function xy(lat, lon) {
+  if (!isPolar()) {
+    return [(lon + 180) / 360 * EQ.W, (90 - lat) / 180 * EQ.H];
+  }
+  /* نصفُ القطر من المركز يتناسب مع بُعدك عن القطب الشمالي،
+     والزاوية هي خطُّ الطول — والشرقُ عكسَ عقارب الساعة. */
+  const rr = (90 - lat) / 180 * PO.r;
+  const a = lon * Math.PI / 180;
+  return [PO.cx - rr * Math.sin(a), PO.cy - rr * Math.cos(a)];
+}
+const px = lon => xy(0, lon)[0];
+const py = lat => xy(lat, 0)[1];
 
 let DATA = null;
 let SHOW = store.get('mapBodies', null);
@@ -174,7 +221,16 @@ function segs(pts) {
   const out = [];
   let cur = [];
   for (let i = 0; i < pts.length; i++) {
-    if (i && Math.abs(pts[i][1] - pts[i-1][1]) > 180) { out.push(cur); cur = []; }
+    /* **والقطعُ يُقاس على اللوحة لا على خطّ الطول.**
+       في المستطيل تكون قفزةُ ١٨٠° قفزةَ عرضِ اللوحة كلِّها.
+       وفي السَّمْتيّ **لا تقفز**: الخريطة دائرة، فالمارّ بخطّ
+       التأريخ يمشي متّصلًا. فلو قُطع لظهرت الخطوط ممزّقةً بلا
+       سبب. فيُقاس البعدُ بعد الإسقاط، ويُقطَع ما تباعد فعلًا. */
+    if (i) {
+      const [x1, y1] = xy(pts[i - 1][0], pts[i - 1][1]);
+      const [x2, y2] = xy(pts[i][0], pts[i][1]);
+      if (Math.hypot(x2 - x1, y2 - y1) > W() * 0.35) { out.push(cur); cur = []; }
+    }
     cur.push(pts[i]);
   }
   if (cur.length) out.push(cur);
@@ -229,28 +285,56 @@ function drawMap() {
   const on = b => !SHOW || SHOW.includes(b);
   let g = '';
 
-  /* الطول: كل ثلاثين درجة، مع أرقامها أسفلَ الخريطة */
-  for (let lo = -180; lo <= 180; lo += 30) {
-    g += `<line class="grat" x1="${px(lo)}" y1="0" x2="${px(lo)}" y2="${H}"/>`;
-    if (lo > -180 && lo < 180)
-      g += `<text class="gtx" x="${px(lo)}" y="${H - 4}" text-anchor="middle"
-        >${Math.abs(lo)}°${lo === 0 ? '' : (lo > 0 ? 'E' : 'W')}</text>`;
+  /* ــ الشبكة: خطُّ الطول مستقيمٌ هناك ونصفُ قطرٍ هنا ــ */
+  if (!isPolar()) {
+    for (let lo = -180; lo <= 180; lo += 30) {
+      g += `<line class="grat" x1="${px(lo)}" y1="0" x2="${px(lo)}" y2="${EQ.H}"/>`;
+      if (lo > -180 && lo < 180)
+        g += `<text class="gtx" x="${px(lo)}" y="${EQ.H - 4}" text-anchor="middle"
+          >${Math.abs(lo)}°${lo === 0 ? '' : (lo > 0 ? 'E' : 'W')}</text>`;
+    }
+    PARALLELS.forEach(([la, name, named]) => {
+      g += `<line class="${la === 0 ? 'eqline' : 'grat'}"
+          x1="0" y1="${py(la)}" x2="${EQ.W}" y2="${py(la)}"/>`;
+      if (named)
+        g += `<text class="gtx" x="4" y="${py(la) - 3}">${name}</text>`;
+    });
+    [45, -45].forEach(la =>
+      g += `<line class="grat" x1="0" y1="${py(la)}" x2="${EQ.W}" y2="${py(la)}"/>`);
+  } else {
+    /* حافّةُ اللوحة هي القطب الجنوبي **مبسوطًا على محيطٍ كامل** —
+       وهي أشدُّ ما في هذا الإسقاط تشويهًا، فتُكتَب لا تُخفى. */
+    g += `<circle class="grat" cx="${PO.cx}" cy="${PO.cy}" r="${PO.r}"
+      fill="none"/>`;
+    for (let lo = -180; lo < 180; lo += 30) {
+      const [x2, y2] = xy(-90, lo);
+      g += `<line class="grat" x1="${PO.cx}" y1="${PO.cy}"
+        x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+      const [tx, ty] = xy(-84, lo);
+      g += `<text class="gtx" x="${tx.toFixed(1)}" y="${ty.toFixed(1)}"
+        text-anchor="middle">${Math.abs(lo)}°${lo === 0 ? '' : (lo > 0 ? 'E' : 'W')}</text>`;
+    }
+    PARALLELS.concat([[45, '', false], [-45, '', false]])
+      .forEach(([la, name, named]) => {
+        const rr = (90 - la) / 180 * PO.r;
+        g += `<circle class="${la === 0 ? 'eqline' : 'grat'}" fill="none"
+          cx="${PO.cx}" cy="${PO.cy}" r="${rr.toFixed(1)}"/>`;
+        if (named) {
+          const [tx, ty] = xy(la, 0);
+          g += `<text class="gtx" x="${(tx + 4).toFixed(1)}"
+            y="${(ty - 3).toFixed(1)}">${name}</text>`;
+        }
+      });
+    g += `<text class="gtx" x="${PO.cx}" y="${PO.cy - 5}"
+      text-anchor="middle">القطب الشمالي</text>`;
+    g += `<text class="gtx" x="${PO.cx}" y="${PO.cy + PO.r - 5}"
+      text-anchor="middle">المحيطُ كلُّه = القطب الجنوبي</text>`;
   }
-
-  /* العرض: المعالم بأسمائها، وسائرُها خفيّ */
-  PARALLELS.forEach(([la, name, named]) => {
-    g += `<line class="${la === 0 ? 'eqline' : 'grat'}"
-        x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`;
-    if (named)
-      g += `<text class="gtx" x="4" y="${py(la) - 3}">${name}</text>`;
-  });
-  [45, -45].forEach(la =>
-    g += `<line class="grat" x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`);
 
   /* المعالم: نقطةٌ واسمٌ — **ولا نقطةَ بلا اسم** */
   g += (DATA.cities || []).map(c => {
-    const x = px(c.lon), y = py(c.lat);
-    const flip = x > W - 70;            /* قربَ الحافّة يُقلَب الاسم */
+    const [x, y] = xy(c.lat, c.lon);
+    const flip = x > W() - 70;          /* قربَ الحافّة يُقلَب الاسم */
     return `<g class="mark"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.7"/>
       <text x="${(x + (flip ? -4 : 4)).toFixed(1)}" y="${(y + 3).toFixed(1)}"
         text-anchor="${flip ? 'end' : 'start'}">${esc(c.n)}</text></g>`;
@@ -263,25 +347,39 @@ function drawMap() {
     const gl = GLYPH[b.name] || '';
 
     /* الرأسيّان: وسط السماء ووتد الأرض */
+    /* **وهما خطّا طولٍ حقيقيّان**، فيُرسمان مستقيمين في المستطيل
+       و**نصفَي قطرٍ من القطب** في السَّمْتيّ — وذلك أصدقُ تمثيلًا،
+       إذ خطوطُ الطول تلتقي عند القطب فعلًا. */
     [['mc', b.mc], ['ic', b.ic]].forEach(([k, lon]) => {
-      const x = px(lon);
-      g += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="${col}"
-        stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"/>
-        <text class="lbl" x="${x}" y="11" text-anchor="middle" fill="${col}"
-          >${gl}\uFE0E ${ANGLE_CODE[k]}</text>`;
+      if (!isPolar()) {
+        const x = px(lon);
+        g += `<line x1="${x}" y1="0" x2="${x}" y2="${EQ.H}" stroke="${col}"
+          stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"/>
+          <text class="lbl" x="${x}" y="11" text-anchor="middle" fill="${col}"
+            >${gl}\uFE0E ${ANGLE_CODE[k]}</text>`;
+      } else {
+        const [x2, y2] = xy(-90, lon);
+        const [tx, ty] = xy(-79, lon);
+        g += `<line x1="${PO.cx}" y1="${PO.cy}" x2="${x2.toFixed(1)}"
+          y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${WID[k]}"
+          stroke-dasharray="${DASH[k]}" opacity=".85"/>
+          <text class="lbl" x="${tx.toFixed(1)}" y="${ty.toFixed(1)}"
+            text-anchor="middle" fill="${col}">${gl}\uFE0E ${ANGLE_CODE[k]}</text>`;
+      }
     });
 
     /* المنحنيان: الطالع والغارب — والاسم عند أوّل نقطةٍ مرئية */
     ['asc', 'dsc'].forEach(k => {
       const parts = segs(b[k] || []);
       parts.forEach((sgm, i) => {
-        const d = sgm.map(pt => `${px(pt[1]).toFixed(1)},${py(pt[0]).toFixed(1)}`).join(' ');
+        const d = sgm.map(pt => xy(pt[0], pt[1]).map(v => v.toFixed(1)).join(',')).join(' ');
         g += `<polyline points="${d}" fill="none" stroke="${col}"
           stroke-width="${WID[k]}" stroke-dasharray="${DASH[k]}" opacity=".85"/>`;
         if (i === 0) {
           const pt = sgm[Math.floor(sgm.length / 2)];
-          g += `<text class="lbl" x="${(px(pt[1]) + 5).toFixed(1)}"
-            y="${(py(pt[0]) - 4).toFixed(1)}" fill="${col}"
+          const [lx, ly] = xy(pt[0], pt[1]);
+          g += `<text class="lbl" x="${(lx + 5).toFixed(1)}"
+            y="${(ly - 4).toFixed(1)}" fill="${col}"
             >${gl}\uFE0E ${ANGLE_CODE[k]}</text>`;
         }
       });
@@ -290,7 +388,7 @@ function drawMap() {
 
   /* المكان المسؤول عنه — أوضحُ ما في اللوحة */
   if (DATA.where_lat != null) {
-    const x = px(DATA.where_lon), y = py(DATA.where_lat);
+    const [x, y] = xy(DATA.where_lat, DATA.where_lon);
     g += `<circle class="here" cx="${x}" cy="${y}" r="4"/>
       <circle cx="${x}" cy="${y}" r="9" fill="none"
         stroke="var(--gold)" stroke-width="1.1" opacity=".7"/>
@@ -298,10 +396,34 @@ function drawMap() {
         >${esc(String(DATA.where).split('—')[0].trim())}</text>`;
   }
 
-  return `<div class="mapbox"><svg viewBox="0 0 ${W} ${H}" role="img"
+  return `<div class="mapbox"><svg viewBox="0 0 ${W()} ${H()}" role="img"
       aria-label="خريطة العالم وعليها خطوط كواكب مولدك">${g}</svg></div>
     <p class="note" style="margin-top:8px">لا تُرسَم السواحل في هذا البناء —
-      والمعالمُ المكتوبة والشبكةُ تقومان مقامها في تحديد الجهة.</p>`;
+      والمعالمُ المكتوبة والشبكةُ تقومان مقامها في تحديد الجهة.</p>
+    <p class="note">${isPolar()
+      ? '<b>منظر القطب</b> — إسقاطٌ سَمْتيٌّ متساوي المسافات، مركزه القطب '
+        + 'الشمالي. عليه شعار الأمم المتحدة وخرائط الطيران واللاسلكي. '
+        + 'وفيه: المركز شمال، والمحيط جنوب، والشرق عكس عقارب الساعة. '
+        + '<b>ويحفظ المسافات من المركز وحده</b> — فبُعد نقطتين جنوبيّتين '
+        + 'إحداهما عن الأخرى يخرج عليه أضعافَ حقيقته.'
+      : '<b>الإسقاط المستطيل</b> — خطوط الطول والعرض فيه مستقيمة متعامدة، '
+        + '<b>ويمطّ المسافات كلّما بعُدتَ عن خطّ الاستواء</b>: غرينلاند '
+        + 'فيه بحجم إفريقيا، وهي أصغر منها أربعةَ عشرَ ضعفًا.'}</p>`;
+}
+
+/* التبديل يُعيد الرسم من المعطيات نفسها — **ولا يُعاد النداء**،
+   إذ الخطوط محسوبةٌ من المطالع لا من شكل الورقة. */
+function initProjSeg() {
+  document.querySelectorAll('#projSeg button').forEach(b => {
+    b.setAttribute('aria-pressed', b.dataset.proj === PROJ ? 'true' : 'false');
+    b.onclick = () => {
+      PROJ = b.dataset.proj;
+      store.set('mapProj', PROJ);
+      document.querySelectorAll('#projSeg button').forEach(x =>
+        x.setAttribute('aria-pressed', x.dataset.proj === PROJ ? 'true' : 'false'));
+      if (DATA) render();
+    };
+  });
 }
 
 const legend = () => `<div class="mapleg" role="group" aria-label="الأجرام">
@@ -391,6 +513,8 @@ $('save').addEventListener('click', () => {
 });
 ['date', 'time', 'orb'].forEach(id =>
   $(id).addEventListener('change', () => { if ($('date').value && $('city').value) load(); }));
+
+initProjSeg();
 
 const saved = store.get('natal', null);
 if (saved && saved.date) {

@@ -168,6 +168,531 @@ UI = {
                               "… examen du thème de l'instant"),
 
     # ══════════════════════════════════════════════════════════
+    # صفحة «أين تُضبَط المعلومة؟»
+    # ══════════════════════════════════════════════════════════
+    "أين تُضبَط المعلومة؟": ("Where can a claim be settled?",
+                            "Où une affirmation se tranche-t-elle ?"),
+    "أين تُضبَط المعلومة؟ — الفَلَك": (
+        "Where can a claim be settled? — Al-Falak",
+        "Où une affirmation se tranche-t-elle ? — Al-Falak"),
+    "الفَلَك — أين تُضبَط المعلومة؟": (
+        "Al-Falak — Where can a claim be settled?",
+        "Al-Falak — Où une affirmation se tranche-t-elle ?"),
+    "alfalak.vercel.app · قياساتٌ يفعلها القارئ بنفسه": (
+        "alfalak.vercel.app · measurements you can make yourself",
+        "alfalak.vercel.app · des mesures que vous faites vous-même"),
+    "قياساتٌ تفعلها بنفسك بدل أن يُقال لك": (
+        "Measurements you make yourself, instead of being told",
+        "Des mesures que vous faites vous-même, au lieu qu'on vous dise"),
+    "في مسير النيّرين وشكل الأرض دعاوى تُتداول، ولكلٍّ منها أصحابٌ "
+    "يحتجّون. ولسنا هنا لنقول لك من الصادق. هذه الصفحة تفعل شيئًا "
+    "واحدًا: تضع إزاء كل دعوى": (
+        "Claims circulate about the course of the luminaries and the "
+        "shape of the Earth, and each has advocates who argue for it. We "
+        "are not here to tell you who is right. This page does one "
+        "thing: it sets beside each claim",
+        "Des affirmations circulent sur la course des luminaires et la "
+        "forme de la Terre, et chacune a ses défenseurs. Nous ne sommes "
+        "pas ici pour vous dire qui a raison. Cette page fait une seule "
+        "chose : elle place en regard de chaque affirmation"),
+    "قياسًا يفصل فيها": ("a measurement that settles it",
+                        "une mesure qui la tranche"),
+    "— قياسًا تستطيع أنت أن تفعله، أو تجد نتيجته منشورةً يقارنها من "
+    "شاء.": (
+        "— one you can make yourself, or whose result is published for "
+        "anyone to compare.",
+        "— une mesure que vous pouvez faire, ou dont le résultat est "
+        "publié et que chacun peut comparer."),
+    "دعاوى في شكل الأرض ومسير النيّرين، وإزاء كلٍّ منها": (
+        "Claims about the shape of the Earth and the course of the "
+        "luminaries, and beside each of them",
+        "Des affirmations sur la forme de la Terre et la course des "
+        "luminaires, et en regard de chacune"),
+    "قياسٌ تفعله بنفسك": ("a measurement you make yourself",
+                         "une mesure que vous faites vous-même"),
+    "— لا حكمٌ يُملى. ومنها امتحانُ هذا الموقع بتنبّؤ الكسوف.": (
+        "— not a verdict handed down. Among them: testing this very site "
+        "by its eclipse predictions.",
+        "— non un verdict imposé. Parmi elles : éprouver ce site même "
+        "par ses prédictions d'éclipses."),
+
+    "القاعدة التي نمشي عليها": ("The rule we follow",
+                               "La règle que nous suivons"),
+    "الدعوى التي لا يفصل فيها قياسٌ لا تُقبَل ولا تُردّ": (
+        "A claim that no measurement can settle is neither accepted nor "
+        "rejected",
+        "Une affirmation qu'aucune mesure ne tranche n'est ni acceptée "
+        "ni rejetée"),
+    "— إنّما يُقال إنّها خارج ما يُبتّ فيه.": (
+        "— it is simply said to lie outside what can be decided.",
+        "— on dit seulement qu'elle est hors de ce qui se décide."),
+    "ونموذجٌ لا يُخرِج رقمًا يُقابَل بالرصد ليس نموذجًا": (
+        "A model that yields no number to check against observation is "
+        "not a model",
+        "Un modèle qui ne donne aucun nombre à confronter à "
+        "l'observation n'est pas un modèle"),
+    "، مهما حسُنت صورته.": (", however fine its picture.",
+                          ", si belle qu'en soit l'image."),
+    "ونحن أوّلُ من يُمتحَن": ("And we are the first to be tested",
+                            "Et nous sommes les premiers à être éprouvés"),
+    ": هذا الموقع يتنبّأ بأوقات الكسوف ومقاديره وارتفاعه لأيّ مدينة. "
+    "فمن أراد امتحاننا فليأخذ الرقم ويقابله.": (
+        ": this site predicts eclipse times, magnitudes and altitudes "
+        "for any city. Whoever wishes to test us, let him take the "
+        "number and check it.",
+        ": ce site prédit les heures, grandeurs et hauteurs des éclipses "
+        "pour toute ville. Qui veut nous éprouver n'a qu'à prendre le "
+        "nombre et le vérifier."),
+    "وما نجهله نقول إنّا نجهله.": (
+        "And what we do not know, we say we do not know.",
+        "Et ce que nous ignorons, nous disons l'ignorer."),
+    "وقد فعلنا ذلك في": ("We did so in", "Nous l'avons fait dans"),
+    "حين لم نجد أصلًا لِما يُسمّى «التنجيم السومري».": (
+        "when we found no source for what is called \"Sumerian "
+        "astrology\".",
+        "quand nous n'avons trouvé aucune source à ce qu'on appelle "
+        "« l'astrologie sumérienne »."),
+
+    "المسافات على الإسقاط السَّمْتيّ": (
+        "Distances on the azimuthal projection",
+        "Les distances sur la projection azimutale"),
+    "١ — «الخريطة الدائرية تُري الأرض على حقيقتها»": (
+        "1 — \"The circular map shows the Earth as it really is\"",
+        "1 — « La carte circulaire montre la Terre telle qu'elle est »"),
+    "تُعرَض خريطةٌ دائرية مركزها القطب الشمالي ومحيطها الجنوب، ويُقال "
+    "إنّ هذا شكل الأرض لا إسقاطًا لها.": (
+        "A circular map is shown, centred on the North Pole with the "
+        "south at its rim, and it is said that this is the shape of the "
+        "Earth and not a projection of it.",
+        "On présente une carte circulaire centrée sur le pôle Nord, le "
+        "sud à son pourtour, en disant que c'est la forme de la Terre et "
+        "non une projection."),
+    "القياس الفاصل: المسافات الجنوبية.": (
+        "The deciding measurement: southern distances.",
+        "La mesure décisive : les distances australes."),
+    "هذا الإسقاط (سَمْتيّ متساوي المسافات)": (
+        "This projection (azimuthal equidistant)",
+        "Cette projection (azimutale équidistante)"),
+    "يحفظ المسافات من مركزه وحده": (
+        "preserves distances from its centre only",
+        "ne conserve les distances que depuis son centre"),
+    ". فبُعدُ نقطتين جنوبيّتين إحداهما عن الأخرى يخرج عليه أكبرَ من "
+    "حقيقته أضعافًا.": (
+        ". So the distance between two southern points comes out several "
+        "times larger than it truly is.",
+        ". Ainsi la distance entre deux points australes en ressort "
+        "plusieurs fois plus grande qu'elle ne l'est."),
+    "وهذا يُقاس بزمن رحلةٍ مباشرة": (
+        "And this is measured by the duration of a direct flight",
+        "Et cela se mesure par la durée d'un vol direct"),
+    "— والرحلاتُ الثلاث أدناه تُباع تذاكرُها اليوم، ومدّتُها منشورة. "
+    "احسب على الإسقاط وقارن.": (
+        "— tickets for the routes below are sold today and their "
+        "durations are published. Compute on the projection and compare.",
+        "— les billets des liaisons ci-dessous se vendent aujourd'hui et "
+        "leurs durées sont publiées. Calculez sur la projection et "
+        "comparez."),
+    "الرحلة": ("The route", "La liaison"),
+    # ــ نتيجةُ الحساب: تُبنى في المتصفّح، فيراها المقياسُ من الصفحة
+    #   ولا يراها المستخرِج (لأنّها داخل قالبٍ فيه `${}`) ــ
+    "· على الكرة:": ("· On the sphere:", "· Sur la sphère :"),
+    "· على الإسقاط السَّمْتيّ:": ("· On the azimuthal projection:",
+                                "· Sur la projection azimutale :"),
+    "كم": ("km", "km"),
+    "كم — أي": ("km — that is", "km — soit"),
+    "· والرحلة المباشرة تستغرق نحو": (
+        "· And the direct flight takes about",
+        "· Et le vol direct dure environ"),
+    "ساعة. وبسرعة طيرانٍ معتادة (900 كم/س) يقتضي ذلك نحو": (
+        "hours. At a usual cruising speed (900 km/h) that implies about",
+        "heures. À une vitesse de croisière habituelle (900 km/h) cela "
+        "implique environ"),
+    "كم — وهو قريبٌ من الأوّل، بعيدٌ عن الثاني.": (
+        "km — close to the first, far from the second.",
+        "km — proche du premier, loin du second."),
+    "والقياسان محسوبان الآن في متصفّحك من إحداثيات المدينتين: الأوّل "
+    "بهافرساين، والثاني بمقياس الإسقاط نفسه.": (
+        "Both figures are computed right now in your browser from the "
+        "two cities' coordinates: the first by haversine, the second by "
+        "the projection's own scale.",
+        "Les deux valeurs sont calculées à l'instant dans votre "
+        "navigateur à partir des coordonnées des deux villes : la "
+        "première par haversine, la seconde à l'échelle de la projection "
+        "elle-même."),
+    # مفردةٌ تُلصَق بعدد — انظر `VOCAB_KEYS`
+    "ضعفًا": ("times", "fois"),
+    "جوهانسبرغ": ("Johannesburg", "Johannesburg"),
+    "بيرث": ("Perth", "Perth"),
+    "سانتياغو": ("Santiago", "Santiago"),
+    "سِدني": ("Sydney", "Sydney"),
+    "بوينس آيرس": ("Buenos Aires", "Buenos Aires"),
+    "أوكلاند": ("Auckland", "Auckland"),
+    "كيب تاون": ("Cape Town", "Le Cap"),
+    "جوهانسبرغ ← بيرث": ("Johannesburg → Perth", "Johannesburg → Perth"),
+    "سانتياغو ← سِدني": ("Santiago → Sydney", "Santiago → Sydney"),
+    "بوينس آيرس ← أوكلاند": ("Buenos Aires → Auckland",
+                            "Buenos Aires → Auckland"),
+    "كيب تاون ← سِدني": ("Cape Town → Sydney", "Le Cap → Sydney"),
+    "وليس في هذا ذمٌّ للإسقاط: هو إسقاطٌ نافع، عليه شعارُ الأمم المتحدة "
+    "وخرائطُ اللاسلكي، وصفحةُ": (
+        "This is no reproach to the projection: it is a useful one — the "
+        "United Nations emblem and radio charts use it, and our page",
+        "Ce n'est nullement un reproche à la projection : elle est "
+        "utile — l'emblème des Nations unies et les cartes radio "
+        "l'emploient, et notre page"),
+    "عندنا تعرضه خيارًا.": ("offers it as an option.",
+                          "la propose en option."),
+    "وإنّما الذمُّ أن يُقرأ خريطةً للمسافات وهو لا يحفظها إلّا من "
+    "مركزه.": (
+        "The reproach is only to read it as a map of distances when it "
+        "preserves them from its centre alone.",
+        "Le reproche est seulement de la lire comme une carte des "
+        "distances alors qu'elle ne les conserve que depuis son centre."),
+
+    "٢ — «الشمس والقمر إسقاطٌ ضوئيّ لا أجسام»": (
+        "2 — \"The Sun and Moon are light projections, not bodies\"",
+        "2 — « Le Soleil et la Lune sont des projections lumineuses, non "
+        "des corps »"),
+    "يُقال إنّ ما نراه في السماء ليس جِرمًا ماديًّا، وإنّما صورةٌ "
+    "تُسقَط في الجوّ.": (
+        "It is said that what we see in the sky is not a material body "
+        "but an image projected into the air.",
+        "On dit que ce que nous voyons au ciel n'est pas un corps "
+        "matériel mais une image projetée dans l'air."),
+    "القياس الفاصل: القدر الزاويّ عبر النهار.": (
+        "The deciding measurement: the angular size across the day.",
+        "La mesure décisive : le diamètre apparent au fil du jour."),
+    "جِرمٌ يدور فوق سطحٍ مستوٍ يقترب منك ويبتعد،": (
+        "A body circling above a flat surface draws near and moves away,",
+        "Un astre tournant au-dessus d'une surface plane s'approche puis "
+        "s'éloigne,"),
+    "فيتغيّر قطرُه الظاهر تغيّرًا كبيرًا": (
+        "so its apparent diameter changes greatly",
+        "de sorte que son diamètre apparent change fortement"),
+    "— يقتضي الحسابُ نحوَ الضعف بين الظهر والغروب.": (
+        "— the calculation requires roughly a factor of two between "
+        "noon and sunset.",
+        "— le calcul exige environ un facteur deux entre midi et le "
+        "coucher."),
+    "والمقيس:": ("What is measured:", "Ce qui est mesuré :"),
+    "قطرُ الشمس الظاهر يبقى نحو": (
+        "the Sun's apparent diameter stays at about",
+        "le diamètre apparent du Soleil reste d'environ"),
+    "من الشروق إلى الغروب، ولا يتغيّر إلّا بأجزاءٍ من المئة. ويُقاس "
+    "بمرشِّح شمسيٍّ رخيص وآلة تصوير: صوّرها ثلاث مرّات في اليوم وقِس "
+    "القرص بالبكسل.": (
+        "from sunrise to sunset, varying only by fractions of a percent. "
+        "It is measured with a cheap solar filter and a camera: "
+        "photograph it three times in the day and measure the disc in "
+        "pixels.",
+        "du lever au coucher, ne variant que de fractions de pour cent. "
+        "Cela se mesure avec un filtre solaire bon marché et un "
+        "appareil photo : photographiez-le trois fois dans la journée et "
+        "mesurez le disque en pixels."),
+    "وهذا قياسٌ لا يحتاج إلى تصديق أحد: أنت تلتقط الصور، وأنت تعدّ "
+    "البكسلات.": (
+        "This measurement requires trusting no one: you take the "
+        "photographs, and you count the pixels.",
+        "Cette mesure n'exige la confiance de personne : c'est vous qui "
+        "prenez les photos, et vous qui comptez les pixels."),
+
+    "٣ — «مركزٌ واحد للسماء»": ("3 — \"A single centre for the sky\"",
+                              "3 — « Un centre unique du ciel »"),
+    "تُعرَض صورُ التعريض الطويل لنجوم الشمال وهي تدور حول نقطةٍ واحدة، "
+    "ويُستدَلّ بها على مركزٍ واحد للفَلَك.": (
+        "Long-exposure photographs of the northern stars circling one "
+        "point are shown, and taken as proof of a single centre of the "
+        "heavens.",
+        "On montre des poses longues des étoiles du nord tournant autour "
+        "d'un seul point, et l'on y voit la preuve d'un centre unique du "
+        "ciel."),
+    "القياس الفاصل: الجنوب.": ("The deciding measurement: the south.",
+                              "La mesure décisive : le sud."),
+    "صوّر السماء من جنوب خطّ الاستواء تعريضًا طويلًا. تجد النجوم تدور "
+    "حول نقطةٍ أخرى — قربَ نجم": (
+        "Photograph the sky south of the equator with a long exposure. "
+        "You will find the stars circling another point — near the star",
+        "Photographiez le ciel au sud de l'équateur en pose longue. Vous "
+        "trouverez les étoiles tournant autour d'un autre point — près "
+        "de l'étoile"),
+    "سيغما الثُّمن (Sigma Octantis)": ("Sigma Octantis", "Sigma Octantis"),
+    "وباتّجاهٍ معاكس": ("and in the opposite direction",
+                       "et en sens inverse"),
+    "مركزُ دورانٍ واحد لا يُخرِج مركزين متضادّين": (
+        "A single centre of rotation cannot produce two opposed centres",
+        "Un seul centre de rotation ne peut produire deux centres "
+        "opposés"),
+    "في الوقت نفسه. والصورُ متاحةٌ من مراصد الجنوب، ويلتقطها هواةٌ في "
+    "تشيلي وأستراليا وجنوب إفريقيا كلَّ ليلة.": (
+        "at the same time. The photographs are available from southern "
+        "observatories, and amateurs in Chile, Australia and South "
+        "Africa take them every night.",
+        "en même temps. Les clichés sont disponibles auprès des "
+        "observatoires austraux, et des amateurs au Chili, en Australie "
+        "et en Afrique du Sud en prennent chaque nuit."),
+
+    "٤ — «الكسوف لا يسبّبه القمر»": (
+        "4 — \"The Moon does not cause the eclipse\"",
+        "4 — « Ce n'est pas la Lune qui cause l'éclipse »"),
+    "يُقال إنّ الكاسف جِرمٌ خفيّ لا يُرى، لا القمر.": (
+        "It is said the eclipser is an unseen body, not the Moon.",
+        "On dit que l'occulteur est un corps invisible, non la Lune."),
+    "القياس الفاصل: التنبّؤ المحلّي.": (
+        "The deciding measurement: local prediction.",
+        "La mesure décisive : la prédiction locale."),
+    "النموذج الذي نحسب به يُخرِج لكلّ مدينةٍ على الأرض:": (
+        "The model we compute with yields, for every city on Earth:",
+        "Le modèle avec lequel nous calculons donne, pour chaque ville "
+        "de la Terre :"),
+    "ساعةَ الذروة بالدقيقة": ("the time of greatest eclipse to the minute",
+                            "l'heure du maximum à la minute"),
+    "كم يُغطَّى من القرص": ("how much of the disc is covered",
+                          "quelle part du disque est couverte"),
+    "ارتفاعَ الجرم عن الأفق": ("the body's altitude above the horizon",
+                             "la hauteur de l'astre au-dessus de "
+                             "l'horizon"),
+    ". وهي أرقامٌ تُكذَّب بسهولة لو كانت خطأً.": (
+        ". These are numbers easily falsified if they were wrong.",
+        ". Ce sont des nombres aisément démentis s'ils étaient faux."),
+    "وصفحةُ": ("And the page", "Et la page"),
+    "تُخرجها لك. أمثلة مُقابَلة:": ("gives them to you. Checked examples:",
+                                  "vous les donne. Exemples vérifiés :"),
+    "· الأقصر، ٢ آب ٢٠٢٧ —": ("· Luxor, 2 August 2027 —",
+                             "· Louxor, 2 août 2027 —"),
+    "· مدريد، ١٢ آب ٢٠٢٦ — جزئي، القدر": (
+        "· Madrid, 12 August 2026 — partial, magnitude",
+        "· Madrid, 12 août 2026 — partielle, grandeur"),
+    "· نيويورك، ٨ نيسان ٢٠٢٤ — جزئي، القدر": (
+        "· New York, 8 April 2024 — partial, magnitude",
+        "· New York, 8 avril 2024 — partielle, grandeur"),
+    "، القدر": (", magnitude", ", grandeur"),
+    "، ارتفاع": (", altitude", ", hauteur"),
+    "ونحن نُمتحَن بهذا لا نحتجّ به": (
+        "We are tested by this; we do not argue from it",
+        "Nous sommes éprouvés par cela ; nous n'en argumentons pas"),
+    ": خذ الرقم، واذهب إلى المدينة أو اسأل من كان فيها. فإن أخطأنا "
+    "فالنموذج الذي نحسب به خطأ، ويلزمنا تغييرُه.": (
+        ": take the number, go to the city or ask someone who was there. "
+        "If we are wrong, the model we compute with is wrong, and we are "
+        "bound to change it.",
+        ": prenez le nombre, allez sur place ou demandez à qui y était. "
+        "Si nous nous trompons, le modèle avec lequel nous calculons est "
+        "faux, et il nous faut le changer."),
+
+    "٥ — «ما لا يفصل فيه قياس»": (
+        "5 — \"What no measurement can settle\"",
+        "5 — « Ce qu'aucune mesure ne tranche »"),
+    "وثمّة دعاوى لا نضع إزاءها شيئًا، لأنّها": (
+        "There are claims beside which we set nothing, because they",
+        "Il est des affirmations en regard desquelles nous ne mettons "
+        "rien, parce qu'elles"),
+    "لا تُخرِج رقمًا يُقابَل": ("yield no number that can be checked",
+                             "ne donnent aucun nombre vérifiable"),
+    ": من قال إنّ كلّ صورةٍ مزوّرة وكلّ رحلةٍ ملفَّقة وكلّ قياسٍ مدسوس، "
+    "فقد وضع دعواه خارج ما يُبتّ فيه.": (
+        ": whoever says that every photograph is forged, every flight "
+        "fabricated and every measurement planted, has placed his claim "
+        "outside what can be decided.",
+        ": qui affirme que toute photographie est truquée, tout vol "
+        "inventé et toute mesure falsifiée, a placé son affirmation hors "
+        "de ce qui se décide."),
+    "ولا نُسمّي ذلك كذبًا ولا صدقًا": (
+        "We call that neither false nor true",
+        "Nous n'appelons cela ni faux ni vrai"),
+    "— نقول إنّه خارج ما تفصل فيه هذه الصفحة، وهذا كلُّ ما نستطيع قوله "
+    "بإنصاف.": (
+        "— we say it lies outside what this page can settle, and that is "
+        "all we can fairly say.",
+        "— nous disons que cela est hors de ce que cette page peut "
+        "trancher, et c'est tout ce que nous pouvons dire avec équité."),
+
+    "المسافات محسوبة بصيغة هافرساين على نصف قطر ٦٣٧١ كم، والمقارنة على "
+    "الإسقاط السَّمْتيّ محسوبة من الصفحة نفسها لا منقولة.": (
+        "Distances are computed with the haversine formula on a radius "
+        "of 6371 km, and the azimuthal comparison is computed by this "
+        "page itself, not quoted.",
+        "Les distances sont calculées par la formule de haversine sur un "
+        "rayon de 6371 km, et la comparaison azimutale est calculée par "
+        "la page elle-même, non citée."),
+    "وأزمنة الرحلات المذكورة من جداول الطيران المنشورة، وهي تتبدّل "
+    "بتبدّل الطائرة والرياح.": (
+        "The flight times given are from published airline schedules, "
+        "and they vary with aircraft and winds.",
+        "Les durées de vol indiquées proviennent des horaires publiés, "
+        "et varient selon l'appareil et les vents."),
+
+    # ــ خرائط الأرض: تسمية الإسقاطين ــ
+    "منظر القطب": ("Polar view", "Vue polaire"),
+    "الإسقاط": ("projection", "projection"),
+    "منظر القطب — إسقاطٌ سَمْتيٌّ متساوي المسافات، مركزه القطب": (
+        "Polar view — an azimuthal equidistant projection, centred on "
+        "the North",
+        "Vue polaire — projection azimutale équidistante, centrée sur le "
+        "pôle"),
+    "الشمالي. عليه شعار الأمم المتحدة وخرائط الطيران واللاسلكي.": (
+        "Pole. The United Nations emblem, aviation and radio charts use "
+        "it.",
+        "Nord. L'emblème des Nations unies, les cartes aéronautiques et "
+        "radio l'emploient."),
+    "وفيه: المركز شمال، والمحيط جنوب، والشرق عكس عقارب الساعة.": (
+        "On it: the centre is north, the rim is south, and east runs "
+        "counter-clockwise.",
+        "Sur elle : le centre est au nord, le pourtour au sud, et l'est "
+        "va dans le sens antihoraire."),
+    "ويحفظ المسافات من المركز وحده — فبُعد نقطتين جنوبيّتين": (
+        "And it preserves distances from the centre alone — so the "
+        "distance between two southern points",
+        "Et elle ne conserve les distances que depuis le centre — la "
+        "distance entre deux points australes"),
+    "إحداهما عن الأخرى يخرج عليه أضعافَ حقيقته.": (
+        "comes out several times its true value.",
+        "en ressort plusieurs fois sa valeur réelle."),
+    "الإسقاط المستطيل — خطوط الطول والعرض فيه مستقيمة متعامدة،": (
+        "The rectangular projection — its meridians and parallels are "
+        "straight and perpendicular,",
+        "La projection rectangulaire — ses méridiens et parallèles sont "
+        "droits et perpendiculaires,"),
+    "ويمطّ المسافات كلّما بعُدتَ عن خطّ الاستواء: غرينلاند": (
+        "and it stretches distances the further you go from the "
+        "equator: Greenland",
+        "et elle étire les distances à mesure que l'on s'éloigne de "
+        "l'équateur : le Groenland"),
+    "فيه بحجم إفريقيا، وهي أصغر منها أربعةَ عشرَ ضعفًا.": (
+        "appears the size of Africa on it, though it is fourteen times "
+        "smaller.",
+        "y paraît de la taille de l'Afrique, alors qu'il est quatorze "
+        "fois plus petit."),
+    "الحساب من المطالع المستقيمة والمَيْل والوقت النجمي بغرينتش، "
+    "والمدن من أطلس الموقع نفسه.": (
+        "Computed from right ascensions, declination and Greenwich "
+        "sidereal time; the cities come from this site's own atlas.",
+        "Calculé à partir des ascensions droites, de la déclinaison et "
+        "du temps sidéral de Greenwich ; les villes viennent de l'atlas "
+        "du site."),
+    ": مستطيلٌ أو سَمْتيٌّ مركزه القطب. وكلُّ إسقاطٍ يحفظ شيئًا ويُفسد "
+    "شيئًا، فليس أحدهما شكلَ الأرض — وتفصيلُ ذلك في": (
+        ": rectangular, or azimuthal centred on the pole. Every "
+        "projection preserves something and spoils something, so neither "
+        "is the shape of the Earth — the details are in",
+        ": rectangulaire, ou azimutale centrée sur le pôle. Toute "
+        "projection conserve une chose et en fausse une autre : aucune "
+        "n'est la forme de la Terre — le détail se trouve dans"),
+
+    # ══════════════════════════════════════════════════════════
+    # مختبر السماء — آلة الزمن
+    # ══════════════════════════════════════════════════════════
+    "مختبر السماء": ("Sky Lab", "Laboratoire du ciel"),
+    "مختبر السماء — الفَلَك": ("Sky Lab — Al-Falak",
+                              "Laboratoire du ciel — Al-Falak"),
+    "الفَلَك — مختبر السماء": ("Al-Falak — Sky Lab",
+                              "Al-Falak — Laboratoire du ciel"),
+    "كيف تتحرّك السماء؟": ("How does the sky move?",
+                          "Comment le ciel se meut-il ?"),
+    "عجلةٌ تتقدّم بالزمن وتتأخّر — ترى مسير الكواكب ورجوعها بعينك": (
+        "A wheel that runs time forward and back — watch the planets "
+        "move and turn retrograde with your own eyes",
+        "Une roue qui avance et recule dans le temps — voyez de vos yeux "
+        "les planètes marcher et rétrograder"),
+    "قدّم الزمن وانظر السماء تتحرّك": (
+        "Run time forward and watch the sky move",
+        "Avancez le temps et regardez le ciel bouger"),
+    "قدّم الزمن أو أخّره — بالدقيقة أو الساعة أو اليوم أو السنة — وانظر "
+    "كيف تسير الكواكب في البروج. والمرسوم هنا ليس نموذجًا للعالم، بل "
+    "جدولُ ما ستراه في السماء: في أيّ جهةٍ من الفَلَك يقع كلُّ جرم، "
+    "وهو ما يُرصَد ويُقاس.": (
+        "Run time forward or back — by the minute, the hour, the day or "
+        "the year — and watch the planets move through the signs. What "
+        "is drawn here is not a model of the world but a table of what "
+        "you will see in the sky: in which direction of the heavens each "
+        "body lies. That is what is observed and measured.",
+        "Avancez ou reculez le temps — à la minute, à l'heure, au jour "
+        "ou à l'année — et regardez les planètes parcourir les signes. "
+        "Ce qui est tracé ici n'est pas un modèle du monde, mais une "
+        "table de ce que vous verrez au ciel : dans quelle direction du "
+        "firmament se tient chaque astre. Voilà ce qui s'observe et se "
+        "mesure."),
+    "عجلةٌ تتحرّك بالزمن: قدّم الساعة أو اليوم أو السنة وانظر كيف تسير "
+    "الكواكب في البروج، ومتى ترجع. والمرسوم جهةُ الجرم كما تُرى.": (
+        "A wheel that moves with time: advance the hour, the day or the "
+        "year and watch how the planets travel through the signs, and "
+        "when they turn retrograde. What is drawn is the body's "
+        "direction as seen.",
+        "Une roue qui se meut avec le temps : avancez l'heure, le jour "
+        "ou l'année et voyez les planètes parcourir les signes, et quand "
+        "elles rétrogradent. Ce qui est tracé est la direction de "
+        "l'astre telle qu'on la voit."),
+    "عجلةٌ تتحرّك بالزمن: قدّم الساعة أو اليوم أو السنة وانظر كيف تسير": (
+        "A wheel that moves with time: advance the hour, the day or the "
+        "year and watch how",
+        "Une roue qui se meut avec le temps : avancez l'heure, le jour "
+        "ou l'année et voyez"),
+    "الكواكب في البروج، ومتى ترجع. والمرسوم جهةُ الجرم كما تُرى.": (
+        "the planets travel through the signs, and when they turn "
+        "retrograde. What is drawn is the body's direction as seen.",
+        "les planètes parcourir les signes, et quand elles rétrogradent. "
+        "Ce qui est tracé est la direction de l'astre telle qu'on la voit."),
+    "عجلةٌ تتحرّك بالزمن: قدّم الساعة أو اليوم أو السنة، وانظر مسير كل "
+    "كوكب في البروج ومتى يرجع.": (
+        "A wheel that moves with time: advance the hour, the day or the "
+        "year, and watch each planet's course through the signs and when "
+        "it turns retrograde.",
+        "Une roue qui se meut avec le temps : avancez l'heure, le jour "
+        "ou l'année, et suivez la course de chaque planète dans les "
+        "signes et le moment où elle rétrograde."),
+    "ابدأ من": ("Start from", "Commencer le"),
+    "الخطوة": ("Step", "Pas"),
+    "خطوة": ("step", "pas"),
+    "أسبوع": ("Week", "Semaine"),
+    "دقيقة": ("Minute", "Minute"),
+    "يوم": ("Day", "Jour"),
+    "سنة": ("Year", "Année"),
+    "الزمن": ("Time", "Temps"),
+    "السرعة": ("Speed", "Vitesse"),
+    "بطيء": ("Slow", "Lent"),
+    "وسط": ("Medium", "Moyen"),
+    "كلّي": ("total", "totale"),
+    "مستطيل": ("Rectangular", "Rectangulaire"),
+    "إسقاط": ("projection", "projection"),
+    "والخريطة": ("And the map is a", "Et la carte est une"),
+    "▶ تشغيل": ("▶ Play", "▶ Lecture"),
+    "⏸ إيقاف": ("⏸ Pause", "⏸ Pause"),
+    "تشغيل": ("Play", "Lecture"),
+    "سريع": ("Fast", "Rapide"),
+    "أخفِ الأثر": ("Hide the trail", "Masquer la trace"),
+    "أظهر الأثر": ("Show the trail", "Afficher la trace"),
+    "إلى الآن": ("To now", "À maintenant"),
+    "… أحسب مسير الأجرام": ("… computing the bodies' courses",
+                           "… calcul de la course des astres"),
+    "الأثر الباهت": ("The faint trail", "La trace pâle"),
+    "هو مسار الجرم في اللقطات السابقة. وحين يرتدّ إلى الوراء فذلك": (
+        "is the body's path across the previous frames. When it doubles "
+        "back, that is",
+        "est le chemin de l'astre sur les images précédentes. Quand il "
+        "revient en arrière, c'est"),
+    "— يُرسَم الجرم أحمر ومعه حرف «ر». والرجوع ليس توقّفًا في السماء: "
+    "هو ما نراه من جهةٍ نحن فيها نتحرّك أيضًا.": (
+        "— the body is drawn in red with the letter «ر». Retrogradation "
+        "is not a halt in the sky: it is what we see from a place that "
+        "is itself moving.",
+        "— l'astre est tracé en rouge avec la lettre « ر ». La "
+        "rétrogradation n'est pas un arrêt dans le ciel : c'est ce que "
+        "l'on voit depuis un lieu qui se meut lui aussi."),
+    "المواقع محسوبة بمكتبة Swiss Ephemeris لحظةً بلحظة، لا من جدولٍ "
+    "مخزون.": (
+        "Positions are computed moment by moment with the Swiss "
+        "Ephemeris library, not read from a stored table.",
+        "Les positions sont calculées instant par instant avec la "
+        "bibliothèque Swiss Ephemeris, non lues dans une table."),
+    "والمرسوم طولٌ في دائرة البروج: جهةُ الجرم كما تُرى، لا مسافتُه ولا "
+    "مساره في الفضاء.": (
+        "What is drawn is a longitude on the ecliptic: the body's "
+        "direction as seen — not its distance, nor its path through "
+        "space.",
+        "Ce qui est tracé est une longitude sur l'écliptique : la "
+        "direction de l'astre telle qu'on la voit — non sa distance, ni "
+        "sa trajectoire dans l'espace."),
+
+    # ══════════════════════════════════════════════════════════
     # صفحةُ الكسوف والخسوف
     # ══════════════════════════════════════════════════════════
     "الكسوف والخسوف": ("Eclipses", "Éclipses"),
@@ -2453,7 +2978,7 @@ VOCAB_KEYS = (
     # **وكلمةٌ تُلصَق بعددٍ متغيّر لا تكون مفتاحًا.**
     # «١٢٦ مصطلحًا» يتبدّل عددُه بتبدّل المعجم، فلا عبارةَ ثابتة
     # تُطابَق. والمفرداتُ هي البابُ الموضوع لهذا بعينه.
-    "مصطلحًا", "تعذّر الاتصال بالخادم",
+    "مصطلحًا", "تعذّر الاتصال بالخادم", "ضعفًا",
     # الأجرام
     "الشمس", "القمر", "عطارد", "الزهرة", "المريخ", "المشتري", "زحل",
     "أورانوس", "نبتون", "بلوتو", "خيرون", "ليليث", "الرأس", "الذنب",

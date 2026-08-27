@@ -43,6 +43,7 @@
     <a href="/">الرئيسة</a>
     <a href="/bulletin.html">النشرة اليومية</a>
     <a href="/monthly.html">الشهرية</a>
+    <a href="/sky.html">مختبر السماء</a>
     <a href="/eclipses.html">الكسوف والخسوف</a>
     <a href="/hours.html">ساعات الكواكب</a>
     <a href="/elections.html">الاختيارات</a>
@@ -54,6 +55,7 @@
     <a href="/timelords.html">أرباب الأزمنة</a>
     <a href="/ephemeris.html">مواقع الكواكب</a>
     <a href="/api.html">الواجهة البرمجية</a>
+    <a href="/verify.html">أين تُضبَط المعلومة؟</a>
     <a href="/learn.html">تعلّم</a>
   </nav>
 </div>
@@ -183,6 +185,20 @@ function jumpToBody(name) {
 }
 
 out.addEventListener('click', e => {
+  /* **جسرٌ إلى مختبر السماء بمعطيات هذه الخريطة.**
+     ويُبنى الرابط عند الضغط لا عند الرسم، لأنّ المعطيات قد
+     تتبدّل بين الرسمتين — **ورابطٌ يُبنى مرّةً يحمل قديمًا**. */
+  if (e.target.id === 'toSky') {
+    e.preventDefault();
+    const p = new URLSearchParams({
+      start: $('date').value || todayISO(),
+      time: $('time').value || '12:00',
+      city: $('city').value.trim(),
+      step: 'يوم',
+    });
+    location.href = '/sky.html?' + p.toString();
+    return;
+  }
   const g = e.target.closest && e.target.closest('g.pl[data-body]');
   if (g) { jumpToBody(g.dataset.body); return; }
   const head = e.target.closest('[data-open]');
@@ -537,6 +553,9 @@ function render(c) {
   const wheel = card('العجلة',
     `${layerBar()}
      <div class="wheel" id="wheelBox">${wheelSVG(c, { deep: DEEP, layers: LAYERS })}</div>
+     <div class="row" style="margin-top:10px">
+       <a class="btn ghost sm" id="toSky">حرّك الزمن من هذه اللحظة ›</a>
+     </div>
      ${wheelInfo(c)}
      <p class="note" style="margin-top:14px">
        <b>مرّر المؤشّر على أيّ عنصر في العجلة</b> — كوكبٍ أو بيتٍ أو برجٍ أو

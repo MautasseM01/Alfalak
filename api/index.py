@@ -35,7 +35,7 @@ from falak import mundane  # noqa: E402
 from falak import plain  # noqa: E402
 from falak import progress, salts  # noqa: E402
 from falak import tables  # noqa: E402
-from falak import timelords, transits  # noqa: E402
+from falak import timelords, track, transits  # noqa: E402
 from falak import timezone as ftz  # noqa: E402
 
 
@@ -941,6 +941,50 @@ def route_glossary(q):
             "default_level": plain.DEFAULT_LEVEL}
 
 
+def route_track(q):
+    """
+    آلة الزمن: مئاتُ اللقطات في نداءٍ واحد.
+
+    `start` بداية المدّة · `step` خطوةٌ مسمّاة (دقيقة… سنة) أو
+    عددُ دقائق · `frames` عددُ اللقطات · `city` لإضافة الأوتاد.
+
+    **ونداءٌ واحدٌ لمئتَي لقطة أرخصُ من مئتَي نداءٍ للقطة** —
+    والدالّةُ بلا خادم تُشغَّل لكلّ نداءٍ من جديد.
+    """
+    lat = lon = None
+    tzname, label = "UTC", None
+    if _one(q, "city") or _one(q, "lat"):
+        lat, lon, tzname, label = resolve_place(q)
+
+    ds = _one(q, "start")
+    if ds:
+        when, _info = parse_birth({**q, "date": [ds],
+                                   "time": q.get("time", ["12:00"])},
+                                  tzname, lon or 0.0)
+    else:
+        when = datetime.now(ZoneInfo(tzname))
+
+    raw = _one(q, "step") or "يوم"
+    step = track.STEPS.get(raw)
+    if step is None:
+        try:
+            step = float(raw)
+        except ValueError:
+            raise ApiError("الخطوة إمّا اسمٌ (دقيقة، ساعة، يوم، أسبوع، "
+                           "شهر، سنة) وإمّا عددُ دقائق.")
+    if _one(q, "back") == "1":
+        step = -abs(step)
+
+    names = _one(q, "bodies")
+    out = track.frames(
+        when, step, int(_one(q, "frames") or 200),
+        [n.strip() for n in names.split(",")] if names else None,
+        lat, lon, _one(q, "system", "whole"))
+    out["place"] = label
+    out["tz"] = tzname
+    return out
+
+
 def route_eclipses(q):
     """
     الكسوف والخسوف: جدولُ مدّة، وسلسلةُ ساروس، وتدقيقُ الاجتماعات.
@@ -1264,6 +1308,7 @@ ROUTES = {
     "depth": route_depth,
     "hours": route_hours,
     "eclipses": route_eclipses,
+    "track": route_track,
     "month": route_month,
     "elections": route_elections,
     "monthly": route_monthly,

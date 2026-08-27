@@ -4157,3 +4157,207 @@ def test_eclipse_rulings_are_attributed_not_asserted():
     assert r["node"] in ("الرأس", "الذنب")
     for v in r.values():
         assert "سيحدث" not in str(v) and "ستقع" not in str(v), v
+
+
+# ══════════════════════════════════════════════════════════════════
+# آلة الزمن
+# ══════════════════════════════════════════════════════════════════
+def test_track_frames_are_compact_and_correct():
+    """
+    **مئتا لقطةٍ في نداءٍ واحد، وحجمُها يُقاس.**
+
+    آلة الزمن تُحرَّك في المتصفّح من ذاكرته، فلو ثقُل الردّ لثقُل
+    التحريك. والصيغةُ مصفوفاتٌ لا كائنات لهذا بعينه — فيُحرَس
+    الحجم كي لا يعود أحدٌ إلى الكائنات ظنًّا أنّها أوضح.
+    """
+    import json
+    from datetime import datetime as _dt
+    from falak import track
+
+    d = track.frames(_dt(2026, 1, 1, tzinfo=ephem.UTC), 1440, 200,
+                     lat=33.5, lon=36.3)
+    assert d["count"] == 200
+    assert len(d["lon"]) == 200 and len(d["retro"]) == 200
+    assert len(d["lon"][0]) == len(d["bodies"]) == len(d["symbols"])
+    size = len(json.dumps(d, ensure_ascii=False))
+    assert size < 60_000, f"الردّ {size} حرفًا — والتحريك يثقل به"
+
+    # ــ **الأوتاد تُحسَب فعلًا، لا تخرج فارغة** ــ
+    # خرجت `None` أوّلَ مرّة، لأنّ `HOUSE_SYSTEMS` قيمتُها كائنٌ لا
+    # رمز، **و`except` ابتلع الرمي** فبدا الردّ تامًّا وهو ناقص.
+    assert "ang" in d and d["ang"][0][0] is not None, d.get("ang_error")
+    assert d.get("ang_error") is None
+
+    # الطالع يدور دورةً كاملة في اليوم: تُفحَص بخطوة ساعة
+    h = track.frames(_dt(2026, 1, 1, tzinfo=ephem.UTC), 60, 24,
+                     lat=33.5, lon=36.3)
+    asc = [x[0] for x in h["ang"]]
+    assert max(asc) - min(asc) > 300, asc
+
+
+def test_track_retrograde_comes_from_speed_not_difference():
+    """
+    **الرجوع يُؤخَذ من السرعة، لا من الفرق بين لقطتين.**
+
+    الفرقُ يلتفّ عند ٣٦٠→٠ فيبدو الجرمُ راجعًا وهو مستقيم. وعطارد
+    راجعٌ في آذار ٢٠٢٦ (٢٦ شباط ← ٢٠ آذار)، ومستقيمٌ في كانون
+    الثاني — فيُمتحَن الطرفان.
+    """
+    from datetime import datetime as _dt
+    from falak import track
+
+    d = track.frames(_dt(2026, 1, 1, tzinfo=ephem.UTC), 1440, 200)
+    i = d["bodies"].index("عطارد")
+    on = {k for k in range(200) if (d["retro"][k] >> i) & 1}
+
+    # ١١ آذار = اللقطة ٦٩ (من ١ كانون الثاني) — في مدّة الرجوع
+    assert 69 in on and 75 in on, sorted(on)[:10]
+    # ٥ كانون الثاني — مستقيم
+    assert 4 not in on
+
+    # **والشمس لا ترجع أبدًا** — حارسٌ على أنّ القناع ليس ضجيجًا
+    s = d["bodies"].index("الشمس")
+    assert not any((m >> s) & 1 for m in d["retro"])
+
+
+def test_timelab_does_not_assume_a_world_model():
+    """
+    **العجلة تعرض ما يُرى، ولا تدّعي شكلًا للعالم.**
+
+    وهذا شرطٌ في الصفحة لا في الشيفرة وحدها: أن يُقال للقارئ إنّ
+    المرسوم **طولٌ في دائرة البروج** — أي جهةُ الجرم كما تُرى —
+    لا مسافتُه ولا مسارُه في الفضاء. فمن قرأها لم يخرج بغير ما
+    تحتمله.
+    """
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    page = open(os.path.join(root, "sky.html"), encoding="utf-8").read()
+    js = open(os.path.join(root, "assets", "timelab.js"),
+              encoding="utf-8").read()
+
+    assert "ليس نموذجًا للعالم" in page
+    assert "لا مسافتُه ولا مساره في الفضاء" in page
+    assert "لا تفترض شكلًا للأرض" in js
+
+    # ــ ونداءٌ واحدٌ للمدّة كلّها، لا نداءٌ لكل إطار ــ
+    assert "requestAnimationFrame" in js
+    assert "fetch" not in js, ("التحريك يطلب من الشبكة — "
+                               "وهو ثلاثون نداءً في الثانية")
+
+
+def test_saros_third_shifts_the_path_a_hundred_and_twenty_west():
+    """
+    **الثلث: الكسرُ الذي يُزيح موضع الرؤية.**
+
+    ٦٥٨٥٫٣٢ يومًا = ١٨ سنة و١١ يومًا **وثلثَ يوم**. وفي ذلك الثلث
+    تدور الأرض ثلثَ دورة، فيقع النظير نحو ١٢٠° غربًا. وثلاثُ
+    دوراتٍ تُعيده — وهو «الإكسِلِغموس».
+
+    **والإزاحة تُقاس بين المتجاورَين لا بينها وبين الأصل**: الزاوية
+    تلتفّ، فقياسُ النظير الثاني إلى الأصل يُخرج ‎−١١٥°‎ وهو في
+    الحقيقة ٢٤٠°، وقسمتُه على اثنين تُخرج عددًا لا معنى له.
+    """
+    from datetime import datetime as _dt
+    from falak import eclipse as ecl
+
+    ch = ecl.saros_chain(_dt(2024, 4, 8, tzinfo=ephem.UTC), False, 3, 3)
+    T = ch["third"]
+    assert 7 <= T["hours"] <= 9, T["hours"]
+
+    shifts = [l["shift_deg"] for l in ch["links"] if l.get("shift_deg") is not None]
+    assert len(shifts) >= 4, shifts
+    for s in shifts:
+        assert -135 <= s <= -105, ("الإزاحة ليست نحو ١٢٠° غربًا", shifts)
+
+    # وبعد ثلاث دورات يعود إلى الناحية نفسها — ولا يعود تمامًا
+    r = T["exeligmos_residual"]
+    assert r is not None and abs(r) < 25, r
+    assert abs(r) > 0.5, "لا يعود تمامًا — والكسر ليس ثلثًا دقيقًا"
+
+
+# ══════════════════════════════════════════════════════════════════
+# الهاتف واللوحيّ
+# ══════════════════════════════════════════════════════════════════
+def test_layout_does_not_overflow_the_phone():
+    """
+    **قِيس في متصفّحٍ حقيقيّ على عرض ٣٩٠، فكان المستند ٥٢٤.**
+
+    أي **١٤٨ بكسلًا تخرج عن الشاشة** في كل صفحةٍ فيها مفتاحُ
+    المستوى — فتُسحَب الصفحة جانبًا وتُقتطع أطرافُ النصّ. وهذا
+    هو «التصميم المكسور» الذي شُكي منه، وكان مكسورًا فعلًا.
+
+    ولم يكن عيبًا واحدًا بل اجتماعَ ثلاثة، **كلٌّ منها صحيحٌ
+    وحده**:
+      · `.topbar{flex-wrap:nowrap}` يمنع الالتفاف،
+      · `.seg.levelsw{width:100%}` يملأ سطرًا لا يلتفّ،
+      · `.langbox` بلا قاعدةٍ للهاتف فيخرج يسارًا.
+
+    فلا يُحرَس واحدٌ منها، بل تُحرَس **الشروط التي لا يقع العطب
+    إلّا بنقضها**.
+    """
+    import os, re
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    css = open(os.path.join(root, "assets/style.css"), encoding="utf-8").read()
+    css_ = re.sub(r"/\*[\s\S]*?\*/", "", css)          # التعليق يصف ولا يكون
+
+    m = re.search(r"@media\(max-width:860px\)\{([\s\S]*?)\n\}", css_)
+    assert m, "كتلة الهاتف غائبة"
+    block = m.group(1)
+    assert "flex-wrap:nowrap" not in block, (
+        "الشريط لا يلتفّ على الهاتف — فيخرج ما لا يسع عن الشاشة")
+    assert "flex-wrap:wrap" in block
+
+    assert "width:100%" not in re.search(
+        r"@media\(max-width:700px\)\{([\s\S]*?)\n\}", css_).group(1) \
+        .split(".seg.levelsw")[1].split("}")[0], \
+        "مفتاحُ المستوى يأخذ السطر كلَّه، فيدفع مبدّل اللغة خارجه"
+
+    # ــ نصُّ الزرّ المقسَّم لا يُكسَر سطرين ــ
+    seg = re.search(r"\n\.seg button\{([^}]*)\}", css_).group(1)
+    assert "white-space:nowrap" in seg, (
+        "«لغة الصناعة» تنكسر داخل زرّها فيعوجّ المفتاح")
+
+    # ــ **وكلُّ شبكةٍ تنكمش تحت أضيق هاتف** ــ
+    # `minmax(290px,1fr)` يفرض ٢٩٠ ولو ضاقت الحاوية عنها، فتفيض.
+    # و`min(290px,100%)` يمنع الصنف كلَّه لا حالةً منه.
+    import glob
+    bad = []
+    for f in glob.glob(os.path.join(root, "*.html")) + \
+            [os.path.join(root, "assets/style.css")]:
+        for mm in re.finditer(r"minmax\(\s*(\d+)px", open(f, encoding="utf-8").read()):
+            if int(mm.group(1)) > 160:
+                bad.append(f"{os.path.basename(f)}: minmax({mm.group(1)}px …)")
+    assert not bad, ("شبكةٌ لا تنكمش — استعمل minmax(min(Npx,100%),…):\n  "
+                     + "\n  ".join(bad[:6]))
+
+
+def test_every_page_declares_the_viewport():
+    """بلا هذا يرسم الهاتفُ الصفحةَ بعرض ٩٨٠ ثم يُصغّرها، فلا تُقرأ."""
+    import os, glob
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for f in glob.glob(os.path.join(root, "*.html")):
+        t = open(f, encoding="utf-8").read()
+        assert 'name="viewport"' in t and "width=device-width" in t, \
+            os.path.basename(f)
+
+
+def test_language_switch_has_a_short_label_for_phones():
+    """
+    **الاسمُ التامّ والمختصَر يُرسَمان معًا، ويُخفي أحدَهما التنسيق.**
+
+    قِيس: مبدّل اللغة ١٩٩ بكسلًا ومفتاح المستوى ١٥٧، ومجموعُهما
+    يتجاوز المتاح على ٣٦٠ — فينزل كلٌّ سطرًا، فيأكل الشريطُ
+    ثلاثة سطور. والمختصَر يُنزله إلى ١١٦ فيجتمعان.
+
+    **ولا يُبدَّل النصُّ بجافاسكربت يقرأ عرضَ الشاشة**: فيصير
+    للقياس مكانان، وهما يفترقان. والقياسُ في استعلام الوسائط وحده.
+    """
+    import os, re
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    js = open(os.path.join(root, "assets/i18n.js"), encoding="utf-8").read()
+    css = open(os.path.join(root, "assets/style.css"), encoding="utf-8").read()
+
+    assert "lg-full" in js and "lg-short" in js
+    assert 'aria-label="${n}"' in js, "قارئ الشاشة يقرأ «EN» لا «English»"
+    assert re.search(r"\.langbox \.lg-short\{display:none\}", css)
+    assert "innerWidth" not in js, "عرضُ الشاشة يُقرأ بالتنسيق لا بالشيفرة"

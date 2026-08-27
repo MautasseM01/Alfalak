@@ -465,10 +465,27 @@ function i18nBar() {
     box.setAttribute('aria-label', 'اللغة / Language');
     bar.appendChild(box);
   }
-  box.innerHTML = [['ar', 'العربية'], ['en', 'English'], ['fr', 'Français']]
-    .map(([k, n]) => `<button type="button" data-lang="${k}"
-      class="${k === I18N_LANG ? 'on' : ''}"
-      aria-pressed="${k === I18N_LANG}" lang="${k}">${n}</button>`).join('');
+  /* ══════════════════════════════════════════════════════════
+     **اسمان لكلّ لسان: تامٌّ ومختصَر**
+
+     قِيس على عرض ٣٦٠: مبدّلُ اللغة ١٩٩ بكسلًا ومفتاحُ المستوى
+     ١٥٧، ومجموعُهما يتجاوز المتاح — **فينزل كلٌّ منهما سطرًا**،
+     فيأكل الشريطُ ثلاثة سطور قبل أن يبدأ المحتوى.
+
+     والمختصَر يُنزله إلى نحو ١١٠، فيجتمعان في سطرٍ واحد.
+
+     **والاسمان يُرسَمان معًا ويُخفي أحدَهما التنسيق** — لا يُبدَّل
+     النصُّ بجافاسكربت يقرأ عرضَ الشاشة. فالقياسُ في مكانٍ واحد
+     (استعلامُ الوسائط)، **ولا يفترق مقياسان على شيءٍ واحد**.
+     وقارئُ الشاشة يقرأ `aria-label` التامّ لا الحرفين. */
+  box.innerHTML = [['ar', 'العربية', 'ع'],
+                   ['en', 'English', 'EN'],
+                   ['fr', 'Français', 'FR']]
+    .map(([k, n, s]) => `<button type="button" data-lang="${k}"
+      class="${k === I18N_LANG ? 'on' : ''}" aria-label="${n}"
+      aria-pressed="${k === I18N_LANG}" lang="${k}"
+      ><span class="lg-full">${n}</span><span class="lg-short">${s}</span></button>`)
+    .join('');
 }
 
 document.addEventListener('click', e => {

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مختبر السماء — الفَلَك</title>
+<meta name="description" content="عجلةٌ تتحرّك بالزمن: قدّم الساعة أو اليوم أو السنة وانظر كيف تسير الكواكب في البروج، ومتى ترجع.">
+<link rel="canonical" href="https://alfalak.vercel.app/sky.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="الفَلَك">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:url" content="https://alfalak.vercel.app/sky.html">
+<meta property="og:title" content="مختبر السماء — الفَلَك">
+<meta property="og:description" content="قدّم الزمن أو أخّره وانظر السماء تتحرّك: مسير الكواكب في البروج ورجوعها.">
+<meta property="og:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="مختبر السماء — الفَلَك">
+<meta name="twitter:description" content="قدّم الزمن أو أخّره وانظر السماء تتحرّك: مسير الكواكب في البروج ورجوعها.">
+<meta name="twitter:image" content="https://alfalak.vercel.app/assets/share.png">
+<meta name="theme-color" content="#0a0f1d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.lab{display:grid;grid-template-columns:minmax(min(280px,100%),1fr) minmax(min(240px,100%),340px);gap:16px}
+@media(max-width:820px){.lab{grid-template-columns:1fr}}
+.stage{position:relative;aspect-ratio:1;min-height:280px}
+.stage canvas{width:100%;height:100%;display:block}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}
+.ctl .grp{display:flex;gap:4px;align-items:center;background:rgba(255,255,255,.03);
+  border:1px solid var(--line);border-radius:999px;padding:3px 5px}
+.ctl button{font-size:.8rem;padding:3px 9px;border-radius:999px;border:0;
+  background:transparent;color:var(--text);cursor:pointer}
+.ctl button:hover{background:rgba(217,180,91,.14);color:var(--gold)}
+.ctl .lbl{font-size:.76rem;color:var(--muted);padding:0 5px}
+#scrub{width:100%;margin-top:10px;accent-color:var(--gold)}
+.tbl{font-size:.83rem}
+.tbl tr.r td{color:var(--neg)}
+.tbl td:first-child{color:var(--gold)}
+.now{font-variant-numeric:tabular-nums;font-size:.86rem;color:var(--muted);
+  text-align:center;margin-top:6px}
+.hintbox{font-size:.83rem;line-height:1.85;color:var(--muted);
+  padding-inline-start:12px;border-inline-start:2px solid var(--gold-dim);margin-top:14px}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"مختبر السماء","url":"https://alfalak.vercel.app/sky.html","description":"عجلة متحرّكة بالزمن تُظهر مسير الكواكب في البروج ورجوعها.","inLanguage":"ar","applicationCategory":"ReferenceApplication","operatingSystem":"أي متصفّح","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isPartOf":{"@type":"WebSite","name":"الفَلَك","url":"https://alfalak.vercel.app/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسة","item":"https://alfalak.vercel.app/"},{"@type":"ListItem","position":2,"name":"مختبر السماء","item":"https://alfalak.vercel.app/sky.html"}]}</script>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="brand" href="/">
+    <svg width="42" height="27" viewBox="0 0 64 40" fill="none" aria-hidden="true">
+      <path d="M2 38 A30 30 0 0 1 62 38" stroke="#d9b45b" stroke-width="1.2" fill="none" opacity=".8"/>
+      <line x1="0" y1="38" x2="64" y2="38" stroke="#d9b45b" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="14" r="3.4" fill="#d9b45b" opacity=".9"/>
+    </svg>
+    <div><h1>الفَلَك</h1><small>أدوات فلكية عربية</small></div>
+  </a>
+  <nav>
+    <a href="/">الرئيسة</a>
+    <a href="/bulletin.html">النشرة اليومية</a>
+    <a href="/monthly.html">الشهرية</a>
+    <a href="/sky.html" class="on">مختبر السماء</a>
+    <a href="/eclipses.html">الكسوف والخسوف</a>
+    <a href="/hours.html">ساعات الكواكب</a>
+    <a href="/elections.html">الاختيارات</a>
+    <a href="/horary.html">المسائل</a>
+    <a href="/chart.html">خريطة الميلاد</a>
+    <a href="/ephemeris.html">مواقع الكواكب</a>
+    <a href="/verify.html">أين تُضبَط المعلومة؟</a>
+    <a href="/learn.html">تعلّم</a>
+  </nav>
+</div>
+
+<div class="printhead">
+  <h1>الفَلَك — مختبر السماء</h1>
+  <p>alfalak.vercel.app · الحساب بمكتبة Swiss Ephemeris</p>
+</div>
+<main id="main">
+<h2 class="page">مختبر السماء</h2>
+<p class="lede">
+  قدّم الزمن أو أخّره — بالدقيقة أو الساعة أو اليوم أو السنة — وانظر كيف تسير
+  الكواكب في البروج. والمرسوم هنا ليس نموذجًا للعالم، بل جدولُ ما ستراه في السماء:
+  في أيّ جهةٍ من الفَلَك يقع كلُّ جرم، وهو ما يُرصَد ويُقاس.
+</p>
+
+<div class="card">
+  <div class="card-body">
+    <div class="form">
+      <div class="field"><label for="start">ابدأ من</label><input type="date" id="start"></div>
+      <div class="field"><label for="time">الساعة</label><input type="time" id="time" value="12:00"></div>
+      <div class="field"><label for="city">المدينة</label>
+        <input type="text" id="city" placeholder="دمشق، القاهرة…" autocomplete="off"></div>
+      <div class="field"><label for="step">الخطوة</label>
+        <select id="step">
+          <option value="دقيقة">دقيقة</option>
+          <option value="ساعة">ساعة</option>
+          <option value="يوم" selected>يوم</option>
+          <option value="أسبوع">أسبوع</option>
+          <option value="شهر">شهر</option>
+          <option value="سنة">سنة</option>
+        </select></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="lab">
+      <div>
+        <div class="stage"><canvas id="wheel"></canvas></div>
+        <label for="scrub" class="sr-only">الزمن</label>
+        <input type="range" id="scrub" min="0" max="199" value="0">
+        <div class="ctl">
+          <div class="grp">
+            <button id="play" aria-label="تشغيل">▶ تشغيل</button>
+          </div>
+          <div class="grp">
+            <span class="lbl">خطوة</span>
+            <button data-jump="-10">‹‹ ١٠</button>
+            <button data-jump="-1">‹</button>
+            <button data-jump="1">›</button>
+            <button data-jump="10">١٠ ››</button>
+          </div>
+          <div class="grp">
+            <span class="lbl">السرعة</span>
+            <button data-fps="6">بطيء</button>
+            <button data-fps="12">وسط</button>
+            <button data-fps="30">سريع</button>
+          </div>
+          <div class="grp">
+            <button id="trail">أخفِ الأثر</button>
+            <button id="now">إلى الآن</button>
+          </div>
+        </div>
+        <div class="now" id="nowline"></div>
+      </div>
+      <div>
+        <div class="tblwrap"><table class="tbl"><tbody id="rows"></tbody></table></div>
+        <div class="hintbox">
+          <b>الأثر الباهت</b> هو مسار الجرم في اللقطات السابقة. وحين يرتدّ
+          إلى الوراء فذلك <b>الرجوع</b> — يُرسَم الجرم أحمر ومعه حرف «ر».
+          والرجوع ليس توقّفًا في السماء: هو ما نراه من جهةٍ نحن فيها نتحرّك أيضًا.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+<footer>
+  المواقع محسوبة بمكتبة Swiss Ephemeris لحظةً بلحظة، لا من جدولٍ مخزون.<br>
+  والمرسوم طولٌ في دائرة البروج: جهةُ الجرم كما تُرى، لا مسافتُه ولا مساره في الفضاء.
+</footer>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/hint.js"></script>
+<script src="/assets/select.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/i18n.js"></script>
+<script src="/assets/plain.js"></script>
+<script src="/assets/timelab.js"></script>
+<script>
+starfield('stars');
+initGlossary();
+pageIntro('sky');
+const $ = id => document.getElementById(id);
+const lab = new TimeLab($('wheel'), { onFrame: onFrame });
+
+function esc2(t){ return String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+cityInput($('city'), () => load());
+
+async function load() {
+  const q = {
+    start: $('start').value, time: $('time').value,
+    city: $('city').value.trim(), step: $('step').value, frames: 200,
+  };
+  store.set('sky', q);
+  $('nowline').textContent = '… أحسب مسير الأجرام';
+  try {
+    const d = await API('track', q);
+    $('scrub').max = d.count - 1;
+    $('scrub').value = 0;
+    lab.load(d);
+  } catch (e) {
+    $('nowline').textContent = e.message;
+  }
+}
+
+function onFrame(i, t, d) {
+  $('scrub').value = i;
+  const dd = new Date(t);
+  $('nowline').textContent =
+    `اللقطة ${i + 1} من ${d.count} · ${dd.toISOString().slice(0, 16).replace('T', ' ')} عالميًّا`
+    + (d.place ? ` · ${d.place}` : '');
+  $('rows').innerHTML = lab.rows().map(r =>
+    `<tr class="${r.retro ? 'r' : ''}"><td>${esc2(r.symbol || '')} ${esc2(r.name)}</td>
+     <td>${esc2(r.text)}${r.retro ? ' <b>ر</b>' : ''}</td></tr>`).join('');
+}
+
+$('scrub').oninput = () => { lab.pause(); $('play').textContent = '▶ تشغيل'; lab.i = +$('scrub').value; lab.draw(); };
+$('play').onclick = () => {
+  lab.toggle();
+  $('play').textContent = lab.playing ? '⏸ إيقاف' : '▶ تشغيل';
+};
+document.querySelectorAll('[data-jump]').forEach(b =>
+  b.onclick = () => { lab.pause(); $('play').textContent = '▶ تشغيل'; lab.step(+b.dataset.jump); });
+document.querySelectorAll('[data-fps]').forEach(b =>
+  b.onclick = () => { lab.fps = +b.dataset.fps; });
+$('trail').onclick = () => {
+  lab.trail = !lab.trail;
+  $('trail').textContent = lab.trail ? 'أخفِ الأثر' : 'أظهر الأثر';
+  lab.draw();
+};
+$('now').onclick = () => { $('start').value = todayISO(); load(); };
+$('step').onchange = load;
+$('start').onchange = load;
+$('time').onchange = load;
+$('city').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.querySelector('.ac.show')) load();
+});
+
+/* **ويُقبَل ما يأتي من صفحة الخريطة في الرابط.** فمن ضغط «حرّك
+   الزمن» هناك وصل هنا ومولدُه معه، فلا يُعيد إدخاله. */
+const P = new URLSearchParams(location.search);
+const s0 = store.get('sky', {});
+$('city').value = P.get('city') || s0.city || 'دمشق';
+$('start').value = P.get('start') || s0.start || todayISO();
+$('time').value = P.get('time') || s0.time || '12:00';
+if (P.get('step') || s0.step) $('step').value = P.get('step') || s0.step;
+load();
+</script>
+</body>
+</html>

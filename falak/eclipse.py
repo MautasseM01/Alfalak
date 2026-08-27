@@ -377,9 +377,76 @@ def saros_chain(when: datetime, lunar: bool, back: int = 2,
             "eclipse": found,
         })
     links.sort(key=lambda x: x["step"])
+
+    # ══════════════════════════════════════════════════════════════
+    # **الثلث** — وهو أدقُّ ما في الدورة وأقلُّه ذكرًا.
+    #
+    # ٦٥٨٥٫٣٢ يومًا = ١٨ سنة و١١ يومًا **وثُلثَ يوم**. ولولا الثلث
+    # لعاد الكسوف إلى المكان نفسه من الأرض. لكنّ الأرض تدور ثلثَ
+    # دورةٍ في تلك الساعات الثماني، **فيقع النظير على بُعد ١٢٠°
+    # غربًا** من موضع أصله.
+    #
+    # وثلاثةُ أثلاثٍ دورةٌ كاملة: فبعد **ثلاث** دوراتٍ (٥٤ سنة
+    # و٣٣ يومًا) يعود الكسوف إلى الناحية نفسها. وهذا ما سمّاه
+    # اليونان «إكسِلِغموس».
+    #
+    # وهو مُقاسٌ لا مُدَّعى: يُؤخَذ خطُّ طول موضع الذروة من
+    # المكتبة، ويُعرَض الفرقُ بين كلّ نظيرٍ وسابقه.
+    # ══════════════════════════════════════════════════════════════
+    # **والإزاحة تُقاس بين المتتاليَين، لا بينها وبين الأصل.**
+    # أوّلُ صياغةٍ لي قست كلَّ نظيرٍ إلى الأصل ثم قسمت على عدد
+    # الدورات — **وذلك باطلٌ لأن الزاوية تلتفّ**: النظيرُ الثاني
+    # أزاحت ٢٤٠°، وتُقرأ ‎−١١٥٫٩‎، فتخرج القسمةُ ‎+٥٨‎ وهو عددٌ لا
+    # معنى له. والفرقُ بين خطوتين متجاورتين لا يلتفّ.
+    chain = [(0, base)] + [(l["step"], l.get("eclipse")) for l in links]
+    chain = [(s, e) for s, e in chain
+             if e and e.get("greatest")]
+    chain.sort(key=lambda x: x[0])
+    shifts = {}
+    for (s0, e0), (s1, e1) in zip(chain, chain[1:]):
+        d = (e1["greatest"]["lon"] - e0["greatest"]["lon"]) % 360.0
+        if d > 180.0:
+            d -= 360.0
+        shifts[s1] = round(d, 1)
+
+    for link in links:
+        e = link.get("eclipse")
+        link["greatest"] = e.get("greatest") if e else None
+        # الإزاحة عن الخطوة التي قبلها — وهي التي تُقارَب ١٢٠°
+        link["shift_deg"] = shifts.get(link["step"])
+
     return {"base": base, "links": links,
             "saros_days": SAROS_DAYS,
-            "period_text": "١٨ سنة و١١ يومًا و٨ ساعات"}
+            "period_text": "١٨ سنة و١١ يومًا و٨ ساعات",
+            "third": {
+                "fraction_days": round(SAROS_DAYS - int(SAROS_DAYS), 4),
+                "hours": round((SAROS_DAYS - int(SAROS_DAYS)) * 24, 2),
+                "shift_expected": 120.0,
+                "text": ("الكسرُ الباقي من الدورة ثُلثُ يومٍ تقريبًا "
+                         "(نحو ثماني ساعات). وفي تلك الساعات تدور الأرض "
+                         "ثلثَ دورة، فيقع النظيرُ على نحو ١٢٠° غربًا من "
+                         "موضع أصله."),
+                "exeligmos_text": ("وثلاثةُ أثلاثٍ دورةٌ تامّة: فبعد ثلاث "
+                                   "دورات — أي ٥٤ سنة و٣٣ يومًا — يعود "
+                                   "الكسوف إلى الناحية نفسها. وهي التي "
+                                   "سمّاها اليونان «إكسِلِغموس»."),
+                "exeligmos_days": round(SAROS_DAYS * 3, 2),
+                # وبقيّةُ الإكسلغموس: كم بقي بعد ثلاث دوراتٍ من
+                # الرجوع التامّ. تُقاس ولا تُدَّعى.
+                "exeligmos_residual": _residual(base, links, 3),
+            }}
+
+
+def _residual(base: dict, links: list, n: int) -> float | None:
+    """ما بقي من الدورة بعد `n` دورات — بالدرجات، بين الأصل والنظير."""
+    g0 = base.get("greatest")
+    hit = next((l for l in links if l["step"] == n and l.get("greatest")), None)
+    hit = hit or next((l for l in links
+                       if l["step"] == -n and l.get("greatest")), None)
+    if not g0 or not hit:
+        return None
+    d = (hit["greatest"]["lon"] - g0["lon"]) % 360.0
+    return round(d - 360.0 if d > 180.0 else d, 1)
 
 
 # ══════════════════════════════════════════════════════════════════
